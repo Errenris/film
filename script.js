@@ -1,5 +1,5 @@
 // Konfigurasi API
-const TMDB_KEY = "52a1d7f550504d909030616970769a93"; // Ganti jika tidak muncul
+const TMDB_KEY = "80907d8985c7a31505c21f7532d84793"; // Ganti jika tidak muncul
 const VID_API = "https://vidapi.ru/api";
 const IMG_PATH = "https://image.tmdb.org/t/p/w500";
 const BACKDROP_PATH = "https://image.tmdb.org/t/p/original";
