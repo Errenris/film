@@ -3,6 +3,7 @@ const BACK_PATH = "https://image.tmdb.org/t/p/original";
 
 let currentPage = 1; let currentAction = ''; let currentPath = ''; let currentQuery = '';
 let featuredMovies = []; let currentHeroIndex = 0; let carouselTimer;
+let liveSearchTimeout; // Timer untuk Live Search
 
 window.onload = () => { initApp(); };
 
@@ -13,14 +14,88 @@ async function initApp() {
     updateHero();
     startCarousel();
 
-    // Render baris default di Home
     fetchAndRender('movie/popular', 'row1');
     fetchAndRender('tv/popular', 'row2');
-    // Jika kamu sudah pasang rowNostalgia di index.html, hapus tanda '//' di bawah ini:
-    // fetchAndRender('discover/movie?primary_release_date.gte=2000-01-01&primary_release_date.lte=2009-12-31&sort_by=vote_average.desc&vote_count.gte=1000', 'rowNostalgia');
 }
 
-// --- LOGIKA 1: MY LIST (DAFTAR FAVORIT) ---
+// --- LOGIKA 1: LIVE SEARCH (AUTO SUGGEST) ---
+async function handleLiveSearch(query) {
+    const suggestBox = document.getElementById('searchSuggestions');
+    
+    if (!query || query.length < 2) {
+        suggestBox.classList.add('hidden');
+        return;
+    }
+
+    clearTimeout(liveSearchTimeout); // Cegah spam request pas ngetik cepet
+    liveSearchTimeout = setTimeout(async () => {
+        try {
+            suggestBox.innerHTML = '<p class="text-xs text-center text-white/50 py-3">Mencari...</p>';
+            suggestBox.classList.remove('hidden');
+
+            const res = await fetch(`/api/movies?path=search/multi&query=${encodeURIComponent(query)}&page=1`);
+            const data = await res.json();
+            
+            const suggestions = data.results.filter(m => m.poster_path).slice(0, 5); // Tampilkan maks 5 aja
+            
+            if (suggestions.length === 0) {
+                 suggestBox.innerHTML = '<p class="text-xs text-center text-red-400 py-3">Film tidak ditemukan</p>';
+                 return;
+            }
+
+            suggestBox.innerHTML = ''; // Bersihin kotak loading
+
+            suggestions.forEach(movie => {
+                const type = movie.media_type === 'tv' ? 'tv' : 'movie';
+                const year = (movie.release_date || movie.first_air_date || '').split('-')[0];
+                
+                const item = document.createElement('div');
+                item.className = "flex items-center gap-3 p-2 hover:bg-white/10 rounded-xl cursor-pointer transition";
+                item.innerHTML = `
+                    <img src="${IMG_PATH + movie.poster_path}" class="w-10 h-14 object-cover rounded shadow">
+                    <div class="flex-1 min-w-0">
+                        <h4 class="text-sm font-bold text-white truncate">${movie.title || movie.name}</h4>
+                        <p class="text-[10px] text-white/50 mt-0.5">${year} • <span class="uppercase text-blue-400">${type}</span></p>
+                    </div>
+                `;
+                item.onclick = () => {
+                    playMovie(movie.id, movie.title || movie.name, type);
+                    closeSuggestions();
+                    document.getElementById('searchInput').value = ''; // Kosongin input setelah diklik
+                };
+                suggestBox.appendChild(item);
+            });
+            
+            // Tambah tombol "Lihat semua hasil" di bawah
+            if (data.results.length > 5) {
+                const viewAllBtn = document.createElement('button');
+                viewAllBtn.className = "w-full text-center text-xs font-bold text-blue-400 hover:text-white py-3 mt-1 border-t border-white/10 transition";
+                viewAllBtn.innerText = `Lihat semua hasil "${query}" ➔`;
+                viewAllBtn.onclick = () => {
+                    searchMovie();
+                    closeSuggestions();
+                };
+                suggestBox.appendChild(viewAllBtn);
+            }
+
+        } catch (e) {
+            suggestBox.classList.add('hidden');
+        }
+    }, 500); // Eksekusi pencarian 500ms setelah selesai ngetik
+}
+
+function closeSuggestions() {
+    document.getElementById('searchSuggestions').classList.add('hidden');
+}
+
+// Tutup kotak suggestion kalau user klik di luar area
+document.addEventListener('click', (e) => {
+    if (!e.target.closest('#searchInput') && !e.target.closest('#searchSuggestions')) {
+        closeSuggestions();
+    }
+});
+
+// --- LOGIKA 2: MY LIST (DAFTAR FAVORIT) ---
 function getMyList() { return JSON.parse(localStorage.getItem('streamverse_mylist') || '[]'); }
 function saveMyList(list) { localStorage.setItem('streamverse_mylist', JSON.stringify(list)); }
 
@@ -58,7 +133,7 @@ function showMyList() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// --- LOGIKA 2: FILTER GENRE DINAMIS ---
+// --- LOGIKA 3: FILTER GENRE DINAMIS ---
 function loadGenre(genreId, label) {
     loadCategory(`discover/movie?with_genres=${genreId}`, `Genre: ${label}`);
 }
@@ -126,7 +201,7 @@ async function loadMore() {
     if(currentPage >= data.total_pages) btn.classList.add('hidden');
 }
 
-// --- LOGIKA RENDER CARD & TOMBOL LOVE & INDIKATOR NEW ---
+// --- LOGIKA RENDER CARD ---
 async function fetchAndRender(path, elementId) {
     const res = await fetch(`/api/movies?path=${encodeURIComponent(path)}`);
     const data = await res.json();
@@ -136,7 +211,7 @@ async function fetchAndRender(path, elementId) {
 function renderCards(movies, container, append = false, isTV = false) {
     if (!append) container.innerHTML = '';
     const myList = getMyList();
-    const currentYear = new Date().getFullYear(); // Ambil tahun saat ini (Otomatis)
+    const currentYear = new Date().getFullYear(); 
 
     movies.forEach(movie => {
         if (!movie.poster_path) return;
@@ -149,10 +224,7 @@ function renderCards(movies, container, append = false, isTV = false) {
         const movieStr = encodeURIComponent(JSON.stringify(savedObj));
         const isFav = myList.some(m => m.id === movie.id);
         
-        // Cek Tahun Rilis
         const releaseYear = savedObj.release_date ? savedObj.release_date.split('-')[0] : '';
-        
-        // Logika Badge NEW: Muncul jika rilis di tahun yang sama dengan tahun saat ini
         const newBadgeHTML = (releaseYear == currentYear) 
             ? `<div class="absolute top-2 left-14 bg-gradient-to-r from-red-500 to-pink-500 text-white text-[8px] font-extrabold px-2 py-1 rounded-full shadow-[0_0_10px_rgba(255,0,0,0.8)] animate-pulse pointer-events-none z-10">NEW ✨</div>` 
             : '';
@@ -172,10 +244,7 @@ function renderCards(movies, container, append = false, isTV = false) {
             </button>
             
             <div class="absolute top-2 left-2 glass-panel text-white text-[9px] font-bold px-2 py-1 rounded-full pointer-events-none z-10">⭐ ${savedObj.vote_average.toFixed(1)}</div>
-            
-            <!-- Cetak Badge NEW di Sini -->
             ${newBadgeHTML}
-
             <div class="absolute bottom-16 right-2 bg-blue-500 text-white text-[8px] font-bold px-1.5 py-0.5 rounded shadow-lg uppercase pointer-events-none z-10">${type}</div>
             
             <div class="mt-3 px-1 text-center">
@@ -187,7 +256,7 @@ function renderCards(movies, container, append = false, isTV = false) {
     });
 }
 
-// --- LOGIKA 3: PLAYER + FETCH TRAILER ---
+// --- LOGIKA PLAYER + TRAILER ---
 function playMovie(id, title, type = 'movie') {
     const player = document.getElementById('playerContainer');
     const iframe = document.getElementById('videoPlayer');
