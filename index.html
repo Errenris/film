@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StreamPro - Movie Web App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .aspect-video { aspect-ratio: 16 / 9; }
+        body { background-color: #0f172a; color: white; }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <div class="max-w-6xl mx-auto">
+        <header class="mb-8 text-center">
+            <h1 class="text-4xl font-bold text-blue-500 mb-2">StreamPro</h1>
+            <p class="text-gray-400">Nonton film favorit langsung dari browser.</p>
+        </header>
+
+        <!-- Search Bar -->
+        <div class="flex gap-2 mb-8">
+            <input type="text" id="searchInput" placeholder="Masukkan judul film (e.g. Iron Man)..." 
+                   class="w-full p-3 rounded-lg bg-slate-800 border border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <button onclick="searchMovie()" class="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg font-bold transition">Cari</button>
+        </div>
+
+        <!-- Player Section -->
+        <div id="playerContainer" class="hidden mb-12">
+            <h2 id="currentTitle" class="text-2xl font-semibold mb-4 text-blue-300"></h2>
+            <div class="bg-black rounded-xl overflow-hidden shadow-2xl border border-slate-700">
+                <iframe id="videoPlayer" src="" class="w-full aspect-video" frameborder="0" allowfullscreen></iframe>
+            </div>
+        </div>
+
+        <!-- Results Grid -->
+        <div id="resultsGrid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            <!-- Movie cards will appear here -->
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
