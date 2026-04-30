@@ -13,8 +13,11 @@ async function initApp() {
     updateHero();
     startCarousel();
 
+    // Render baris default di Home
     fetchAndRender('movie/popular', 'row1');
     fetchAndRender('tv/popular', 'row2');
+    // Jika kamu sudah pasang rowNostalgia di index.html, hapus tanda '//' di bawah ini:
+    // fetchAndRender('discover/movie?primary_release_date.gte=2000-01-01&primary_release_date.lte=2009-12-31&sort_by=vote_average.desc&vote_count.gte=1000', 'rowNostalgia');
 }
 
 // --- LOGIKA 1: MY LIST (DAFTAR FAVORIT) ---
@@ -22,23 +25,22 @@ function getMyList() { return JSON.parse(localStorage.getItem('streamverse_mylis
 function saveMyList(list) { localStorage.setItem('streamverse_mylist', JSON.stringify(list)); }
 
 function toggleMyList(event, movieStr) {
-    event.stopPropagation(); // Mencegah klik tembus memutar film
+    event.stopPropagation(); 
     const movie = JSON.parse(decodeURIComponent(movieStr));
     let list = getMyList();
     const index = list.findIndex(m => m.id === movie.id);
     
     if (index > -1) {
-        list.splice(index, 1); // Hapus jika sudah ada
+        list.splice(index, 1); 
         event.target.innerText = '🤍';
         event.target.classList.remove('text-red-500');
     } else {
-        list.push(movie); // Tambah jika belum ada
+        list.push(movie); 
         event.target.innerText = '❤️';
         event.target.classList.add('text-red-500');
     }
     saveMyList(list);
 
-    // Refresh langsung jika sedang membuka halaman My List
     if (!document.getElementById('myListSection').classList.contains('hidden')) showMyList();
 }
 
@@ -124,7 +126,7 @@ async function loadMore() {
     if(currentPage >= data.total_pages) btn.classList.add('hidden');
 }
 
-// --- LOGIKA RENDER CARD & TOMBOL LOVE ---
+// --- LOGIKA RENDER CARD & TOMBOL LOVE & INDIKATOR NEW ---
 async function fetchAndRender(path, elementId) {
     const res = await fetch(`/api/movies?path=${encodeURIComponent(path)}`);
     const data = await res.json();
@@ -134,18 +136,26 @@ async function fetchAndRender(path, elementId) {
 function renderCards(movies, container, append = false, isTV = false) {
     if (!append) container.innerHTML = '';
     const myList = getMyList();
+    const currentYear = new Date().getFullYear(); // Ambil tahun saat ini (Otomatis)
 
     movies.forEach(movie => {
         if (!movie.poster_path) return;
         const type = movie.media_type || (isTV ? 'tv' : 'movie');
         
-        // Buat objek aman untuk disimpan ke LocalStorage
         const savedObj = {
             id: movie.id, title: movie.title || movie.name, poster_path: movie.poster_path, 
             media_type: type, vote_average: movie.vote_average, release_date: movie.release_date || movie.first_air_date || ''
         };
         const movieStr = encodeURIComponent(JSON.stringify(savedObj));
         const isFav = myList.some(m => m.id === movie.id);
+        
+        // Cek Tahun Rilis
+        const releaseYear = savedObj.release_date ? savedObj.release_date.split('-')[0] : '';
+        
+        // Logika Badge NEW: Muncul jika rilis di tahun yang sama dengan tahun saat ini
+        const newBadgeHTML = (releaseYear == currentYear) 
+            ? `<div class="absolute top-2 left-14 bg-gradient-to-r from-red-500 to-pink-500 text-white text-[8px] font-extrabold px-2 py-1 rounded-full shadow-[0_0_10px_rgba(255,0,0,0.8)] animate-pulse pointer-events-none z-10">NEW ✨</div>` 
+            : '';
 
         const card = document.createElement('div');
         card.className = "movie-card";
@@ -157,17 +167,20 @@ function renderCards(movies, container, append = false, isTV = false) {
                 </div>
             </div>
             
-            <!-- Tombol Favorit (Love) -->
             <button onclick="toggleMyList(event, '${movieStr}')" class="absolute top-2 right-2 glass-panel w-8 h-8 rounded-full flex items-center justify-center text-sm z-[30] transition ${isFav ? 'text-red-500' : 'text-white'} hover:scale-110">
                 ${isFav ? '❤️' : '🤍'}
             </button>
             
             <div class="absolute top-2 left-2 glass-panel text-white text-[9px] font-bold px-2 py-1 rounded-full pointer-events-none z-10">⭐ ${savedObj.vote_average.toFixed(1)}</div>
+            
+            <!-- Cetak Badge NEW di Sini -->
+            ${newBadgeHTML}
+
             <div class="absolute bottom-16 right-2 bg-blue-500 text-white text-[8px] font-bold px-1.5 py-0.5 rounded shadow-lg uppercase pointer-events-none z-10">${type}</div>
             
             <div class="mt-3 px-1 text-center">
                 <h3 class="text-[13px] font-bold truncate text-white/90">${savedObj.title}</h3>
-                <p class="text-[11px] text-white/50 mt-1">${savedObj.release_date.split('-')[0]}</p>
+                <p class="text-[11px] text-white/50 mt-1">${releaseYear}</p>
             </div>
         `;
         container.appendChild(card);
@@ -184,7 +197,6 @@ function playMovie(id, title, type = 'movie') {
     iframe.src = movieUrl;
     document.getElementById('playingTitle').innerText = title;
     
-    // Siapkan Tombol Kontrol di bawah Player
     controls.innerHTML = `
         <button onclick="document.getElementById('videoPlayer').src='${movieUrl}'" class="glass-btn px-4 py-2 rounded-full text-sm font-bold text-blue-300 hover:bg-blue-600/20">▶ Nonton Full</button>
         <button id="trailerBtn" class="glass-btn px-4 py-2 rounded-full text-sm font-bold text-red-400 hover:bg-red-600/20">🎬 Lihat Trailer</button>
@@ -193,7 +205,6 @@ function playMovie(id, title, type = 'movie') {
     player.classList.remove('hidden');
     document.body.style.overflow = 'hidden';
 
-    // Aksi Saat Tombol Trailer Diklik
     document.getElementById('trailerBtn').onclick = async function() {
         this.innerText = 'Mencari Trailer...';
         try {
