@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StreamVerse | Premium Glass</title>
+    <title>Nobargasi</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;800&display=swap" rel="stylesheet">
     <style>
@@ -19,6 +19,10 @@
         @media (min-width: 768px) { .movie-card { width: 165px; } }
         .movie-card:hover { transform: translateY(-8px) scale(1.05); z-index: 20; }
         .poster-container { aspect-ratio: 2/3; border-radius: 16px; overflow: hidden; position: relative; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
+        
+        /* Custom scrollbar untuk live search dropdown */
+        .custom-scroll::-webkit-scrollbar { width: 6px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
     </style>
 </head>
 <body class="pb-20">
@@ -32,14 +36,21 @@
                     <button onclick="showSection('home')" class="hover:text-white transition">Home</button>
                     <button onclick="loadCategory('movie/popular', 'Movies Popular')" class="hover:text-white transition">Movies</button>
                     <button onclick="loadCategory('tv/popular', 'TV Series Popular')" class="hover:text-white transition">TV Series</button>
-                    <!-- Tombol My List -->
                     <button onclick="showMyList()" class="hover:text-red-400 transition flex items-center gap-1">📌 My List</button>
                 </nav>
             </div>
             
-            <div class="relative w-full md:w-64">
-                <input type="text" id="searchInput" placeholder="Cari film atau series..." class="w-full bg-black/20 border border-white/10 px-4 py-2 rounded-full text-sm focus:outline-none focus:border-blue-400 transition-all text-white placeholder-gray-400 backdrop-blur-md" onkeypress="if(event.key === 'Enter') searchMovie()">
-                <button onclick="searchMovie()" class="absolute right-3 top-2 opacity-60 hover:opacity-100 transition">🔍</button>
+            <div class="relative w-full md:w-72">
+                <!-- Tambah oninput untuk Live Search -->
+                <input type="text" id="searchInput" placeholder="Cari film atau series..." class="w-full bg-black/20 border border-white/10 px-4 py-2 rounded-full text-sm focus:outline-none focus:border-blue-400 transition-all text-white placeholder-gray-400 backdrop-blur-md" 
+                       oninput="handleLiveSearch(this.value)" 
+                       onkeypress="if(event.key === 'Enter') { searchMovie(); closeSuggestions(); }">
+                <button onclick="searchMovie(); closeSuggestions();" class="absolute right-3 top-2 opacity-60 hover:opacity-100 transition">🔍</button>
+                
+                <!-- KOTAK LIVE SEARCH SUGGESTION -->
+                <div id="searchSuggestions" class="hidden absolute top-full mt-3 left-0 w-full glass-panel rounded-2xl max-h-80 overflow-y-auto custom-scroll z-[150] shadow-2xl flex flex-col p-2 border border-white/10">
+                    <!-- Hasil live pencarian bakal muncul di sini -->
+                </div>
             </div>
         </div>
     </header>
@@ -58,7 +69,7 @@
             </div>
         </section>
 
-        <!-- Area Hasil Category & Pencarian -->
+        <!-- Area Hasil Category & Pencarian Full -->
         <section id="gridSection" class="hidden glass-panel rounded-3xl p-6">
             <h2 id="gridTitle" class="text-xl font-bold mb-6 text-blue-300"></h2>
             <div id="gridResults" class="flex flex-wrap justify-center sm:justify-start gap-4 pb-4"></div>
@@ -67,7 +78,7 @@
             </div>
         </section>
 
-        <!-- Area My List (Favorit) -->
+        <!-- Area My List -->
         <section id="myListSection" class="hidden glass-panel rounded-3xl p-6">
             <h2 class="text-xl font-bold mb-6 text-red-400">📌 Daftar Favorit Saya</h2>
             <div id="myListResults" class="flex flex-wrap justify-center sm:justify-start gap-4 pb-4"></div>
@@ -76,7 +87,6 @@
         <!-- Area Home Default -->
         <div id="homeView" class="space-y-10">
             
-            <!-- Filter Genre Dinamis (SEKARANG ADA FILM INDONESIA) -->
             <section class="flex gap-3 overflow-x-auto no-scrollbar py-2">
                 <button onclick="loadCategory('discover/movie?with_original_language=id', 'Film Indonesia 🇮🇩')" class="glass-btn px-5 py-2 rounded-full text-sm font-bold whitespace-nowrap text-red-400 border-red-500/30">Indonesia 🇮🇩</button>
                 <button onclick="loadGenre(28, 'Aksi 💥')" class="glass-btn px-5 py-2 rounded-full text-sm font-bold whitespace-nowrap">Aksi 💥</button>
@@ -119,7 +129,7 @@
         </div>
     </main>
 
-    <!-- Player Modal (Dengan Tombol Trailer) -->
+    <!-- Player Modal -->
     <div id="playerContainer" class="hidden fixed inset-0 z-[200] flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-black/80 backdrop-blur-xl" onclick="closePlayer()"></div>
         <div class="glass-panel relative w-full max-w-5xl rounded-[2rem] p-2 md:p-4">
@@ -127,13 +137,9 @@
             <div class="aspect-video rounded-2xl overflow-hidden bg-black relative">
                 <iframe id="videoPlayer" src="" class="w-full h-full" frameborder="0" allowfullscreen></iframe>
             </div>
-            
-            <!-- Area Kontrol Bawah Player -->
             <div class="mt-4 px-2 pb-2 flex flex-wrap justify-between items-center gap-4">
                 <h3 id="playingTitle" class="text-lg md:text-xl font-bold text-blue-200"></h3>
-                <div class="flex gap-2" id="playerControls">
-                    <!-- Tombol Nonton & Trailer akan muncul di sini via JS -->
-                </div>
+                <div class="flex gap-2" id="playerControls"></div>
             </div>
         </div>
     </div>
