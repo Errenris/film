@@ -24,7 +24,25 @@
                    class="w-full p-3 rounded-lg bg-slate-800 border border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
             <button onclick="searchMovie()" class="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg font-bold transition">Cari</button>
         </div>
+<!-- ... (bagian header & search bar tetap sama) ... -->
 
+<!-- Recommendations Section -->
+<div id="recommendationSection" class="mb-12">
+    <h2 class="text-2xl font-semibold mb-6 text-blue-400">🔥 Sedang Populer</h2>
+    <div id="recommendationGrid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+        <!-- Rekomendasi film akan muncul di sini -->
+    </div>
+</div>
+
+<!-- Search Results Section (Hidden by default) -->
+<div id="searchSection" class="hidden mb-12">
+    <h2 class="text-2xl font-semibold mb-6 text-green-400">🔍 Hasil Pencarian</h2>
+    <div id="resultsGrid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+        <!-- Hasil pencarian -->
+    </div>
+</div>
+
+<!-- ... (bagian playerContainer & script tag tetap sama) ... -->
         <!-- Player Section -->
         <div id="playerContainer" class="hidden mb-12">
             <h2 id="currentTitle" class="text-2xl font-semibold mb-4 text-blue-300"></h2>
