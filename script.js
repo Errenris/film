@@ -1,76 +1,94 @@
-const API_BASE = "https://vidapi.ru/api";
-const TMDB_KEY = "52a1d7f550504d909030616970769a93"; // Key publik demo
+// Ganti dengan API Key TMDB kamu jika ini sudah limit
+const TMDB_KEY = "52a1d7f550504d909030616970769a93"; 
+const VID_API = "[https://vidapi.ru/api](https://vidapi.ru/api)";
 
-// Jalankan fungsi load rekomendasi saat web dibuka
 window.onload = () => {
-    loadRecommendations();
+    initApp();
 };
 
-async function loadRecommendations() {
-    const grid = document.getElementById('recommendationGrid');
+async function initApp() {
+    // Load berbagai kategori
+    fetchAndRender(`[https://api.themoviedb.org/3/trending/movie/day?api_key=$](https://api.themoviedb.org/3/trending/movie/day?api_key=$){TMDB_KEY}`, 'trendingRow', true);
+    fetchAndRender(`[https://api.themoviedb.org/3/discover/movie?api_key=$](https://api.themoviedb.org/3/discover/movie?api_key=$){TMDB_KEY}&with_genres=28`, 'actionRow');
+    fetchAndRender(`[https://api.themoviedb.org/3/movie/popular?api_key=$](https://api.themoviedb.org/3/movie/popular?api_key=$){TMDB_KEY}`, 'popularRow');
+}
+
+async function fetchAndRender(url, elementId, isHero = false) {
+    const container = document.getElementById(elementId);
     try {
-        const response = await fetch(`https://api.themoviedb.org/3/trending/movie/day?api_key=${TMDB_KEY}`);
-        const data = await response.json();
-        renderMovies(data.results, grid);
-    } catch (error) {
-        grid.innerHTML = '<p class="text-gray-500">Gagal memuat rekomendasi.</p>';
+        const res = await fetch(url);
+        const data = await res.json();
+        
+        if (data.results) {
+            if (isHero) setupHero(data.results[0]);
+            renderCards(data.results, container);
+        }
+    } catch (e) {
+        console.error("Gagal load data: ", e);
     }
 }
 
-async function searchMovie() {
-    const query = document.getElementById('searchInput').value;
-    const searchSection = document.getElementById('searchSection');
-    const resultsGrid = document.getElementById('resultsGrid');
-    
-    if (!query) return;
-
-    searchSection.classList.remove('hidden');
-    resultsGrid.innerHTML = '<p class="col-span-full">Mencari...</p>';
-
-    try {
-        const response = await fetch(`https://api.themoviedb.org/3/search/movie?api_key=${TMDB_KEY}&query=${query}`);
-        const data = await response.json();
-        renderMovies(data.results, resultsGrid);
-        window.scrollTo({ top: searchSection.offsetTop - 20, behavior: 'smooth' });
-    } catch (error) {
-        resultsGrid.innerHTML = '<p class="text-red-500">Terjadi kesalahan.</p>';
-    }
-}
-
-// Fungsi reusable untuk menampilkan card film
-function renderMovies(movies, container) {
+function renderCards(movies, container) {
     container.innerHTML = '';
     movies.forEach(movie => {
-        if (!movie.poster_path) return; // Lewati jika tidak ada poster
-
+        if (!movie.poster_path) return;
+        
         const card = document.createElement('div');
-        card.className = "bg-slate-800 rounded-lg overflow-hidden cursor-pointer hover:scale-105 transition border border-slate-700 shadow-lg";
+        card.className = "netflix-card min-w-[160px] md:min-w-[200px] cursor-pointer shadow-lg";
         card.innerHTML = `
-            <div class="relative">
-                <img src="https://image.tmdb.org/t/p/w500${movie.poster_path}" alt="${movie.title}" class="w-full h-64 object-cover">
-                <div class="absolute top-2 right-2 bg-yellow-500 text-black text-xs font-bold px-2 py-1 rounded">
-                    ⭐ ${movie.vote_average.toFixed(1)}
-                </div>
-            </div>
-            <div class="p-3">
-                <h3 class="font-medium text-sm truncate">${movie.title}</h3>
-                <p class="text-xs text-gray-400">${movie.release_date ? movie.release_date.split('-')[0] : 'N/A'}</p>
-            </div>
+            <img src="[https://image.tmdb.org/t/p/w500$](https://image.tmdb.org/t/p/w500$){movie.poster_path}" 
+                 class="w-full h-auto rounded-md object-cover" 
+                 alt="${movie.title}">
         `;
         card.onclick = () => playMovie(movie.id, movie.title);
         container.appendChild(card);
     });
 }
 
-function playMovie(id, title) {
-    const playerContainer = document.getElementById('playerContainer');
-    const iframe = document.getElementById('videoPlayer');
-    const titleHeader = document.getElementById('currentTitle');
+function setupHero(movie) {
+    const hero = document.getElementById('hero');
+    hero.classList.remove('hidden');
+    document.getElementById('heroBg').style.backgroundImage = `url('[https://image.tmdb.org/t/p/original$](https://image.tmdb.org/t/p/original$){movie.backdrop_path}')`;
+    document.getElementById('heroTitle').innerText = movie.title;
+    document.getElementById('heroDesc').innerText = movie.overview;
+    document.getElementById('heroPlayBtn').onclick = () => playMovie(movie.id, movie.title);
+}
 
-    // Integrasi dengan API vidapi.ru
-    iframe.src = `https://vidapi.ru/api?tmdb=${id}`;
+async function searchMovie() {
+    const query = document.getElementById('searchInput').value;
+    const row = document.getElementById('searchRow');
+    const container = document.getElementById('searchResults');
+
+    if (!query) return;
+
+    try {
+        const res = await fetch(`[https://api.themoviedb.org/3/search/movie?api_key=$](https://api.themoviedb.org/3/search/movie?api_key=$){TMDB_KEY}&query=${query}`);
+        const data = await res.json();
+        
+        row.classList.remove('hidden');
+        renderCards(data.results, container);
+        row.scrollIntoView({ behavior: 'smooth' });
+    } catch (e) {
+        console.error("Pencarian gagal");
+    }
+}
+
+function playMovie(id, title) {
+    const player = document.getElementById('playerContainer');
+    const iframe = document.getElementById('videoPlayer');
     
-    titleHeader.innerText = `Sedang Menonton: ${title}`;
-    playerContainer.classList.remove('hidden');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    // Set URL Vidapi
+    iframe.src = `${VID_API}?tmdb=${id}`;
+    document.getElementById('playingTitle').innerText = title;
+    
+    player.classList.remove('hidden');
+    document.body.style.overflow = 'hidden'; // Stop scrolling
+}
+
+function closePlayer() {
+    const player = document.getElementById('playerContainer');
+    const iframe = document.getElementById('videoPlayer');
+    iframe.src = '';
+    player.classList.add('hidden');
+    document.body.style.overflow = 'auto';
 }
