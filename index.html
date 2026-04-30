@@ -3,26 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StreamVerse | Ultimate Glass</title>
+    <title>StreamVerse | Liquid Glass</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;800&display=swap" rel="stylesheet">
     <style>
         :root { --bg-dark: #05050a; --glass-bg: rgba(255, 255, 255, 0.03); --glass-border: rgba(255, 255, 255, 0.08); }
-        body { 
-            background-color: var(--bg-dark); color: white; font-family: 'Outfit', sans-serif; overflow-x: hidden;
-            background-image: radial-gradient(circle at 15% 50%, rgba(20, 50, 150, 0.15), transparent 25%),
-                              radial-gradient(circle at 85% 30%, rgba(100, 20, 150, 0.15), transparent 25%);
-        }
+        body { background-color: var(--bg-dark); color: white; font-family: 'Outfit', sans-serif; overflow-x: hidden; background-image: radial-gradient(circle at 15% 50%, rgba(20, 50, 150, 0.15), transparent 25%), radial-gradient(circle at 85% 30%, rgba(100, 20, 150, 0.15), transparent 25%); }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         
-        /* LIQUID GLASS EFFECT */
-        .glass-panel {
-            background: var(--glass-bg); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-            border: 1px solid var(--glass-border); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
-        }
-        .glass-btn {
-            background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.2); transition: all 0.3s ease;
-        }
+        .glass-panel { background: var(--glass-bg); backdrop-filter: blur(16px); border: 1px solid var(--glass-border); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3); }
+        .glass-btn { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.2); transition: all 0.3s ease; }
         .glass-btn:hover { background: rgba(255, 255, 255, 0.2); transform: scale(1.1); }
 
         .movie-card { width: 140px; flex-shrink: 0; cursor: pointer; transition: 0.4s; }
@@ -33,83 +23,83 @@
 </head>
 <body class="pb-20">
 
-    <!-- Floating Glass Navbar + Menus -->
     <header class="fixed top-4 w-full z-[100] px-4 md:px-8">
         <div class="glass-panel max-w-7xl mx-auto rounded-full px-6 py-3 flex flex-wrap justify-between items-center gap-4">
             <div class="flex items-center gap-8">
                 <h1 class="text-xl md:text-2xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-500 cursor-pointer tracking-widest" onclick="showSection('home')">STREAMVERSE</h1>
-                <!-- Menu Lengkap -->
                 <nav class="hidden lg:flex gap-6 text-sm font-semibold text-white/70">
                     <button onclick="showSection('home')" class="hover:text-white transition">Home</button>
-                    <button onclick="loadCategory('movie/popular', 'Movies')" class="hover:text-white transition">Movies</button>
-                    <button onclick="loadCategory('tv/popular', 'TV Series')" class="hover:text-white transition">TV Series</button>
-                    <button onclick="loadCategory('trending/all/week', 'Trending')" class="hover:text-white transition">Trending</button>
+                    <button onclick="loadCategory('movie/popular', 'Movies Popular')" class="hover:text-white transition">Movies</button>
+                    <button onclick="loadCategory('tv/popular', 'TV Series Popular')" class="hover:text-white transition">TV Series</button>
+                    <button onclick="loadCategory('trending/all/week', 'Trending Pekan Ini')" class="hover:text-white transition">Trending</button>
                 </nav>
             </div>
             
             <div class="relative w-full md:w-64">
-                <input type="text" id="searchInput" placeholder="Cari film atau series..." 
-                       class="w-full bg-black/20 border border-white/10 px-4 py-2 rounded-full text-sm focus:outline-none focus:border-blue-400 transition-all text-white placeholder-gray-400 backdrop-blur-md">
+                <input type="text" id="searchInput" placeholder="Cari film atau series..." class="w-full bg-black/20 border border-white/10 px-4 py-2 rounded-full text-sm focus:outline-none focus:border-blue-400 transition-all text-white placeholder-gray-400 backdrop-blur-md" onkeypress="if(event.key === 'Enter') searchMovie()">
                 <button onclick="searchMovie()" class="absolute right-3 top-2 opacity-60 hover:opacity-100 transition">🔍</button>
             </div>
         </div>
     </header>
 
     <main class="max-w-7xl mx-auto mt-28 px-4 space-y-10">
-        
-        <!-- Hero Carousel (10 Trending) dalam bentuk Glass Panel -->
+        <!-- Hero Carousel (Tetap 10 Rekomendasi Teratas) -->
         <section id="heroSection" class="relative w-full h-[50vh] md:h-[65vh] rounded-[2rem] overflow-hidden shadow-[0_10px_40px_rgba(0,0,0,0.5)] border border-white/10">
             <div id="heroContent" class="absolute inset-0 bg-cover bg-center transition-all duration-1000"></div>
             <div class="absolute inset-0 bg-gradient-to-t from-[#05050a] via-black/40 to-transparent"></div>
-            
             <div class="absolute bottom-0 left-0 w-full p-8 md:p-12 flex flex-col justify-end">
-                <div class="glass-panel w-max px-3 py-1 rounded-full mb-4 text-[10px] font-bold text-blue-300 tracking-wider uppercase">Rekomendasi Trending</div>
+                <div class="glass-panel w-max px-3 py-1 rounded-full mb-4 text-[10px] font-bold text-blue-300 uppercase">Rekomendasi</div>
                 <h2 id="heroTitle" class="text-3xl md:text-5xl font-black mb-3 drop-shadow-lg"></h2>
                 <p id="heroDesc" class="text-white/80 text-sm md:text-base line-clamp-2 md:line-clamp-3 mb-6 max-w-2xl drop-shadow-md"></p>
-                
                 <div class="flex flex-wrap items-center gap-4">
                     <button id="heroPlayBtn" class="glass-panel hover:bg-white/10 px-8 py-3 rounded-full font-bold flex items-center gap-2 transition">▶ NONTON SEKARANG</button>
                     <span id="carouselIndex" class="glass-panel px-4 py-3 rounded-full text-xs font-bold text-white/70"></span>
                 </div>
             </div>
-
             <button onclick="prevHero()" class="absolute left-4 top-1/2 -translate-y-1/2 glass-btn w-12 h-12 rounded-full flex items-center justify-center">❮</button>
             <button onclick="nextHero()" class="absolute right-4 top-1/2 -translate-y-1/2 glass-btn w-12 h-12 rounded-full flex items-center justify-center">❯</button>
         </section>
 
-        <!-- Search Results -->
-        <section id="searchSection" class="hidden glass-panel rounded-3xl p-6">
-            <h2 class="text-xl font-bold mb-6 text-blue-300">Hasil Pencarian</h2>
-            <div id="searchResults" class="flex flex-wrap gap-4 pb-4"></div>
+        <!-- Area Hasil Category & Pencarian -->
+        <section id="gridSection" class="hidden glass-panel rounded-3xl p-6">
+            <h2 id="gridTitle" class="text-xl font-bold mb-6 text-blue-300"></h2>
+            <div id="gridResults" class="flex flex-wrap justify-center sm:justify-start gap-4 pb-4"></div>
+            
+            <!-- Tombol Muat Lebih Banyak -->
+            <div class="flex justify-center mt-8">
+                <button id="loadMoreBtn" onclick="loadMore()" class="hidden glass-panel hover:bg-white/10 border-blue-500/50 px-8 py-3 rounded-full font-bold transition text-sm flex items-center gap-2">
+                    ↻ Muat Lebih Banyak
+                </button>
+            </div>
         </section>
 
-        <!-- Category Results (Dari Menu) -->
-        <section id="categorySection" class="hidden glass-panel rounded-3xl p-6">
-            <h2 id="categoryTitle" class="text-xl font-bold mb-6 text-blue-300"></h2>
-            <div id="categoryResults" class="flex flex-wrap gap-4 pb-4"></div>
-        </section>
-
-        <!-- Home Default View -->
+        <!-- Area Home Default -->
         <div id="homeView" class="space-y-10">
-            <!-- Row: Trending Movie -->
+            <!-- Row 1: Movies -->
             <section class="glass-panel rounded-3xl p-6">
                 <div class="flex justify-between items-center mb-6">
                     <h2 class="text-xl font-bold text-white tracking-wide">Film Terpopuler</h2>
-                    <div class="flex gap-2">
-                        <button onclick="sideScroll('row1', 'left')" class="glass-btn w-10 h-10 rounded-full flex items-center justify-center">❮</button>
-                        <button onclick="sideScroll('row1', 'right')" class="glass-btn w-10 h-10 rounded-full flex items-center justify-center">❯</button>
+                    <div class="flex items-center gap-4">
+                        <button onclick="loadCategory('movie/popular', 'Film Terpopuler')" class="text-xs text-blue-400 hover:text-white transition">Lihat Semua ➔</button>
+                        <div class="hidden md:flex gap-2">
+                            <button onclick="sideScroll('row1', 'left')" class="glass-btn w-10 h-10 rounded-full flex items-center justify-center">❮</button>
+                            <button onclick="sideScroll('row1', 'right')" class="glass-btn w-10 h-10 rounded-full flex items-center justify-center">❯</button>
+                        </div>
                     </div>
                 </div>
                 <div id="row1" class="flex gap-4 overflow-x-auto no-scrollbar scroll-smooth pb-4"></div>
             </section>
 
-            <!-- Row: TV Series -->
+            <!-- Row 2: TV Series -->
             <section class="glass-panel rounded-3xl p-6">
                 <div class="flex justify-between items-center mb-6">
                     <h2 class="text-xl font-bold text-white tracking-wide">Serial TV Pilihan</h2>
-                    <div class="flex gap-2">
-                        <button onclick="sideScroll('row2', 'left')" class="glass-btn w-10 h-10 rounded-full flex items-center justify-center">❮</button>
-                        <button onclick="sideScroll('row2', 'right')" class="glass-btn w-10 h-10 rounded-full flex items-center justify-center">❯</button>
+                    <div class="flex items-center gap-4">
+                        <button onclick="loadCategory('tv/popular', 'Serial TV Pilihan')" class="text-xs text-blue-400 hover:text-white transition">Lihat Semua ➔</button>
+                        <div class="hidden md:flex gap-2">
+                            <button onclick="sideScroll('row2', 'left')" class="glass-btn w-10 h-10 rounded-full flex items-center justify-center">❮</button>
+                            <button onclick="sideScroll('row2', 'right')" class="glass-btn w-10 h-10 rounded-full flex items-center justify-center">❯</button>
+                        </div>
                     </div>
                 </div>
                 <div id="row2" class="flex gap-4 overflow-x-auto no-scrollbar scroll-smooth pb-4"></div>
@@ -117,17 +107,16 @@
         </div>
     </main>
 
-    <!-- Glass Player Modal -->
+    <!-- Player Modal (Sama seperti sebelumnya) -->
     <div id="playerContainer" class="hidden fixed inset-0 z-[200] flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-black/60 backdrop-blur-xl" onclick="closePlayer()"></div>
-        <div class="glass-panel relative w-full max-w-5xl rounded-[2rem] p-2 md:p-4 shadow-[0_0_50px_rgba(50,100,250,0.2)]">
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-xl" onclick="closePlayer()"></div>
+        <div class="glass-panel relative w-full max-w-5xl rounded-[2rem] p-2 md:p-4">
             <button onclick="closePlayer()" class="absolute -top-4 -right-4 md:-top-6 md:-right-6 glass-btn bg-red-500/20 w-12 h-12 rounded-full flex items-center justify-center text-xl z-[210] hover:bg-red-500/50">✕</button>
             <div class="aspect-video rounded-2xl overflow-hidden bg-black">
                 <iframe id="videoPlayer" src="" class="w-full h-full" frameborder="0" allowfullscreen></iframe>
             </div>
             <div class="mt-4 px-2 pb-2">
-                <h3 id="playingTitle" class="text-lg md:text-xl font-bold text-blue-200 tracking-wide"></h3>
-                <p class="text-[10px] text-white/50 mt-1">*Jika TV Series butuh Episode, pilih lewat menu di dalam player.</p>
+                <h3 id="playingTitle" class="text-lg md:text-xl font-bold text-blue-200"></h3>
             </div>
         </div>
     </div>
