@@ -3,76 +3,77 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StreamVerse - Premium Cinema</title>
+    <title>StreamVerse - Cinema Experience</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
         :root { --accent: #E50914; --bg: #080808; }
-        body { background-color: var(--bg); color: white; font-family: 'Plus Jakarta Sans', sans-serif; }
-        .glass { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.05); }
-        .hero-gradient { background: linear-gradient(0deg, var(--bg) 0%, transparent 100%); }
-        .movie-card { transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        .movie-card:hover { transform: translateY(-10px) scale(1.05); box-shadow: 0 20px 40px rgba(0,0,0,0.6); }
+        body { background-color: var(--bg); color: white; font-family: 'Plus Jakarta Sans', sans-serif; overflow-x: hidden; }
+        .glass { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.05); }
+        .hero-shadow { background: linear-gradient(0deg, var(--bg) 0%, rgba(8,8,8,0.5) 50%, transparent 100%); }
         .no-scrollbar::-webkit-scrollbar { display: none; }
+        .movie-card { transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); flex-shrink: 0; }
+        .movie-card:hover { transform: translateY(-12px) scale(1.03); }
     </style>
 </head>
-<body class="overflow-x-hidden">
+<body>
 
-    <nav id="navbar" class="fixed top-0 w-full z-50 transition-all duration-500 px-6 py-4 flex justify-between items-center">
-        <div class="flex items-center gap-8">
-            <h1 class="text-2xl font-extrabold tracking-tighter text-red-600">STREAMVERSE</h1>
-            <div class="hidden md:flex gap-6 text-sm font-medium text-gray-400">
-                <a href="#" class="hover:text-white transition">Home</a>
-                <a href="#" class="hover:text-white transition">Movies</a>
-                <a href="#" class="hover:text-white transition">New & Popular</a>
-            </div>
-        </div>
-        <div class="flex gap-4">
-            <div class="relative group">
-                <input type="text" id="searchInput" placeholder="Cari film..." 
-                       class="bg-white/10 border border-white/10 px-4 py-2 rounded-full text-sm w-40 md:w-64 focus:w-80 transition-all outline-none focus:border-red-600">
-                <button onclick="searchMovie()" class="absolute right-3 top-2 opacity-50">🔍</button>
-            </div>
+    <!-- Navbar -->
+    <nav id="navbar" class="fixed top-0 w-full z-50 transition-all duration-500 px-6 md:px-16 py-4 flex justify-between items-center">
+        <h1 class="text-2xl font-extrabold tracking-tighter text-red-600">STREAMVERSE</h1>
+        <div class="relative flex items-center">
+            <input type="text" id="searchInput" placeholder="Cari film..." 
+                   class="bg-white/10 border border-white/10 px-5 py-2 rounded-full text-sm w-40 md:w-80 outline-none focus:border-red-600 transition-all">
+            <button onclick="searchMovie()" class="absolute right-4 opacity-50">🔍</button>
         </div>
     </nav>
 
-    <div id="hero" class="relative h-[90vh] flex items-center hidden">
-        <div id="heroBg" class="absolute inset-0 bg-cover bg-top scale-110 blur-[2px]"></div>
-        <div class="absolute inset-0 bg-black/60"></div>
-        <div class="absolute inset-0 hero-gradient"></div>
+    <!-- Hero -->
+    <div id="hero" class="relative h-[85vh] flex items-center hidden">
+        <div id="heroBg" class="absolute inset-0 bg-cover bg-top"></div>
+        <div class="absolute inset-0 bg-black/40"></div>
+        <div class="absolute inset-0 hero-shadow"></div>
         <div class="relative z-10 px-8 md:px-20 max-w-4xl">
-            <span class="bg-red-600 text-[10px] font-bold px-2 py-1 rounded mb-4 inline-block tracking-widest uppercase">Trending Hari Ini</span>
-            <h2 id="heroTitle" class="text-5xl md:text-8xl font-extrabold mb-6 leading-none"></h2>
-            <p id="heroDesc" class="text-gray-300 text-lg mb-8 line-clamp-3 max-w-2xl"></p>
-            <div class="flex gap-4">
-                <button id="heroPlayBtn" class="bg-white text-black px-10 py-4 rounded-xl font-bold hover:bg-red-600 hover:text-white transition-all flex items-center gap-3">
-                    <span>▶</span> PLAY NOW
-                </button>
-            </div>
+            <h2 id="heroTitle" class="text-5xl md:text-8xl font-extrabold mb-6 leading-tight"></h2>
+            <p id="heroDesc" class="text-gray-300 text-lg mb-8 line-clamp-3"></p>
+            <button id="heroPlayBtn" class="bg-white text-black px-12 py-4 rounded-2xl font-bold hover:bg-red-600 hover:text-white transition-all">▶ PLAY NOW</button>
         </div>
     </div>
 
-    <main class="relative z-20 -mt-32 px-6 md:px-12 space-y-16 pb-20">
+    <!-- Rows Content -->
+    <main class="relative z-20 -mt-32 px-4 md:px-16 space-y-16 pb-20">
+        <!-- Search -->
         <section id="searchSection" class="hidden">
             <h2 class="text-2xl font-bold mb-6 border-l-4 border-red-600 pl-4">Hasil Pencarian</h2>
-            <div id="searchResults" class="flex gap-6 overflow-x-auto no-scrollbar py-4"></div>
+            <div id="searchResults" class="flex gap-6 overflow-x-auto no-scrollbar scroll-smooth py-4"></div>
         </section>
 
+        <!-- Row Trending -->
         <section>
-            <h2 class="text-2xl font-bold mb-6 border-l-4 border-red-600 pl-4">Terpopuler Pekan Ini</h2>
-            <div id="trendingRow" class="flex gap-6 overflow-x-auto no-scrollbar py-4"></div>
+            <h2 class="text-2xl font-bold mb-6 border-l-4 border-red-600 pl-4">Trending Pekan Ini</h2>
+            <div class="relative group">
+                <button onclick="sideScroll('trendingRow', 'left')" class="absolute left-[-20px] top-1/2 -translate-y-1/2 z-30 bg-red-600 p-3 rounded-full opacity-0 group-hover:opacity-100 transition-all shadow-xl">❮</button>
+                <div id="trendingRow" class="flex gap-6 overflow-x-auto no-scrollbar scroll-smooth py-4"></div>
+                <button onclick="sideScroll('trendingRow', 'right')" class="absolute right-[-20px] top-1/2 -translate-y-1/2 z-30 bg-red-600 p-3 rounded-full opacity-0 group-hover:opacity-100 transition-all shadow-xl">❯</button>
+            </div>
         </section>
 
+        <!-- Row Popular -->
         <section>
-            <h2 class="text-2xl font-bold mb-6 border-l-4 border-red-600 pl-4">Aksi Terbaik</h2>
-            <div id="actionRow" class="flex gap-6 overflow-x-auto no-scrollbar py-4"></div>
+            <h2 class="text-2xl font-bold mb-6 border-l-4 border-red-600 pl-4">Paling Populer</h2>
+            <div class="relative group">
+                <button onclick="sideScroll('popularRow', 'left')" class="absolute left-[-20px] top-1/2 -translate-y-1/2 z-30 bg-red-600 p-3 rounded-full opacity-0 group-hover:opacity-100 transition-all shadow-xl">❮</button>
+                <div id="popularRow" class="flex gap-6 overflow-x-auto no-scrollbar scroll-smooth py-4"></div>
+                <button onclick="sideScroll('popularRow', 'right')" class="absolute right-[-20px] top-1/2 -translate-y-1/2 z-30 bg-red-600 p-3 rounded-full opacity-0 group-hover:opacity-100 transition-all shadow-xl">❯</button>
+            </div>
         </section>
     </main>
 
+    <!-- Player Modal -->
     <div id="playerContainer" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-black/95 backdrop-blur-xl" onclick="closePlayer()"></div>
-        <div class="relative w-full max-w-6xl aspect-video glass rounded-3xl overflow-hidden shadow-[0_0_100px_rgba(229,9,20,0.3)]">
-            <button onclick="closePlayer()" class="absolute top-6 right-6 z-50 bg-black/50 w-12 h-12 rounded-full flex items-center justify-center hover:bg-red-600 transition">✕</button>
+        <div class="absolute inset-0 bg-black/95 backdrop-blur-md" onclick="closePlayer()"></div>
+        <div class="relative w-full max-w-6xl aspect-video glass rounded-3xl overflow-hidden shadow-2xl">
+            <button onclick="closePlayer()" class="absolute top-6 right-6 z-50 bg-black/50 w-10 h-10 rounded-full flex items-center justify-center hover:bg-red-600 transition">✕</button>
             <iframe id="videoPlayer" src="" class="w-full h-full" frameborder="0" allowfullscreen></iframe>
         </div>
     </div>
