@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StreamVerse | Premium Glass</title>
+    <title>Nobargasi</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;800&display=swap" rel="stylesheet">
     <style>
@@ -21,16 +21,14 @@
         .custom-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
     </style>
 </head>
-<body class="pb-24"> <!-- Padding bawah dilebarkan agar konten tidak tertutup Bottom Nav di HP -->
+<body class="pb-24">
 
-    <!-- Header Atas (Responsif) -->
+    <!-- Header Atas -->
     <header class="fixed top-2 md:top-4 w-full z-[100] px-3 md:px-8">
         <div class="glass-panel max-w-7xl mx-auto rounded-full px-4 py-3 flex justify-between items-center gap-3">
             <div class="flex items-center gap-8">
-                <!-- Ukuran Logo disesuaikan di HP -->
-                <h1 class="text-[16px] md:text-2xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-500 cursor-pointer tracking-widest" onclick="goHome()">STREAMVERSE</h1>
+                <h1 class="text-[16px] md:text-2xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-500 cursor-pointer tracking-widest" onclick="goHome()">NOBARGASI</h1>
                 
-                <!-- Menu Desktop (Sembunyi di HP) -->
                 <nav class="hidden md:flex gap-6 text-sm font-semibold text-white/70">
                     <button onclick="goHome()" class="hover:text-white transition">Home</button>
                     <button onclick="loadCategory('movie/popular', 'Movies Popular')" class="hover:text-white transition">Movies</button>
@@ -50,7 +48,7 @@
         </div>
     </header>
 
-    <!-- MENU BAWAH KHUSUS HP (Bottom Navigation) -->
+    <!-- MENU BAWAH KHUSUS HP -->
     <nav class="md:hidden fixed bottom-4 left-4 right-4 z-[100] glass-panel rounded-full flex justify-around items-center px-4 py-2 shadow-[0_10px_40px_rgba(0,0,0,0.8)]">
         <button onclick="goHome()" class="flex flex-col items-center gap-1 text-white/70 hover:text-blue-400 transition">
             <span class="text-xl">🏠</span>
@@ -99,8 +97,9 @@
             <div id="myListResults" class="flex flex-wrap justify-center sm:justify-start gap-3 md:gap-4 pb-4"></div>
         </section>
 
-        <!-- Area Home Default -->
+        <!-- Area Home Default (FULL 10 KATEGORI) -->
         <div id="homeView" class="space-y-8">
+            
             <section class="flex gap-2 overflow-x-auto no-scrollbar py-1">
                 <button onclick="loadCategory('discover/movie?with_original_language=id', 'Film Indonesia 🇮🇩')" class="glass-btn px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap text-red-400 border-red-500/30">Indonesia 🇮🇩</button>
                 <button onclick="loadGenre(28, 'Aksi 💥')" class="glass-btn px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap">Aksi 💥</button>
@@ -114,10 +113,8 @@
             <!-- Row 1: Movies -->
             <section class="glass-panel rounded-3xl p-4 md:p-6">
                 <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-base md:text-xl font-bold text-white tracking-wide">Film Terpopuler</h2>
-                    <div class="flex items-center gap-4">
-                        <button onclick="loadCategory('movie/popular', 'Film Terpopuler')" class="text-[10px] md:text-xs text-blue-400">Lihat Semua ➔</button>
-                    </div>
+                    <h2 class="text-base md:text-xl font-bold text-white tracking-wide">Film Terpopuler 🔥</h2>
+                    <button onclick="loadCategory('movie/popular', 'Film Terpopuler')" class="text-[10px] md:text-xs text-blue-400 hover:text-white transition">Lihat Semua ➔</button>
                 </div>
                 <div id="row1" class="flex gap-3 md:gap-4 overflow-x-auto no-scrollbar scroll-smooth pb-4 pt-1"></div>
             </section>
@@ -125,13 +122,84 @@
             <!-- Row 2: TV Series -->
             <section class="glass-panel rounded-3xl p-4 md:p-6">
                 <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-base md:text-xl font-bold text-white tracking-wide">Serial TV Pilihan</h2>
-                    <div class="flex items-center gap-4">
-                        <button onclick="loadCategory('tv/popular', 'Serial TV Pilihan')" class="text-[10px] md:text-xs text-blue-400">Lihat Semua ➔</button>
-                    </div>
+                    <h2 class="text-base md:text-xl font-bold text-white tracking-wide">Serial TV Pilihan 📺</h2>
+                    <button onclick="loadCategory('tv/popular', 'Serial TV Pilihan')" class="text-[10px] md:text-xs text-blue-400 hover:text-white transition">Lihat Semua ➔</button>
                 </div>
                 <div id="row2" class="flex gap-3 md:gap-4 overflow-x-auto no-scrollbar scroll-smooth pb-4 pt-1"></div>
             </section>
+
+            <!-- Row 3: Anime -->
+            <section class="glass-panel rounded-3xl p-4 md:p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-base md:text-xl font-bold text-white tracking-wide">Anime Populer 🌸</h2>
+                    <button onclick="loadCategory('discover/tv?with_original_language=ja&with_genres=16', 'Anime Populer')" class="text-[10px] md:text-xs text-blue-400 hover:text-white transition">Lihat Semua ➔</button>
+                </div>
+                <div id="row3" class="flex gap-3 md:gap-4 overflow-x-auto no-scrollbar scroll-smooth pb-4 pt-1"></div>
+            </section>
+
+            <!-- Row 4: Drakor -->
+            <section class="glass-panel rounded-3xl p-4 md:p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-base md:text-xl font-bold text-white tracking-wide">Drama Korea (Drakor) 🫰</h2>
+                    <button onclick="loadCategory('discover/tv?with_original_language=ko', 'Drama Korea')" class="text-[10px] md:text-xs text-blue-400 hover:text-white transition">Lihat Semua ➔</button>
+                </div>
+                <div id="row4" class="flex gap-3 md:gap-4 overflow-x-auto no-scrollbar scroll-smooth pb-4 pt-1"></div>
+            </section>
+
+            <!-- Row 5: Horor -->
+            <section class="glass-panel rounded-3xl p-4 md:p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-base md:text-xl font-bold text-white tracking-wide">Malam Jumat Mencekam 👻</h2>
+                    <button onclick="loadCategory('discover/movie?with_genres=27', 'Film Horor')" class="text-[10px] md:text-xs text-blue-400 hover:text-white transition">Lihat Semua ➔</button>
+                </div>
+                <div id="row5" class="flex gap-3 md:gap-4 overflow-x-auto no-scrollbar scroll-smooth pb-4 pt-1"></div>
+            </section>
+
+            <!-- Row 6: Action -->
+            <section class="glass-panel rounded-3xl p-4 md:p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-base md:text-xl font-bold text-white tracking-wide">Aksi & Pertarungan 💥</h2>
+                    <button onclick="loadCategory('discover/movie?with_genres=28', 'Film Aksi')" class="text-[10px] md:text-xs text-blue-400 hover:text-white transition">Lihat Semua ➔</button>
+                </div>
+                <div id="row6" class="flex gap-3 md:gap-4 overflow-x-auto no-scrollbar scroll-smooth pb-4 pt-1"></div>
+            </section>
+
+            <!-- Row 7: Komedi -->
+            <section class="glass-panel rounded-3xl p-4 md:p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-base md:text-xl font-bold text-white tracking-wide">Komedi Bikin Ngakak 😂</h2>
+                    <button onclick="loadCategory('discover/movie?with_genres=35', 'Film Komedi')" class="text-[10px] md:text-xs text-blue-400 hover:text-white transition">Lihat Semua ➔</button>
+                </div>
+                <div id="row7" class="flex gap-3 md:gap-4 overflow-x-auto no-scrollbar scroll-smooth pb-4 pt-1"></div>
+            </section>
+
+            <!-- Row 8: Romantis -->
+            <section class="glass-panel rounded-3xl p-4 md:p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-base md:text-xl font-bold text-white tracking-wide">Romantis & Bikin Baper ❤️</h2>
+                    <button onclick="loadCategory('discover/movie?with_genres=10749', 'Film Romantis')" class="text-[10px] md:text-xs text-blue-400 hover:text-white transition">Lihat Semua ➔</button>
+                </div>
+                <div id="row8" class="flex gap-3 md:gap-4 overflow-x-auto no-scrollbar scroll-smooth pb-4 pt-1"></div>
+            </section>
+
+            <!-- Row 9: Sci-Fi -->
+            <section class="glass-panel rounded-3xl p-4 md:p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-base md:text-xl font-bold text-white tracking-wide">Sci-Fi & Fantasi 🚀</h2>
+                    <button onclick="loadCategory('discover/movie?with_genres=878,14', 'Sci-Fi & Fantasi')" class="text-[10px] md:text-xs text-blue-400 hover:text-white transition">Lihat Semua ➔</button>
+                </div>
+                <div id="row9" class="flex gap-3 md:gap-4 overflow-x-auto no-scrollbar scroll-smooth pb-4 pt-1"></div>
+            </section>
+
+            <!-- Row 10: Animasi -->
+            <section class="glass-panel rounded-3xl p-4 md:p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-base md:text-xl font-bold text-white tracking-wide">Animasi & Keluarga 🧸</h2>
+                    <button onclick="loadCategory('discover/movie?with_genres=16', 'Animasi & Keluarga')" class="text-[10px] md:text-xs text-blue-400 hover:text-white transition">Lihat Semua ➔</button>
+                </div>
+                <div id="row10" class="flex gap-3 md:gap-4 overflow-x-auto no-scrollbar scroll-smooth pb-4 pt-1"></div>
+            </section>
+
         </div>
     </main>
 
@@ -139,7 +207,6 @@
     <div id="playerContainer" class="hidden fixed inset-0 z-[200] flex items-center justify-center p-2 md:p-4">
         <div class="absolute inset-0 bg-black/90 backdrop-blur-xl" onclick="closePlayer()"></div>
         <div class="glass-panel relative w-full max-w-5xl rounded-3xl p-2 shadow-2xl">
-            <!-- Tombol Silang/Tutup -->
             <button onclick="closePlayer()" class="absolute -top-3 -right-3 md:-top-5 md:-right-5 glass-btn bg-red-500/80 text-white w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center text-lg z-[210] hover:bg-red-600 shadow-[0_0_15px_rgba(255,0,0,0.5)]">✕</button>
             <div class="aspect-video rounded-2xl overflow-hidden bg-black relative">
                 <iframe id="videoPlayer" src="" class="w-full h-full" frameborder="0" allowfullscreen></iframe>
