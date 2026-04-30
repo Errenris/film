@@ -96,12 +96,14 @@ function playMovie(id, title) {
     const player = document.getElementById('playerContainer');
     const iframe = document.getElementById('videoPlayer');
     
-    // Integrasi ke API vidapi.ru
-    iframe.src = `${VID_API}?tmdb=${id}`;
+    // PERBAIKAN: Gunakan format /embed/movie/ diikuti ID-nya
+    // Kita langsung tembak ke path embed-nya
+    iframe.src = `https://vidapi.ru/embed/movie/${id}`; 
+    
     document.getElementById('playingTitle').innerText = title;
     
     player.classList.remove('hidden');
-    document.body.style.overflow = 'hidden';
+    document.body.style.overflow = 'hidden'; // Biar gak bisa scroll pas nonton
 }
 
 function closePlayer() {
