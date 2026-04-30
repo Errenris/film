@@ -10,9 +10,11 @@ window.onload = () => { initApp(); };
 async function initApp() {
     const res = await fetch(`/api/movies?path=trending/all/day`);
     const data = await res.json();
-    featuredMovies = data.results.slice(0, 10);
-    updateHero();
-    startCarousel();
+    if(data.results) {
+        featuredMovies = data.results.slice(0, 10);
+        updateHero();
+        startCarousel();
+    }
 
     // FETCH UNTUK 10 BARIS KATEGORI
     fetchAndRender('movie/popular', 'row1');
@@ -63,6 +65,8 @@ async function handleLiveSearch(query) {
 
             const res = await fetch(`/api/movies?path=search/multi&query=${encodeURIComponent(query)}&page=1`);
             const data = await res.json();
+            if(!data.results) return;
+
             const suggestions = data.results.filter(m => m.poster_path).slice(0, 5);
             
             if (suggestions.length === 0) {
@@ -168,10 +172,15 @@ async function loadCategory(path, label) {
     container.innerHTML = '<p class="text-white w-full text-center py-10">Memuat film...</p>';
     document.getElementById('loadMoreBtn').classList.add('hidden');
     
-    const res = await fetch(`/api/movies?path=${encodeURIComponent(path)}&page=${currentPage}`);
+    // FIX 404: Ubah tanda '?' jadi '&' agar URL API aman
+    const safePath = path.replace('?', '&');
+    const res = await fetch(`/api/movies?path=${safePath}&page=${currentPage}`);
     const data = await res.json();
-    renderCards(data.results, container, false, path.includes('tv'));
-    if(data.total_pages > 1) document.getElementById('loadMoreBtn').classList.remove('hidden');
+    
+    if(data.results) {
+        renderCards(data.results, container, false, path.includes('tv'));
+        if(data.total_pages > 1) document.getElementById('loadMoreBtn').classList.remove('hidden');
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -190,7 +199,7 @@ async function searchMovie() {
     const res = await fetch(`/api/movies?path=search/multi&query=${encodeURIComponent(query)}&page=${currentPage}`);
     const data = await res.json();
     
-    if(data.results.length === 0) {
+    if(!data.results || data.results.length === 0) {
         container.innerHTML = '<p class="text-red-400 w-full text-center py-10">Film tidak ditemukan.</p>';
         document.getElementById('loadMoreBtn').classList.add('hidden');
     } else {
@@ -204,19 +213,32 @@ async function loadMore() {
     currentPage++;
     const btn = document.getElementById('loadMoreBtn');
     btn.innerText = 'Memuat...';
-    let url = currentAction === 'category' ? `/api/movies?path=${encodeURIComponent(currentPath)}&page=${currentPage}` : `/api/movies?path=search/multi&query=${encodeURIComponent(currentQuery)}&page=${currentPage}`;
+    
+    // FIX 404 untuk tombol Load More
+    let url = currentAction === 'category' 
+        ? `/api/movies?path=${currentPath.replace('?', '&')}&page=${currentPage}` 
+        : `/api/movies?path=search/multi&query=${encodeURIComponent(currentQuery)}&page=${currentPage}`;
+        
     const res = await fetch(url);
     const data = await res.json();
-    renderCards(data.results, document.getElementById('gridResults'), true, currentPath.includes('tv'));
+    
+    if(data.results) {
+        renderCards(data.results, document.getElementById('gridResults'), true, currentPath.includes('tv'));
+    }
     btn.innerText = '↻ Muat Lebih Banyak';
     if(currentPage >= data.total_pages) btn.classList.add('hidden');
 }
 
 // --- RENDER CARDS ---
 async function fetchAndRender(path, elementId) {
-    const res = await fetch(`/api/movies?path=${encodeURIComponent(path)}`);
+    // FIX 404 di bagian baris kategori Home
+    const safePath = path.replace('?', '&');
+    const res = await fetch(`/api/movies?path=${safePath}`);
     const data = await res.json();
-    renderCards(data.results, document.getElementById(elementId), false, path.includes('tv'));
+    
+    if(data.results) {
+        renderCards(data.results, document.getElementById(elementId), false, path.includes('tv'));
+    }
 }
 
 function renderCards(movies, container, append = false, isTV = false) {
