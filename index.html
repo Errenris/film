@@ -76,8 +76,9 @@
         <!-- Area Home Default -->
         <div id="homeView" class="space-y-10">
             
-            <!-- Filter Genre Dinamis -->
+            <!-- Filter Genre Dinamis (SEKARANG ADA FILM INDONESIA) -->
             <section class="flex gap-3 overflow-x-auto no-scrollbar py-2">
+                <button onclick="loadCategory('discover/movie?with_original_language=id', 'Film Indonesia 🇮🇩')" class="glass-btn px-5 py-2 rounded-full text-sm font-bold whitespace-nowrap text-red-400 border-red-500/30">Indonesia 🇮🇩</button>
                 <button onclick="loadGenre(28, 'Aksi 💥')" class="glass-btn px-5 py-2 rounded-full text-sm font-bold whitespace-nowrap">Aksi 💥</button>
                 <button onclick="loadGenre(27, 'Horor 👻')" class="glass-btn px-5 py-2 rounded-full text-sm font-bold whitespace-nowrap">Horor 👻</button>
                 <button onclick="loadGenre(35, 'Komedi 😂')" class="glass-btn px-5 py-2 rounded-full text-sm font-bold whitespace-nowrap">Komedi 😂</button>
