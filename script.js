@@ -14,22 +14,25 @@ async function initApp() {
     updateHero();
     startCarousel();
 
+    // FETCH UNTUK 10 BARIS KATEGORI
     fetchAndRender('movie/popular', 'row1');
     fetchAndRender('tv/popular', 'row2');
+    fetchAndRender('discover/tv?with_original_language=ja&with_genres=16', 'row3'); // Anime
+    fetchAndRender('discover/tv?with_original_language=ko', 'row4');                // Drakor
+    fetchAndRender('discover/movie?with_genres=27', 'row5');                        // Horor
+    fetchAndRender('discover/movie?with_genres=28', 'row6');                        // Action
+    fetchAndRender('discover/movie?with_genres=35', 'row7');                        // Komedi
+    fetchAndRender('discover/movie?with_genres=10749', 'row8');                     // Romantis
+    fetchAndRender('discover/movie?with_genres=878,14', 'row9');                    // Sci-Fi
+    fetchAndRender('discover/movie?with_genres=16', 'row10');                       // Animasi
 }
 
 // =========================================================
 // SISTEM CEGAT TOMBOL BACK HP (History API)
 // =========================================================
+function addHistoryState(type) { history.pushState({ view: type }, '', `#${type}`); }
 
-// Fungsi mencatat di history HP setiap buka menu baru
-function addHistoryState(type) {
-    history.pushState({ view: type }, '', `#${type}`);
-}
-
-// Listener: Deteksi jika user pencet tombol 'Back' di HP/Browser
 window.addEventListener('popstate', () => {
-    // 1. Kalau Player lagi kebuka, tutup playernya aja.
     const player = document.getElementById('playerContainer');
     if (!player.classList.contains('hidden')) {
         player.classList.add('hidden');
@@ -37,22 +40,12 @@ window.addEventListener('popstate', () => {
         document.body.style.overflow = 'auto';
         return;
     }
-    
-    // 2. Kalau Suggestion terbuka, tutup aja
     closeSuggestions();
-
-    // 3. Kalau URL hashnya kosong, balikin ke halaman Home
-    if (!window.location.hash) {
-        showSection('home');
-    } else {
-        // Biarkan kembali ke hash sebelumnya jika ada
-        showSection('home');
-    }
+    if (!window.location.hash) { showSection('home'); } else { showSection('home'); }
 });
 
-// Fungsi tombol Home
 function goHome() {
-    history.pushState(null, null, ' '); // Menghapus tagar dari URL
+    history.pushState(null, null, ' ');
     showSection('home');
 }
 // =========================================================
@@ -114,10 +107,7 @@ document.addEventListener('click', (e) => {
     if (!e.target.closest('#searchInput') && !e.target.closest('#searchSuggestions')) closeSuggestions();
 });
 
-function doSearch() {
-    closeSuggestions();
-    searchMovie();
-}
+function doSearch() { closeSuggestions(); searchMovie(); }
 
 // --- MY LIST ---
 function getMyList() { return JSON.parse(localStorage.getItem('streamverse_mylist') || '[]'); }
@@ -143,7 +133,7 @@ function toggleMyList(event, movieStr) {
 }
 
 function showMyList() {
-    addHistoryState('mylist'); // Rekam history
+    addHistoryState('mylist'); 
     showSection('mylist');
     document.getElementById('myListSection').classList.remove('hidden');
     const list = getMyList();
@@ -168,7 +158,7 @@ function showSection(type) {
 }
 
 async function loadCategory(path, label) {
-    addHistoryState('kategori'); // Rekam history
+    addHistoryState('kategori'); 
     showSection('grid');
     document.getElementById('gridSection').classList.remove('hidden');
     document.getElementById('gridTitle').innerText = label;
@@ -188,7 +178,7 @@ async function loadCategory(path, label) {
 async function searchMovie() {
     const query = document.getElementById('searchInput').value;
     if (!query) return;
-    addHistoryState('pencarian'); // Rekam history
+    addHistoryState('pencarian'); 
     showSection('grid');
     document.getElementById('gridSection').classList.remove('hidden');
     document.getElementById('gridTitle').innerText = `Pencarian: "${query}"`;
@@ -268,7 +258,7 @@ function renderCards(movies, container, append = false, isTV = false) {
 
 // --- PLAYER ---
 function playMovie(id, title, type = 'movie') {
-    addHistoryState('nonton'); // Mencegah keluar web kalau mencet back saat nonton
+    addHistoryState('nonton'); 
     const player = document.getElementById('playerContainer');
     const iframe = document.getElementById('videoPlayer');
     const controls = document.getElementById('playerControls');
@@ -298,7 +288,6 @@ function playMovie(id, title, type = 'movie') {
 }
 
 function closePlayer() {
-    // Kalau tekan 'X', kita kembali 1 langkah di history HP
     history.back(); 
 }
 
