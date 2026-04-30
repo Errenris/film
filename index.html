@@ -3,39 +3,120 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StreamPro - Movie Web App</title>
+    <title>StreamVerse - Nonton Movie & TV Series</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        .aspect-video { aspect-ratio: 16 / 9; }
-        body { background-color: #0f172a; color: white; }
+        :root { --bg-dark: #0a0c0f; --bg-card: #16191e; --blue-idlix: #3498db; }
+        body { background-color: var(--bg-dark); color: #eee; font-family: 'Roboto', sans-serif; overflow-x: hidden; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .movie-card { width: 140px; transition: all 0.3s; flex-shrink: 0; cursor: pointer; }
+        @media (min-width: 768px) { .movie-card { width: 175px; } }
+        .movie-card:hover { transform: scale(1.05); z-index: 10; }
+        .hero-gradient { background: linear-gradient(to top, var(--bg-dark) 10%, transparent 100%), linear-gradient(to right, var(--bg-dark) 20%, transparent 100%); }
+        .active-nav { color: var(--blue-idlix); border-bottom: 2px solid var(--blue-idlix); }
     </style>
 </head>
-<body class="p-4 md:p-8">
+<body>
 
-    <div class="max-w-6xl mx-auto">
-        <header class="mb-8 text-center">
-            <h1 class="text-4xl font-bold text-blue-500 mb-2">StreamPro</h1>
-            <p class="text-gray-400">Nonton film favorit langsung dari browser.</p>
-        </header>
-
-        <!-- Search Bar -->
-        <div class="flex gap-2 mb-8">
-            <input type="text" id="searchInput" placeholder="Masukkan judul film (e.g. Iron Man)..." 
-                   class="w-full p-3 rounded-lg bg-slate-800 border border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
-            <button onclick="searchMovie()" class="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg font-bold transition">Cari</button>
-        </div>
-
-        <!-- Player Section -->
-        <div id="playerContainer" class="hidden mb-12">
-            <h2 id="currentTitle" class="text-2xl font-semibold mb-4 text-blue-300"></h2>
-            <div class="bg-black rounded-xl overflow-hidden shadow-2xl border border-slate-700">
-                <iframe id="videoPlayer" src="" class="w-full aspect-video" frameborder="0" allowfullscreen></iframe>
+    <!-- Header & Menu -->
+    <header class="bg-[#16191e] border-b border-gray-800 sticky top-0 z-[100]">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex flex-wrap justify-between items-center py-3 gap-4">
+                <div class="flex items-center gap-8">
+                    <h1 class="text-2xl font-black text-blue-500 tracking-tighter cursor-pointer" onclick="showSection('home')">STREAMVERSE</h1>
+                    <nav class="hidden lg:flex gap-6 text-sm font-bold uppercase tracking-wider">
+                        <button onclick="showSection('home')" class="hover:text-blue-400 transition">Home</button>
+                        <button onclick="loadCategory('movie/popular', 'Movies')" class="hover:text-blue-400 transition">Movies</button>
+                        <button onclick="loadCategory('tv/popular', 'TV Series')" class="hover:text-blue-400 transition">TV Series</button>
+                        <button onclick="loadCategory('trending/all/week', 'Trending')" class="hover:text-blue-400 transition">Trending</button>
+                    </nav>
+                </div>
+                
+                <div class="flex-1 max-w-sm relative">
+                    <input type="text" id="searchInput" placeholder="Cari film atau series..." 
+                           class="w-full bg-[#0a0c0f] border border-gray-700 px-4 py-2 rounded-md text-sm outline-none focus:border-blue-500">
+                    <button onclick="searchMovie()" class="absolute right-3 top-2.5">🔍</button>
+                </div>
             </div>
         </div>
+    </header>
 
-        <!-- Results Grid -->
-        <div id="resultsGrid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
-            <!-- Movie cards will appear here -->
+    <!-- Hero Carousel (Top 10) -->
+    <section id="heroSection" class="relative w-full h-[50vh] md:h-[70vh] bg-black overflow-hidden mb-8">
+        <div id="heroContent" class="absolute inset-0 bg-cover bg-center transition-all duration-1000"></div>
+        <div class="absolute inset-0 hero-gradient"></div>
+        <div class="relative h-full flex flex-col justify-center px-8 md:px-20 max-w-3xl">
+            <div id="heroBadge" class="bg-blue-600 text-[10px] font-bold px-2 py-1 rounded w-max mb-4 uppercase">Rekomendasi Trending</div>
+            <h2 id="heroTitle" class="text-4xl md:text-6xl font-black mb-4 leading-tight"></h2>
+            <p id="heroDesc" class="text-gray-300 text-sm md:text-base line-clamp-3 mb-6"></p>
+            <div class="flex gap-4">
+                <button id="heroPlayBtn" class="bg-blue-600 hover:bg-blue-700 px-8 py-3 rounded font-bold flex items-center gap-2">▶ NONTON SEKARANG</button>
+                <div class="flex gap-1 items-center">
+                    <span id="carouselIndex" class="text-xs font-bold text-gray-500"></span>
+                </div>
+            </div>
+        </div>
+        <!-- Carousel Nav -->
+        <button onclick="prevHero()" class="absolute left-4 top-1/2 bg-black/30 p-2 rounded-full hover:bg-blue-600 transition">❮</button>
+        <button onclick="nextHero()" class="absolute right-4 top-1/2 bg-black/30 p-2 rounded-full hover:bg-blue-600 transition">❯</button>
+    </section>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 space-y-12 pb-20">
+        
+        <!-- Search Results -->
+        <section id="searchSection" class="hidden">
+            <h2 class="text-xl font-bold mb-4 border-l-4 border-blue-500 pl-3 uppercase">🔍 Hasil Pencarian</h2>
+            <div id="searchResults" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4"></div>
+        </section>
+
+        <!-- Category/Menu Results -->
+        <section id="categorySection" class="hidden">
+            <h2 id="categoryTitle" class="text-xl font-bold mb-4 border-l-4 border-blue-500 pl-3 uppercase"></h2>
+            <div id="categoryResults" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4"></div>
+        </section>
+
+        <!-- Default Home View -->
+        <div id="homeView" class="space-y-12">
+            <!-- Row: Trending Movies -->
+            <section>
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-bold border-l-4 border-blue-500 pl-3 uppercase">Trending Film</h2>
+                    <div class="flex gap-2">
+                        <button onclick="sideScroll('row1', 'left')" class="bg-gray-800 p-1 rounded hover:bg-blue-600">❮</button>
+                        <button onclick="sideScroll('row1', 'right')" class="bg-gray-800 p-1 rounded hover:bg-blue-600">❯</button>
+                    </div>
+                </div>
+                <div id="row1" class="flex gap-4 overflow-x-auto no-scrollbar scroll-smooth"></div>
+            </section>
+
+            <!-- Row: TV Series -->
+            <section>
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-bold border-l-4 border-blue-500 pl-3 uppercase">Serial TV Populer</h2>
+                    <div class="flex gap-2">
+                        <button onclick="sideScroll('row2', 'left')" class="bg-gray-800 p-1 rounded hover:bg-blue-600">❮</button>
+                        <button onclick="sideScroll('row2', 'right')" class="bg-gray-800 p-1 rounded hover:bg-blue-600">❯</button>
+                    </div>
+                </div>
+                <div id="row2" class="flex gap-4 overflow-x-auto no-scrollbar scroll-smooth"></div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Player Modal -->
+    <div id="playerContainer" class="hidden fixed inset-0 z-[200] flex items-center justify-center p-2">
+        <div class="absolute inset-0 bg-black/95 backdrop-blur-sm" onclick="closePlayer()"></div>
+        <div class="relative w-full max-w-5xl bg-[#16191e] rounded-xl overflow-hidden shadow-2xl">
+            <button onclick="closePlayer()" class="absolute top-4 right-4 z-[210] bg-black/50 hover:bg-red-600 w-10 h-10 rounded-full flex items-center justify-center transition">✕</button>
+            <div class="aspect-video">
+                <iframe id="videoPlayer" src="" class="w-full h-full" frameborder="0" allowfullscreen></iframe>
+            </div>
+            <div class="p-6">
+                <h3 id="playingTitle" class="text-xl font-bold text-blue-400"></h3>
+                <p class="text-gray-500 text-xs mt-2 italic">*Jika video tidak muncul, coba refresh halaman atau ganti judul lain.</p>
+            </div>
         </div>
     </div>
 
