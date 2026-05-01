@@ -16,18 +16,62 @@ async function initApp() {
         startCarousel();
     }
 
-    // FETCH UNTUK 10 BARIS KATEGORI
+    renderHistory(); // Muat Riwayat saat buka web
+
     fetchAndRender('movie/popular', 'row1');
     fetchAndRender('tv/popular', 'row2');
     fetchAndRender('discover/tv?with_original_language=ja&with_genres=16', 'row3'); // Anime
     fetchAndRender('discover/tv?with_original_language=ko', 'row4');                // Drakor
     fetchAndRender('discover/movie?with_genres=27', 'row5');                        // Horor
     fetchAndRender('discover/movie?with_genres=28', 'row6');                        // Action
-    fetchAndRender('discover/movie?with_genres=35', 'row7');                        // Komedi
-    fetchAndRender('discover/movie?with_genres=10749', 'row8');                     // Romantis
-    fetchAndRender('discover/movie?with_genres=878,14', 'row9');                    // Sci-Fi
-    fetchAndRender('discover/movie?with_genres=16', 'row10');                       // Animasi
 }
+
+// =========================================================
+// SISTEM RIWAYAT TONTONAN (HISTORY)
+// =========================================================
+async function saveToHistory(id, type) {
+    try {
+        const res = await fetch(`/api/movies?path=${type}/${id}`);
+        const data = await res.json();
+        if(!data.poster_path) return;
+
+        const savedObj = {
+            id: data.id, 
+            title: data.title || data.name, 
+            poster_path: data.poster_path,
+            media_type: type, 
+            vote_average: data.vote_average || 0, 
+            release_date: data.release_date || data.first_air_date || ''
+        };
+
+        let history = JSON.parse(localStorage.getItem('streamverse_history') || '[]');
+        history = history.filter(m => m.id !== id); // Hapus kalau udah ada (biar naik ke paling depan)
+        history.unshift(savedObj); // Taruh di urutan #1
+        if (history.length > 15) history.pop(); // Maksimal simpan 15 film aja biar ringan
+
+        localStorage.setItem('streamverse_history', JSON.stringify(history));
+        renderHistory();
+    } catch(e) {}
+}
+
+function renderHistory() {
+    const history = JSON.parse(localStorage.getItem('streamverse_history') || '[]');
+    const section = document.getElementById('historySection');
+    const container = document.getElementById('rowHistory');
+
+    if (history.length === 0) {
+        section.classList.add('hidden');
+    } else {
+        section.classList.remove('hidden');
+        renderCards(history, container, false, false);
+    }
+}
+
+function clearHistory() {
+    localStorage.removeItem('streamverse_history');
+    renderHistory();
+}
+// =========================================================
 
 // =========================================================
 // SISTEM CEGAT TOMBOL BACK HP (History API)
@@ -50,7 +94,6 @@ function goHome() {
     history.pushState(null, null, ' ');
     showSection('home');
 }
-// =========================================================
 
 // --- LIVE SEARCH ---
 async function handleLiveSearch(query) {
@@ -172,7 +215,6 @@ async function loadCategory(path, label) {
     container.innerHTML = '<p class="text-white w-full text-center py-10">Memuat film...</p>';
     document.getElementById('loadMoreBtn').classList.add('hidden');
     
-    // FIX 404: Ubah tanda '?' jadi '&' agar URL API aman
     const safePath = path.replace('?', '&');
     const res = await fetch(`/api/movies?path=${safePath}&page=${currentPage}`);
     const data = await res.json();
@@ -214,7 +256,6 @@ async function loadMore() {
     const btn = document.getElementById('loadMoreBtn');
     btn.innerText = 'Memuat...';
     
-    // FIX 404 untuk tombol Load More
     let url = currentAction === 'category' 
         ? `/api/movies?path=${currentPath.replace('?', '&')}&page=${currentPage}` 
         : `/api/movies?path=search/multi&query=${encodeURIComponent(currentQuery)}&page=${currentPage}`;
@@ -231,7 +272,6 @@ async function loadMore() {
 
 // --- RENDER CARDS ---
 async function fetchAndRender(path, elementId) {
-    // FIX 404 di bagian baris kategori Home
     const safePath = path.replace('?', '&');
     const res = await fetch(`/api/movies?path=${safePath}`);
     const data = await res.json();
@@ -281,6 +321,10 @@ function renderCards(movies, container, append = false, isTV = false) {
 // --- PLAYER ---
 function playMovie(id, title, type = 'movie') {
     addHistoryState('nonton'); 
+    
+    // Simpan ke Riwayat Tontonan
+    saveToHistory(id, type); 
+
     const player = document.getElementById('playerContainer');
     const iframe = document.getElementById('videoPlayer');
     const controls = document.getElementById('playerControls');
