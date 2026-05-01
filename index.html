@@ -19,8 +19,6 @@
         .poster-container { aspect-ratio: 2/3; border-radius: 12px; overflow: hidden; position: relative; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
         .custom-scroll::-webkit-scrollbar { width: 6px; }
         .custom-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
-        
-        /* CSS Skeleton Loading Animasi Shimmer */
         .skeleton { background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.15) 50%, rgba(255,255,255,0.05) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 12px; aspect-ratio: 2/3; width: 100%; }
         @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
     </style>
@@ -31,7 +29,6 @@
         <div class="glass-panel max-w-7xl mx-auto rounded-full px-4 py-3 flex justify-between items-center gap-3">
             <div class="flex items-center gap-8">
                 <h1 class="text-[16px] md:text-2xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-500 cursor-pointer tracking-widest" onclick="goHome()">NOBARGASI</h1>
-                
                 <nav class="hidden md:flex gap-6 text-sm font-semibold text-white/70">
                     <button onclick="goHome()" class="hover:text-white transition">Home</button>
                     <button onclick="loadCategory('movie/popular', 'Movies Popular')" class="hover:text-white transition">Movies</button>
@@ -41,11 +38,8 @@
             </div>
             
             <div class="relative w-full max-w-[160px] md:max-w-xs">
-                <input type="text" id="searchInput" placeholder="Cari film..." class="w-full bg-black/20 border border-white/10 px-4 py-2 rounded-full text-xs md:text-sm focus:outline-none focus:border-blue-400 transition-all text-white placeholder-gray-400 backdrop-blur-md" 
-                       oninput="handleLiveSearch(this.value)" 
-                       onkeypress="if(event.key === 'Enter') { doSearch(); }">
+                <input type="text" id="searchInput" placeholder="Cari film..." class="w-full bg-black/20 border border-white/10 px-4 py-2 rounded-full text-xs md:text-sm focus:outline-none focus:border-blue-400 transition-all text-white placeholder-gray-400 backdrop-blur-md" oninput="handleLiveSearch(this.value)" onkeypress="if(event.key === 'Enter') { doSearch(); }">
                 <button onclick="doSearch();" class="absolute right-3 top-1.5 md:top-2 opacity-60 hover:opacity-100 transition text-sm">🔍</button>
-                
                 <div id="searchSuggestions" class="hidden absolute top-full mt-2 left-0 w-full glass-panel rounded-xl max-h-80 overflow-y-auto custom-scroll z-[150] shadow-2xl flex flex-col p-2 border border-white/10"></div>
             </div>
         </div>
@@ -54,18 +48,10 @@
     <button onclick="surpriseMe()" class="fixed bottom-20 right-4 md:bottom-8 md:right-8 z-[150] glass-panel bg-gradient-to-tr from-purple-600 to-blue-500 text-white w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center text-xl md:text-2xl shadow-[0_0_20px_rgba(100,50,255,0.5)] hover:scale-110 transition animate-bounce" title="Acak Film (Surprise Me!)">🎲</button>
 
     <nav class="md:hidden fixed bottom-4 left-4 right-4 z-[100] glass-panel rounded-full flex justify-around items-center px-4 py-2 shadow-[0_10px_40px_rgba(0,0,0,0.8)]">
-        <button onclick="goHome()" class="flex flex-col items-center gap-1 text-white/70 hover:text-blue-400 transition">
-            <span class="text-xl">🏠</span><span class="text-[9px] font-bold">Home</span>
-        </button>
-        <button onclick="loadCategory('movie/popular', 'Movies')" class="flex flex-col items-center gap-1 text-white/70 hover:text-blue-400 transition">
-            <span class="text-xl">🎬</span><span class="text-[9px] font-bold">Movies</span>
-        </button>
-        <button onclick="loadCategory('tv/popular', 'Series')" class="flex flex-col items-center gap-1 text-white/70 hover:text-blue-400 transition">
-            <span class="text-xl">📺</span><span class="text-[9px] font-bold">Series</span>
-        </button>
-        <button onclick="showMyList()" class="flex flex-col items-center gap-1 text-white/70 hover:text-red-400 transition">
-            <span class="text-xl">📌</span><span class="text-[9px] font-bold">My List</span>
-        </button>
+        <button onclick="goHome()" class="flex flex-col items-center gap-1 text-white/70 hover:text-blue-400 transition"><span class="text-xl">🏠</span><span class="text-[9px] font-bold">Home</span></button>
+        <button onclick="loadCategory('movie/popular', 'Movies')" class="flex flex-col items-center gap-1 text-white/70 hover:text-blue-400 transition"><span class="text-xl">🎬</span><span class="text-[9px] font-bold">Movies</span></button>
+        <button onclick="loadCategory('tv/popular', 'Series')" class="flex flex-col items-center gap-1 text-white/70 hover:text-blue-400 transition"><span class="text-xl">📺</span><span class="text-[9px] font-bold">Series</span></button>
+        <button onclick="showMyList()" class="flex flex-col items-center gap-1 text-white/70 hover:text-red-400 transition"><span class="text-xl">📌</span><span class="text-[9px] font-bold">My List</span></button>
     </nav>
 
     <main class="max-w-7xl mx-auto mt-24 px-4 space-y-8">
@@ -95,10 +81,8 @@
         </section>
 
         <div id="homeView" class="space-y-8">
-            
             <section class="flex gap-2 overflow-x-auto no-scrollbar py-1">
                 <button onclick="toggleFilterPanel()" class="glass-btn px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap bg-blue-500/20 text-blue-300 border-blue-400/50">⚙️ Filter Spesifik</button>
-                
                 <button onclick="loadGenre(28, 'Aksi 💥')" class="glass-btn px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap">Aksi 💥</button>
                 <button onclick="loadGenre(27, 'Horor 👻')" class="glass-btn px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap">Horor 👻</button>
                 <button onclick="loadGenre(35, 'Komedi 😂')" class="glass-btn px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap">Komedi 😂</button>
@@ -108,26 +92,25 @@
             </section>
 
             <div id="filterPanel" class="hidden glass-panel p-4 rounded-2xl flex flex-wrap gap-4 items-end border border-blue-500/30">
-                <div>
-                    <label class="block text-[10px] text-white/50 mb-1">Tahun Rilis</label>
-                    <input type="number" id="filterYear" placeholder="Contoh: 2023" class="bg-black/30 border border-white/10 px-3 py-1.5 rounded-lg text-sm text-white w-28 focus:border-blue-400 outline-none">
-                </div>
-                <div>
-                    <label class="block text-[10px] text-white/50 mb-1">Minimal Rating (1-10)</label>
-                    <input type="number" id="filterRating" placeholder="Contoh: 7" max="10" min="1" class="bg-black/30 border border-white/10 px-3 py-1.5 rounded-lg text-sm text-white w-28 focus:border-blue-400 outline-none">
-                </div>
+                <div><label class="block text-[10px] text-white/50 mb-1">Tahun Rilis</label><input type="number" id="filterYear" placeholder="Contoh: 2023" class="bg-black/30 border border-white/10 px-3 py-1.5 rounded-lg text-sm text-white w-28 focus:border-blue-400 outline-none"></div>
+                <div><label class="block text-[10px] text-white/50 mb-1">Minimal Rating (1-10)</label><input type="number" id="filterRating" placeholder="Contoh: 7" max="10" min="1" class="bg-black/30 border border-white/10 px-3 py-1.5 rounded-lg text-sm text-white w-28 focus:border-blue-400 outline-none"></div>
                 <button onclick="applyFilters()" class="glass-btn bg-blue-500/80 hover:bg-blue-600 px-6 py-1.5 rounded-lg text-sm font-bold transition">Terapkan Filter 🔍</button>
             </div>
 
             <section id="historySection" class="hidden glass-panel rounded-3xl p-4 md:p-6 border border-blue-500/30 bg-blue-900/10">
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-base md:text-xl font-bold text-white tracking-wide">Lanjutkan Menonton 🍿</h2>
-                    <button onclick="clearHistory()" class="text-[10px] md:text-xs text-red-400 hover:text-white transition">Hapus Riwayat ✕</button>
-                </div>
+                <div class="flex justify-between items-center mb-4"><h2 class="text-base md:text-xl font-bold text-white tracking-wide">Lanjutkan Menonton 🍿</h2><button onclick="clearHistory()" class="text-[10px] md:text-xs text-red-400 hover:text-white transition">Hapus Riwayat ✕</button></div>
                 <div id="rowHistory" class="flex gap-3 md:gap-4 overflow-x-auto no-scrollbar scroll-smooth pb-4 pt-1"></div>
             </section>
 
-            <section class="glass-panel rounded-3xl p-4 md:p-6"><div class="flex justify-between items-center mb-4"><h2 class="text-base md:text-xl font-bold">Film Terpopuler 🔥</h2><button onclick="loadCategory('movie/popular', 'Film Terpopuler')" class="text-[10px] md:text-xs text-blue-400">Lihat Semua ➔</button></div><div id="row1" class="flex gap-3 md:gap-4 overflow-x-auto no-scrollbar pb-4 pt-1"></div></section>
+            <section class="glass-panel rounded-3xl p-4 md:p-6 border border-yellow-500/30 bg-yellow-900/10">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-base md:text-xl font-bold text-yellow-400 tracking-wide">🔥 Trending Malam Ini</h2>
+                    <button onclick="loadCategory('trending/movie/day', 'Trending Malam Ini')" class="text-[10px] md:text-xs text-blue-400 hover:text-white transition">Lihat Semua ➔</button>
+                </div>
+                <div id="rowTrending" class="flex gap-3 md:gap-4 overflow-x-auto no-scrollbar scroll-smooth pb-4 pt-2"></div>
+            </section>
+
+            <section class="glass-panel rounded-3xl p-4 md:p-6"><div class="flex justify-between items-center mb-4"><h2 class="text-base md:text-xl font-bold">Film Terpopuler ⭐</h2><button onclick="loadCategory('movie/popular', 'Film Terpopuler')" class="text-[10px] md:text-xs text-blue-400">Lihat Semua ➔</button></div><div id="row1" class="flex gap-3 md:gap-4 overflow-x-auto no-scrollbar pb-4 pt-1"></div></section>
             <section class="glass-panel rounded-3xl p-4 md:p-6"><div class="flex justify-between items-center mb-4"><h2 class="text-base md:text-xl font-bold">Serial TV Pilihan 📺</h2><button onclick="loadCategory('tv/popular', 'Serial TV Pilihan')" class="text-[10px] md:text-xs text-blue-400">Lihat Semua ➔</button></div><div id="row2" class="flex gap-3 md:gap-4 overflow-x-auto no-scrollbar pb-4 pt-1"></div></section>
             <section class="glass-panel rounded-3xl p-4 md:p-6"><div class="flex justify-between items-center mb-4"><h2 class="text-base md:text-xl font-bold">Anime Populer 🌸</h2><button onclick="loadCategory('discover/tv?with_original_language=ja&with_genres=16', 'Anime Populer')" class="text-[10px] md:text-xs text-blue-400">Lihat Semua ➔</button></div><div id="row3" class="flex gap-3 md:gap-4 overflow-x-auto no-scrollbar pb-4 pt-1"></div></section>
             <section class="glass-panel rounded-3xl p-4 md:p-6"><div class="flex justify-between items-center mb-4"><h2 class="text-base md:text-xl font-bold">Drama Korea (Drakor) 🫰</h2><button onclick="loadCategory('discover/tv?with_original_language=ko', 'Drama Korea')" class="text-[10px] md:text-xs text-blue-400">Lihat Semua ➔</button></div><div id="row4" class="flex gap-3 md:gap-4 overflow-x-auto no-scrollbar pb-4 pt-1"></div></section>
@@ -139,23 +122,18 @@
     <div id="playerContainer" class="hidden fixed inset-0 z-[200] flex items-center justify-center p-2 md:p-4 overflow-hidden">
         <div id="playerBg" class="absolute inset-0 bg-cover bg-center opacity-40 blur-[50px] transform scale-110 z-0 transition-all duration-1000"></div>
         <div class="absolute inset-0 bg-black/60 z-0" onclick="closePlayer()"></div>
-        
         <div class="glass-panel relative w-full max-w-5xl rounded-3xl p-2 md:p-4 shadow-2xl z-10 flex flex-col max-h-screen overflow-y-auto no-scrollbar border border-white/20">
             <button onclick="closePlayer()" class="absolute top-2 right-2 md:top-4 md:right-4 glass-btn bg-black/50 text-white w-10 h-10 rounded-full flex items-center justify-center text-lg z-[210] hover:bg-red-600 transition">✕</button>
-            
             <div class="aspect-video rounded-2xl overflow-hidden bg-black relative shadow-lg">
                 <iframe id="videoPlayer" src="" class="w-full h-full" frameborder="0" allowfullscreen></iframe>
             </div>
-            
             <div class="mt-4 px-2 flex flex-col md:flex-row justify-between items-start md:items-center gap-3 border-b border-white/10 pb-4">
                 <h3 id="playingTitle" class="text-lg md:text-2xl font-black text-white drop-shadow-md"></h3>
                 <div class="flex gap-2 w-full md:w-auto" id="playerControls"></div>
             </div>
-
             <div class="px-2 mt-3 mb-2">
                 <h4 class="text-[10px] font-bold text-white/50 uppercase tracking-widest mb-2">Pemeran Utama</h4>
-                <div id="castContainer" class="flex gap-3 overflow-x-auto no-scrollbar pb-2 items-start">
-                    </div>
+                <div id="castContainer" class="flex gap-3 overflow-x-auto no-scrollbar pb-2 items-start"></div>
             </div>
         </div>
     </div>
