@@ -5,7 +5,6 @@ let currentPage = 1; let currentAction = ''; let currentPath = ''; let currentQu
 let featuredMovies = []; let currentHeroIndex = 0; let carouselTimer;
 let liveSearchTimeout;
 
-// Variabel Global untuk nyimpen film yang lagi diputar (buat pindah server)
 let currentPlayId = ''; 
 let currentPlayType = '';
 
@@ -262,22 +261,20 @@ function renderTrendingCards(movies, container) {
     });
 }
 
-// === FUNGSI PINDAH SERVER (BARU) ===
 function changeServer(serverName) {
     const iframe = document.getElementById('videoPlayer');
     let url = '';
     
-    if (serverName === 'AutoEmbed') {
-        url = currentPlayType === 'movie' ? `https://player.autoembed.app/embed/movie/${currentPlayId}` : `https://player.autoembed.app/embed/tv/${currentPlayId}/1/1`;
-    } else if (serverName === 'VidSrc') {
+    if (serverName === 'VidSrc') {
         url = currentPlayType === 'movie' ? `https://vidsrc.me/embed/movie?tmdb=${currentPlayId}` : `https://vidsrc.me/embed/tv?tmdb=${currentPlayId}&season=1&ep=1`;
+    } else if (serverName === 'AutoEmbed') {
+        url = currentPlayType === 'movie' ? `https://player.autoembed.app/embed/movie/${currentPlayId}` : `https://player.autoembed.app/embed/tv/${currentPlayId}/1/1`;
     } else if (serverName === 'VidLink') {
         url = currentPlayType === 'movie' ? `https://vidlink.pro/movie/${currentPlayId}` : `https://vidlink.pro/tv/${currentPlayId}/1/1`;
     }
     
     iframe.src = url;
     
-    // Ganti Warna Tombol yang Aktif
     document.querySelectorAll('.server-btn').forEach(btn => {
         btn.classList.remove('bg-blue-600', 'text-white', 'shadow-[0_0_15px_rgba(37,99,235,0.5)]', 'border-transparent');
         btn.classList.add('bg-white/10', 'text-white/70', 'border-white/20');
@@ -290,11 +287,9 @@ function changeServer(serverName) {
     }
 }
 
-// === UPDATE PLAYER DENGAN TOMBOL MULTI-SERVER ===
 async function playMovie(id, title, type = 'movie', backdropPath = '') {
     addHistoryState('nonton'); saveToHistory(id, type, backdropPath); 
     
-    // Simpan ke variabel global buat fungsi changeServer
     currentPlayId = id; currentPlayType = type;
     
     const player = document.getElementById('playerContainer'); 
@@ -305,20 +300,20 @@ async function playMovie(id, title, type = 'movie', backdropPath = '') {
     
     document.getElementById('playingTitle').innerText = title;
     
-    // HTML Tombol Server
+    // HTML Tombol Server: VidSrc sekarang jadi "Utama"
     controls.innerHTML = `
         <div class="flex flex-wrap gap-2 items-center w-full md:w-auto">
             <span class="text-[10px] md:text-xs text-white/50 uppercase font-bold mr-1">Server:</span>
-            <button id="server-AutoEmbed" onclick="changeServer('AutoEmbed')" class="server-btn px-3 py-1.5 rounded-full text-[10px] md:text-xs font-bold transition border border-transparent">Utama</button>
-            <button id="server-VidSrc" onclick="changeServer('VidSrc')" class="server-btn px-3 py-1.5 rounded-full text-[10px] md:text-xs font-bold transition border border-white/20">Cadangan 1</button>
+            <button id="server-VidSrc" onclick="changeServer('VidSrc')" class="server-btn px-3 py-1.5 rounded-full text-[10px] md:text-xs font-bold transition border border-transparent">Utama</button>
+            <button id="server-AutoEmbed" onclick="changeServer('AutoEmbed')" class="server-btn px-3 py-1.5 rounded-full text-[10px] md:text-xs font-bold transition border border-white/20">Cadangan 1</button>
             <button id="server-VidLink" onclick="changeServer('VidLink')" class="server-btn px-3 py-1.5 rounded-full text-[10px] md:text-xs font-bold transition border border-white/20">Cadangan 2</button>
             <div class="hidden md:block w-[1px] h-4 bg-white/20 mx-1"></div>
             <button id="trailerBtn" class="bg-red-500/20 text-red-400 hover:bg-red-600 hover:text-white px-3 py-1.5 rounded-full text-[10px] md:text-xs font-bold flex items-center gap-1 transition border border-red-500/50">🎬 Trailer</button>
         </div>
     `;
     
-    // Panggil server pertama secara otomatis
-    changeServer('AutoEmbed');
+    // Panggil VidSrc pertama kali secara otomatis
+    changeServer('VidSrc');
     
     player.classList.remove('hidden'); 
     const modalBox = document.getElementById('playerModalBox'); 
