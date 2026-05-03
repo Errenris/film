@@ -7,7 +7,6 @@ let liveSearchTimeout;
 
 window.onload = () => { initApp(); setupScrollHide(); setupHeroSwipe(); };
 
-// --- Scroll to Hide Navbar (Mobile) ---
 function setupScrollHide() {
     let lastScrollY = window.scrollY;
     const nav = document.getElementById('mobileNav');
@@ -18,15 +17,17 @@ function setupScrollHide() {
     });
 }
 
-// --- Setup Nav Active State ---
+// PERBAIKAN: Set Active Menu untuk HP dan Desktop
 function setActiveNav(tab) {
     document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
-    if(tab && document.getElementById(`nav-${tab}`)) {
-        document.getElementById(`nav-${tab}`).classList.add('active');
-    }
+    document.querySelectorAll('.desk-nav-btn').forEach(btn => btn.classList.remove('active'));
+    
+    if(tab === 'home' || !tab) tab = 'home';
+    
+    if(document.getElementById(`nav-${tab}`)) document.getElementById(`nav-${tab}`).classList.add('active');
+    if(document.getElementById(`desk-nav-${tab}`)) document.getElementById(`desk-nav-${tab}`).classList.add('active');
 }
 
-// --- Render Loading Skeleton ---
 function renderSkeleton(elementId, count = 10) {
     const container = document.getElementById(elementId);
     if(!container) return; container.innerHTML = '';
@@ -37,7 +38,6 @@ function renderSkeleton(elementId, count = 10) {
     }
 }
 
-// --- Init App ---
 async function initApp() {
     const res = await fetch(`/api/movies?path=trending/all/day`); const data = await res.json();
     if(data.results) {
@@ -56,14 +56,13 @@ async function initApp() {
     fetchAndRender('discover/movie?with_genres=27', 'row5');                        
 }
 
-// --- Fitur Filter & Surprise ---
 function toggleFilterPanel() { document.getElementById('filterPanel').classList.toggle('hidden'); }
 function applyFilters() {
     const year = document.getElementById('filterYear').value; const rating = document.getElementById('filterRating').value;
     let path = 'discover/movie?sort_by=popularity.desc';
     if(year) path += `&primary_release_year=${year}`; if(rating) path += `&vote_average.gte=${rating}`;
     document.getElementById('filterPanel').classList.add('hidden');
-    loadCategory(path, `Filter: ${year ? year : 'Semua'} | Rating ${rating ? rating+'+' : 'Semua'}`);
+    loadCategory(path, `Filter: ${year ? year : 'Semua'} | Rating ${rating ? rating+'+' : 'Semua'}`, 'movies');
 }
 async function surpriseMe() {
     try {
@@ -76,7 +75,6 @@ async function surpriseMe() {
     } catch(e) { alert("Gagal mengacak film."); }
 }
 
-// --- History LocalStorage ---
 async function saveToHistory(id, type, backdrop) {
     try {
         const res = await fetch(`/api/movies?path=${type}/${id}`); const data = await res.json();
@@ -95,29 +93,25 @@ function renderHistory() {
 }
 function clearHistory() { localStorage.removeItem('streamverse_history'); renderHistory(); }
 
-// --- Routing & Animasi Tampilan ---
 function addHistoryState(type) { history.pushState({ view: type }, '', `#${type}`); }
 window.addEventListener('popstate', () => {
     const player = document.getElementById('playerContainer');
     if (!player.classList.contains('hidden')) {
         player.classList.add('hidden'); document.getElementById('videoPlayer').src = ''; document.getElementById('playerBg').style.backgroundImage = 'none'; document.body.style.overflow = 'auto'; return;
     }
-    closeSuggestions(); showSection('home');
+    closeSuggestions(); showSection('home'); setActiveNav('home');
 });
 function goHome() { history.pushState(null, null, ' '); showSection('home'); setActiveNav('home'); }
 
 function showSection(type) {
     const main = document.getElementById('mainContainer');
-    // Re-trigger animasi fade-in
     main.classList.remove('fade-in-up'); void main.offsetWidth; main.classList.add('fade-in-up');
-    
     document.getElementById('homeView').style.display = type === 'home' ? 'block' : 'none';
     document.getElementById('heroSection').style.display = type === 'home' ? 'block' : 'none';
     document.getElementById('gridSection').classList.add('hidden'); document.getElementById('myListSection').classList.add('hidden');
     if(type === 'home') window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// --- Live Search ---
 async function handleLiveSearch(query) {
     const suggestBox = document.getElementById('searchSuggestions');
     if (!query || query.length < 2) { suggestBox.classList.add('hidden'); return; }
@@ -146,7 +140,6 @@ function closeSuggestions() { document.getElementById('searchSuggestions').class
 document.addEventListener('click', (e) => { if (!e.target.closest('#searchInput') && !e.target.closest('#searchSuggestions')) closeSuggestions(); });
 function doSearch() { closeSuggestions(); searchMovie(); }
 
-// --- My List ---
 function getMyList() { return JSON.parse(localStorage.getItem('streamverse_mylist') || '[]'); }
 function saveMyList(list) { localStorage.setItem('streamverse_mylist', JSON.stringify(list)); }
 function toggleMyList(event, movieStr) {
@@ -164,19 +157,14 @@ function showMyList() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// --- Kategori & Aktor ---
-function loadGenre(genreId, label) { loadCategory(`discover/movie?with_genres=${genreId}`, `Genre: ${label}`); }
+function loadGenre(genreId, label) { loadCategory(`discover/movie?with_genres=${genreId}`, `Genre: ${label}`, 'movies'); }
 
 async function loadCategory(path, label, tabId = '') {
     addHistoryState('kategori'); setActiveNav(tabId); showSection('grid'); document.getElementById('gridSection').classList.remove('hidden');
     document.getElementById('gridTitle').innerText = label; currentPage = 1; currentAction = 'category'; currentPath = path;
     renderSkeleton('gridResults', 15); document.getElementById('loadMoreBtn').classList.add('hidden');
-    
     const res = await fetch(`/api/movies?path=${path.replace('?', '&')}&page=${currentPage}`); const data = await res.json();
-    if(data.results) {
-        renderCards(data.results, document.getElementById('gridResults'), false, path.includes('tv'));
-        if(data.total_pages > 1) document.getElementById('loadMoreBtn').classList.remove('hidden');
-    }
+    if(data.results) { renderCards(data.results, document.getElementById('gridResults'), false, path.includes('tv')); if(data.total_pages > 1) document.getElementById('loadMoreBtn').classList.remove('hidden'); }
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -209,21 +197,18 @@ async function loadMore() {
     btn.innerText = '↻ Muat Lebih Banyak'; if(currentPage >= data.total_pages) btn.classList.add('hidden');
 }
 
-// --- Render Cards ---
 async function fetchAndRender(path, elementId) {
     const res = await fetch(`/api/movies?path=${path.replace('?', '&')}`); const data = await res.json();
     if(data.results) renderCards(data.results, document.getElementById(elementId), false, path.includes('tv'));
 }
 
 function renderCards(movies, container, append = false, isTV = false) {
-    if (!append) container.innerHTML = '';
-    const myList = getMyList(); const currentYear = new Date().getFullYear(); 
+    if (!append) container.innerHTML = ''; const myList = getMyList(); const currentYear = new Date().getFullYear(); 
     movies.forEach(movie => {
         if (!movie.poster_path) return;
         const type = movie.media_type || (isTV ? 'tv' : 'movie');
         const savedObj = { id: movie.id, title: movie.title || movie.name, poster_path: movie.poster_path, backdrop_path: movie.backdrop_path, media_type: type, vote_average: movie.vote_average, release_date: movie.release_date || movie.first_air_date || '' };
-        const movieStr = encodeURIComponent(JSON.stringify(savedObj));
-        const isFav = myList.some(m => m.id === movie.id); const releaseYear = savedObj.release_date ? savedObj.release_date.split('-')[0] : '';
+        const movieStr = encodeURIComponent(JSON.stringify(savedObj)); const isFav = myList.some(m => m.id === movie.id); const releaseYear = savedObj.release_date ? savedObj.release_date.split('-')[0] : '';
         const newBadgeHTML = (releaseYear == currentYear) ? `<div class="absolute top-2 left-12 bg-gradient-to-r from-red-500 to-pink-500 text-white text-[8px] font-extrabold px-1.5 py-0.5 rounded-full shadow-[0_0_10px_rgba(255,0,0,0.8)] animate-pulse pointer-events-none z-10">NEW</div>` : '';
 
         const card = document.createElement('div'); card.className = "movie-card";
@@ -267,7 +252,7 @@ function renderTrendingCards(movies, container) {
     });
 }
 
-// --- Full Player Logic ---
+// PERBAIKAN: Modal tidak crash lagi, Cast & Similar pasti muncul
 async function playMovie(id, title, type = 'movie', backdropPath = '') {
     addHistoryState('nonton'); saveToHistory(id, type, backdropPath); 
     const player = document.getElementById('playerContainer'); const iframe = document.getElementById('videoPlayer');
@@ -279,9 +264,14 @@ async function playMovie(id, title, type = 'movie', backdropPath = '') {
     
     controls.innerHTML = `<button onclick="document.getElementById('videoPlayer').src='${movieUrl}'" class="bg-blue-600 text-white hover:bg-blue-500 px-4 py-2 rounded-full text-xs md:text-sm font-bold flex items-center gap-2 transition shadow-[0_0_15px_rgba(37,99,235,0.5)]">▶ Tonton Sekarang</button><button id="trailerBtn" class="bg-white/10 text-white hover:bg-red-600 px-4 py-2 rounded-full text-xs md:text-sm font-bold flex items-center gap-2 transition border border-white/20">🎬 Trailer</button>`;
     
-    // Re-trigger animasi modal
-    player.classList.remove('hidden'); const modalBox = player.querySelector('.glass-panel'); 
-    modalBox.classList.remove('fade-in-up'); void modalBox.offsetWidth; modalBox.classList.add('fade-in-up');
+    // Perbaikan animasi biar gak crash JS
+    player.classList.remove('hidden'); 
+    const modalBox = document.getElementById('playerModalBox'); 
+    if(modalBox) {
+        modalBox.classList.remove('fade-in-up'); 
+        void modalBox.offsetWidth; 
+        modalBox.classList.add('fade-in-up');
+    }
     document.body.style.overflow = 'hidden';
 
     // Casts
@@ -317,14 +307,12 @@ async function playMovie(id, title, type = 'movie', backdropPath = '') {
 }
 function closePlayer() { history.back(); }
 
-// --- Hero Swipe & Carousel Logic ---
 function updateHero() {
     const movie = featuredMovies[currentHeroIndex]; if (!movie) return;
     document.getElementById('heroContent').style.backgroundImage = `url('${BACK_PATH + movie.backdrop_path}')`;
     document.getElementById('heroTitle').innerText = movie.title || movie.name; document.getElementById('heroDesc').innerText = movie.overview;
     document.getElementById('heroPlayBtn').onclick = () => playMovie(movie.id, movie.title || movie.name, movie.media_type, movie.backdrop_path);
     
-    // Render Dots
     let dotsHTML = '';
     featuredMovies.forEach((_, i) => { dotsHTML += `<div class="h-1.5 rounded-full transition-all duration-500 ease-out ${i === currentHeroIndex ? 'w-6 bg-blue-400 shadow-[0_0_10px_rgba(96,165,250,0.8)]' : 'w-1.5 bg-white/40'}"></div>`; });
     document.getElementById('heroDots').innerHTML = dotsHTML;
@@ -340,8 +328,8 @@ function setupHeroSwipe() {
     hero.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; clearInterval(carouselTimer); });
     hero.addEventListener('touchend', e => {
         touchEndX = e.changedTouches[0].screenX;
-        if (touchEndX < touchStartX - 50) { nextHero(); } // Swipe Kiri
-        if (touchEndX > touchStartX + 50) { prevHero(); } // Swipe Kanan
+        if (touchEndX < touchStartX - 50) { nextHero(); } 
+        if (touchEndX > touchStartX + 50) { prevHero(); } 
         startCarousel();
     });
 }
