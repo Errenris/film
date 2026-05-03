@@ -3,29 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NOBARGASI | Premium Glass</title>
+    <title>NOBARGASI</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;800&display=swap" rel="stylesheet">
     <style>
         :root { --bg-dark: #05050a; --glass-bg: rgba(255, 255, 255, 0.03); --glass-border: rgba(255, 255, 255, 0.08); }
         body { background-color: var(--bg-dark); color: white; font-family: 'Outfit', sans-serif; overflow-x: hidden; background-image: radial-gradient(circle at 15% 50%, rgba(20, 50, 150, 0.15), transparent 25%), radial-gradient(circle at 85% 30%, rgba(100, 20, 150, 0.15), transparent 25%); }
+        
+        /* Scrollbar Vertical (Bawaan) */
         .no-scrollbar::-webkit-scrollbar { display: none; }
+        .custom-scroll::-webkit-scrollbar { width: 6px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
+
+        /* SCROLLBAR HORIZONTAL ESTETIK (BARU) */
+        .custom-scrollbar-x::-webkit-scrollbar { height: 8px; }
+        .custom-scrollbar-x::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); border-radius: 10px; margin: 0 10px; }
+        .custom-scrollbar-x::-webkit-scrollbar-thumb { background: rgba(96,165,250,0.4); border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); }
+        .custom-scrollbar-x::-webkit-scrollbar-thumb:hover { background: rgba(96,165,250,0.8); cursor: pointer; }
+
         .glass-panel { background: var(--glass-bg); backdrop-filter: blur(16px); border: 1px solid var(--glass-border); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3); }
         .glass-btn { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.2); transition: all 0.3s ease; }
         .glass-btn:hover { background: rgba(255, 255, 255, 0.2); transform: scale(1.05); }
         
-        /* FIX ANTI-NYANGKUT KETIKA DIGESER */
         .movie-card { width: 130px; flex-shrink: 0; cursor: pointer; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); position: relative; user-select: none; -webkit-user-select: none; }
-        .movie-card img { -webkit-user-drag: none; pointer-events: none; } /* Mencegah gambar ikut terseret */
-        .overflow-x-auto { user-select: none; -webkit-user-select: none; } /* Mencegah teks terblok biru */
+        .movie-card img { -webkit-user-drag: none; pointer-events: none; } 
+        .overflow-x-auto { user-select: none; -webkit-user-select: none; } 
 
         @media (min-width: 768px) { .movie-card { width: 165px; } }
         .movie-card:hover { transform: translateY(-10px) scale(1.05); z-index: 20; }
         .movie-card:hover .poster-container { box-shadow: 0 15px 30px rgba(96, 165, 250, 0.3); border-color: rgba(96, 165, 250, 0.5); }
         
         .poster-container { aspect-ratio: 2/3; border-radius: 12px; overflow: hidden; position: relative; box-shadow: 0 10px 20px rgba(0,0,0,0.5); border: 1px solid transparent; transition: all 0.3s ease; }
-        .custom-scroll::-webkit-scrollbar { width: 6px; }
-        .custom-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
         
         .skeleton { background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.15) 50%, rgba(255,255,255,0.05) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 12px; aspect-ratio: 2/3; width: 100%; }
         @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
@@ -113,7 +121,7 @@
         </section>
 
         <div id="homeView" class="space-y-8">
-            <section class="flex gap-2 overflow-x-auto no-scrollbar py-1 px-1 cursor-grab active:cursor-grabbing select-none">
+            <section class="flex gap-2 overflow-x-auto custom-scrollbar-x py-2 px-1 cursor-grab active:cursor-grabbing select-none">
                 <button onclick="toggleFilterPanel()" class="glass-btn px-5 py-2 rounded-full text-xs font-bold whitespace-nowrap bg-blue-500/20 text-blue-300 border-blue-400/50 shadow-lg">⚙️ Filter Spesifik</button>
                 <button onclick="loadGenre(28, 'Aksi 💥')" class="glass-btn px-5 py-2 rounded-full text-xs font-bold whitespace-nowrap shadow-md">Aksi 💥</button>
                 <button onclick="loadGenre(27, 'Horor 👻')" class="glass-btn px-5 py-2 rounded-full text-xs font-bold whitespace-nowrap shadow-md">Horor 👻</button>
@@ -131,19 +139,19 @@
 
             <section id="historySection" class="hidden glass-panel rounded-3xl p-4 md:p-6 border border-blue-500/30 bg-blue-900/10 shadow-[0_10px_30px_rgba(0,0,0,0.3)]">
                 <div class="flex justify-between items-center mb-4"><h2 class="text-base md:text-xl font-black text-white tracking-wide select-none">Lanjutkan Menonton 🍿</h2><button onclick="clearHistory()" class="bg-black/40 px-3 py-1 rounded-full border border-red-500/30 text-[10px] md:text-xs text-red-400 hover:bg-red-500 hover:text-white transition">Hapus Semua ✕</button></div>
-                <div id="rowHistory" class="flex gap-3 md:gap-4 overflow-x-auto no-scrollbar scroll-smooth pb-4 pt-1 px-1 cursor-grab active:cursor-grabbing select-none"></div>
+                <div id="rowHistory" class="flex gap-3 md:gap-4 overflow-x-auto custom-scrollbar-x scroll-smooth pb-4 pt-1 px-1 cursor-grab active:cursor-grabbing select-none"></div>
             </section>
 
             <section class="glass-panel rounded-3xl p-4 md:p-6 border border-yellow-500/30 bg-yellow-900/10 shadow-[0_10px_30px_rgba(0,0,0,0.3)]">
                 <div class="flex justify-between items-center mb-4"><h2 class="text-base md:text-xl font-black text-yellow-400 tracking-wide drop-shadow-[0_0_10px_rgba(250,204,21,0.3)] select-none">🔥 Trending Malam Ini</h2><button onclick="loadCategory('trending/movie/day', 'Trending Malam Ini')" class="text-[10px] md:text-xs text-blue-400 hover:text-white transition font-bold">Lihat Semua ➔</button></div>
-                <div id="rowTrending" class="flex gap-3 md:gap-4 overflow-x-auto no-scrollbar scroll-smooth pb-4 pt-2 px-1 cursor-grab active:cursor-grabbing select-none"></div>
+                <div id="rowTrending" class="flex gap-3 md:gap-4 overflow-x-auto custom-scrollbar-x scroll-smooth pb-4 pt-2 px-1 cursor-grab active:cursor-grabbing select-none"></div>
             </section>
 
-            <section class="glass-panel rounded-3xl p-4 md:p-6"><div class="flex justify-between items-center mb-4"><h2 class="text-base md:text-xl font-black tracking-wide select-none">Film Terpopuler ⭐</h2><button onclick="loadCategory('movie/popular', 'Film Terpopuler')" class="text-[10px] md:text-xs text-blue-400 hover:text-white font-bold">Lihat Semua ➔</button></div><div id="row1" class="flex gap-3 md:gap-4 overflow-x-auto no-scrollbar pb-4 pt-1 px-1 cursor-grab active:cursor-grabbing select-none"></div></section>
-            <section class="glass-panel rounded-3xl p-4 md:p-6"><div class="flex justify-between items-center mb-4"><h2 class="text-base md:text-xl font-black tracking-wide select-none">Serial TV Pilihan 📺</h2><button onclick="loadCategory('tv/popular', 'Serial TV Pilihan')" class="text-[10px] md:text-xs text-blue-400 hover:text-white font-bold">Lihat Semua ➔</button></div><div id="row2" class="flex gap-3 md:gap-4 overflow-x-auto no-scrollbar pb-4 pt-1 px-1 cursor-grab active:cursor-grabbing select-none"></div></section>
-            <section class="glass-panel rounded-3xl p-4 md:p-6"><div class="flex justify-between items-center mb-4"><h2 class="text-base md:text-xl font-black tracking-wide select-none">Anime Populer 🌸</h2><button onclick="loadCategory('discover/tv?with_original_language=ja&with_genres=16', 'Anime Populer')" class="text-[10px] md:text-xs text-blue-400 hover:text-white font-bold">Lihat Semua ➔</button></div><div id="row3" class="flex gap-3 md:gap-4 overflow-x-auto no-scrollbar pb-4 pt-1 px-1 cursor-grab active:cursor-grabbing select-none"></div></section>
-            <section class="glass-panel rounded-3xl p-4 md:p-6"><div class="flex justify-between items-center mb-4"><h2 class="text-base md:text-xl font-black tracking-wide select-none">Drama Korea (Drakor) 🫰</h2><button onclick="loadCategory('discover/tv?with_original_language=ko', 'Drama Korea')" class="text-[10px] md:text-xs text-blue-400 hover:text-white font-bold">Lihat Semua ➔</button></div><div id="row4" class="flex gap-3 md:gap-4 overflow-x-auto no-scrollbar pb-4 pt-1 px-1 cursor-grab active:cursor-grabbing select-none"></div></section>
-            <section class="glass-panel rounded-3xl p-4 md:p-6"><div class="flex justify-between items-center mb-4"><h2 class="text-base md:text-xl font-black tracking-wide select-none">Malam Jumat Mencekam 👻</h2><button onclick="loadCategory('discover/movie?with_genres=27', 'Film Horor')" class="text-[10px] md:text-xs text-blue-400 hover:text-white font-bold">Lihat Semua ➔</button></div><div id="row5" class="flex gap-3 md:gap-4 overflow-x-auto no-scrollbar pb-4 pt-1 px-1 cursor-grab active:cursor-grabbing select-none"></div></section>
+            <section class="glass-panel rounded-3xl p-4 md:p-6"><div class="flex justify-between items-center mb-4"><h2 class="text-base md:text-xl font-black tracking-wide select-none">Film Terpopuler ⭐</h2><button onclick="loadCategory('movie/popular', 'Film Terpopuler')" class="text-[10px] md:text-xs text-blue-400 hover:text-white font-bold">Lihat Semua ➔</button></div><div id="row1" class="flex gap-3 md:gap-4 overflow-x-auto custom-scrollbar-x pb-4 pt-1 px-1 cursor-grab active:cursor-grabbing select-none"></div></section>
+            <section class="glass-panel rounded-3xl p-4 md:p-6"><div class="flex justify-between items-center mb-4"><h2 class="text-base md:text-xl font-black tracking-wide select-none">Serial TV Pilihan 📺</h2><button onclick="loadCategory('tv/popular', 'Serial TV Pilihan')" class="text-[10px] md:text-xs text-blue-400 hover:text-white font-bold">Lihat Semua ➔</button></div><div id="row2" class="flex gap-3 md:gap-4 overflow-x-auto custom-scrollbar-x pb-4 pt-1 px-1 cursor-grab active:cursor-grabbing select-none"></div></section>
+            <section class="glass-panel rounded-3xl p-4 md:p-6"><div class="flex justify-between items-center mb-4"><h2 class="text-base md:text-xl font-black tracking-wide select-none">Anime Populer 🌸</h2><button onclick="loadCategory('discover/tv?with_original_language=ja&with_genres=16', 'Anime Populer')" class="text-[10px] md:text-xs text-blue-400 hover:text-white font-bold">Lihat Semua ➔</button></div><div id="row3" class="flex gap-3 md:gap-4 overflow-x-auto custom-scrollbar-x pb-4 pt-1 px-1 cursor-grab active:cursor-grabbing select-none"></div></section>
+            <section class="glass-panel rounded-3xl p-4 md:p-6"><div class="flex justify-between items-center mb-4"><h2 class="text-base md:text-xl font-black tracking-wide select-none">Drama Korea (Drakor) 🫰</h2><button onclick="loadCategory('discover/tv?with_original_language=ko', 'Drama Korea')" class="text-[10px] md:text-xs text-blue-400 hover:text-white font-bold">Lihat Semua ➔</button></div><div id="row4" class="flex gap-3 md:gap-4 overflow-x-auto custom-scrollbar-x pb-4 pt-1 px-1 cursor-grab active:cursor-grabbing select-none"></div></section>
+            <section class="glass-panel rounded-3xl p-4 md:p-6"><div class="flex justify-between items-center mb-4"><h2 class="text-base md:text-xl font-black tracking-wide select-none">Malam Jumat Mencekam 👻</h2><button onclick="loadCategory('discover/movie?with_genres=27', 'Film Horor')" class="text-[10px] md:text-xs text-blue-400 hover:text-white font-bold">Lihat Semua ➔</button></div><div id="row5" class="flex gap-3 md:gap-4 overflow-x-auto custom-scrollbar-x pb-4 pt-1 px-1 cursor-grab active:cursor-grabbing select-none"></div></section>
         </div>
     </main>
 
@@ -171,12 +179,12 @@
                 
                 <div class="mt-5">
                     <h4 class="text-[10px] font-bold text-white/50 uppercase tracking-widest mb-3 select-none">Pemeran Utama</h4>
-                    <div id="castContainer" class="flex gap-4 overflow-x-auto no-scrollbar pb-2 items-start cursor-grab active:cursor-grabbing select-none"></div>
+                    <div id="castContainer" class="flex gap-4 overflow-x-auto custom-scrollbar-x pb-4 items-start cursor-grab active:cursor-grabbing select-none"></div>
                 </div>
 
                 <div class="mt-2 pt-5 border-t border-white/10 pb-12 md:pb-2">
                     <h4 class="text-[10px] font-bold text-white/50 uppercase tracking-widest mb-3 select-none">🍿 Mungkin Kamu Suka</h4>
-                    <div id="similarContainer" class="flex gap-3 overflow-x-auto no-scrollbar pb-2 items-start px-1 cursor-grab active:cursor-grabbing select-none"></div>
+                    <div id="similarContainer" class="flex gap-3 overflow-x-auto custom-scrollbar-x pb-4 items-start px-1 cursor-grab active:cursor-grabbing select-none"></div>
                 </div>
             </div>
             
