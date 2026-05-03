@@ -5,7 +5,39 @@ let currentPage = 1; let currentAction = ''; let currentPath = ''; let currentQu
 let featuredMovies = []; let currentHeroIndex = 0; let carouselTimer;
 let liveSearchTimeout;
 
-window.onload = () => { initApp(); setupScrollHide(); setupHeroSwipe(); };
+window.onload = () => { initApp(); setupScrollHide(); setupHeroSwipe(); setupDragToScroll(); };
+
+// FUNGSI BARU: Drag To Scroll pakai Mouse di PC
+function setupDragToScroll() {
+    const sliders = document.querySelectorAll('.overflow-x-auto');
+    sliders.forEach(slider => {
+        let isDown = false; let startX; let scrollLeft;
+        
+        slider.addEventListener('mousedown', (e) => {
+            isDown = true; slider.classList.add('cursor-grabbing');
+            startX = e.pageX - slider.offsetLeft; scrollLeft = slider.scrollLeft;
+        });
+        slider.addEventListener('mouseleave', () => {
+            isDown = false; slider.classList.remove('cursor-grabbing');
+        });
+        slider.addEventListener('mouseup', () => {
+            isDown = false; slider.classList.remove('cursor-grabbing');
+            setTimeout(() => { slider.querySelectorAll('.movie-card, .glass-btn, img').forEach(el => el.style.pointerEvents = 'auto'); }, 50);
+        });
+        slider.addEventListener('mousemove', (e) => {
+            if (!isDown) return;
+            e.preventDefault();
+            const x = e.pageX - slider.offsetLeft;
+            const walk = (x - startX) * 2; // Kecepatan geser dikali 2
+            
+            // Cegah klik otomatis saat sedang asik menggeser
+            if (Math.abs(walk) > 10) {
+                slider.querySelectorAll('.movie-card, .glass-btn, img').forEach(el => el.style.pointerEvents = 'none');
+            }
+            slider.scrollLeft = scrollLeft - walk;
+        });
+    });
+}
 
 function setupScrollHide() {
     let lastScrollY = window.scrollY;
@@ -255,7 +287,6 @@ function renderTrendingCards(movies, container) {
     });
 }
 
-// LOGIKA BARU AUTOEMBED BERDASARKAN DOKUMENTASI
 async function playMovie(id, title, type = 'movie', backdropPath = '') {
     addHistoryState('nonton'); saveToHistory(id, type, backdropPath); 
     const player = document.getElementById('playerContainer'); const iframe = document.getElementById('videoPlayer');
@@ -264,14 +295,9 @@ async function playMovie(id, title, type = 'movie', backdropPath = '') {
     
     if(backdropPath && backdropPath !== 'null') { bg.style.backgroundImage = `url('${BACK_PATH + backdropPath}')`; } else { bg.style.backgroundImage = 'none'; }
     
-    // PEMBAGIAN URL AUTOEMBED (MOVIE vs TV SERIES)
     let movieUrl = '';
-    if (type === 'movie') {
-        movieUrl = `https://player.autoembed.app/embed/movie/${id}`;
-    } else {
-        // Karena TV Butuh Season/Episode, default ke Season 1 Episode 1 dulu
-        movieUrl = `https://player.autoembed.app/embed/tv/${id}/1/1`;
-    }
+    if (type === 'movie') { movieUrl = `https://player.autoembed.app/embed/movie/${id}`; } 
+    else { movieUrl = `https://player.autoembed.app/embed/tv/${id}/1/1`; }
     
     iframe.src = movieUrl; document.getElementById('playingTitle').innerText = title;
     
@@ -279,11 +305,7 @@ async function playMovie(id, title, type = 'movie', backdropPath = '') {
     
     player.classList.remove('hidden'); 
     const modalBox = document.getElementById('playerModalBox'); 
-    if(modalBox) {
-        modalBox.classList.remove('fade-in-up'); 
-        void modalBox.offsetWidth; 
-        modalBox.classList.add('fade-in-up');
-    }
+    if(modalBox) { modalBox.classList.remove('fade-in-up'); void modalBox.offsetWidth; modalBox.classList.add('fade-in-up'); }
     document.body.style.overflow = 'hidden';
 
     castBox.innerHTML = '<p class="text-[10px] text-white/50 animate-pulse">Memuat pemeran...</p>';
