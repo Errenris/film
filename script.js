@@ -17,13 +17,10 @@ function setupScrollHide() {
     });
 }
 
-// PERBAIKAN: Set Active Menu untuk HP dan Desktop
 function setActiveNav(tab) {
     document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
     document.querySelectorAll('.desk-nav-btn').forEach(btn => btn.classList.remove('active'));
-    
     if(tab === 'home' || !tab) tab = 'home';
-    
     if(document.getElementById(`nav-${tab}`)) document.getElementById(`nav-${tab}`).classList.add('active');
     if(document.getElementById(`desk-nav-${tab}`)) document.getElementById(`desk-nav-${tab}`).classList.add('active');
 }
@@ -64,6 +61,7 @@ function applyFilters() {
     document.getElementById('filterPanel').classList.add('hidden');
     loadCategory(path, `Filter: ${year ? year : 'Semua'} | Rating ${rating ? rating+'+' : 'Semua'}`, 'movies');
 }
+
 async function surpriseMe() {
     try {
         const res = await fetch(`/api/movies?path=movie/popular&page=${Math.floor(Math.random() * 10) + 1}`);
@@ -86,11 +84,13 @@ async function saveToHistory(id, type, backdrop) {
         localStorage.setItem('streamverse_history', JSON.stringify(history)); renderHistory();
     } catch(e) {}
 }
+
 function renderHistory() {
     const history = JSON.parse(localStorage.getItem('streamverse_history') || '[]');
     const section = document.getElementById('historySection'); const container = document.getElementById('rowHistory');
     if (history.length === 0) { section.classList.add('hidden'); } else { section.classList.remove('hidden'); renderCards(history, container, false, false); }
 }
+
 function clearHistory() { localStorage.removeItem('streamverse_history'); renderHistory(); }
 
 function addHistoryState(type) { history.pushState({ view: type }, '', `#${type}`); }
@@ -101,6 +101,7 @@ window.addEventListener('popstate', () => {
     }
     closeSuggestions(); showSection('home'); setActiveNav('home');
 });
+
 function goHome() { history.pushState(null, null, ' '); showSection('home'); setActiveNav('home'); }
 
 function showSection(type) {
@@ -136,6 +137,7 @@ async function handleLiveSearch(query) {
         } catch (e) { suggestBox.classList.add('hidden'); }
     }, 500); 
 }
+
 function closeSuggestions() { document.getElementById('searchSuggestions').classList.add('hidden'); }
 document.addEventListener('click', (e) => { if (!e.target.closest('#searchInput') && !e.target.closest('#searchSuggestions')) closeSuggestions(); });
 function doSearch() { closeSuggestions(); searchMovie(); }
@@ -149,6 +151,7 @@ function toggleMyList(event, movieStr) {
     else { list.push(movie); event.target.innerText = '❤️'; event.target.classList.add('text-red-500'); }
     saveMyList(list); if (!document.getElementById('myListSection').classList.contains('hidden')) showMyList();
 }
+
 function showMyList() {
     addHistoryState('mylist'); setActiveNav('mylist'); showSection('mylist'); document.getElementById('myListSection').classList.remove('hidden');
     const list = getMyList(); const container = document.getElementById('myListResults');
@@ -252,7 +255,7 @@ function renderTrendingCards(movies, container) {
     });
 }
 
-// PERBAIKAN: Modal tidak crash lagi, Cast & Similar pasti muncul
+// UPDATE API KE AUTOEMBED
 async function playMovie(id, title, type = 'movie', backdropPath = '') {
     addHistoryState('nonton'); saveToHistory(id, type, backdropPath); 
     const player = document.getElementById('playerContainer'); const iframe = document.getElementById('videoPlayer');
@@ -260,11 +263,14 @@ async function playMovie(id, title, type = 'movie', backdropPath = '') {
     const castBox = document.getElementById('castContainer'); const similarBox = document.getElementById('similarContainer');
     
     if(backdropPath && backdropPath !== 'null') { bg.style.backgroundImage = `url('${BACK_PATH + backdropPath}')`; } else { bg.style.backgroundImage = 'none'; }
-    const movieUrl = `https://vidapi.ru/embed/${type}/${id}`; iframe.src = movieUrl; document.getElementById('playingTitle').innerText = title;
+    
+    // INI BARIS YANG DIUBAH KE AUTOEMBED
+    const movieUrl = `https://player.autoembed.cc/embed/${type}/${id}`; 
+    
+    iframe.src = movieUrl; document.getElementById('playingTitle').innerText = title;
     
     controls.innerHTML = `<button onclick="document.getElementById('videoPlayer').src='${movieUrl}'" class="bg-blue-600 text-white hover:bg-blue-500 px-4 py-2 rounded-full text-xs md:text-sm font-bold flex items-center gap-2 transition shadow-[0_0_15px_rgba(37,99,235,0.5)]">▶ Tonton Sekarang</button><button id="trailerBtn" class="bg-white/10 text-white hover:bg-red-600 px-4 py-2 rounded-full text-xs md:text-sm font-bold flex items-center gap-2 transition border border-white/20">🎬 Trailer</button>`;
     
-    // Perbaikan animasi biar gak crash JS
     player.classList.remove('hidden'); 
     const modalBox = document.getElementById('playerModalBox'); 
     if(modalBox) {
@@ -274,7 +280,6 @@ async function playMovie(id, title, type = 'movie', backdropPath = '') {
     }
     document.body.style.overflow = 'hidden';
 
-    // Casts
     castBox.innerHTML = '<p class="text-[10px] text-white/50 animate-pulse">Memuat pemeran...</p>';
     try {
         const res = await fetch(`/api/movies?path=${type}/${id}/credits`); const data = await res.json();
@@ -285,7 +290,6 @@ async function playMovie(id, title, type = 'movie', backdropPath = '') {
         } else { castBox.innerHTML = '<p class="text-[10px] text-white/50">Data tidak tersedia</p>'; }
     } catch(e) { castBox.innerHTML = '<p class="text-[10px] text-red-400">Gagal memuat cast</p>'; }
 
-    // Similar
     similarBox.innerHTML = '<p class="text-[10px] text-white/50 animate-pulse">Mencari rekomendasi...</p>';
     try {
         const res = await fetch(`/api/movies?path=${type}/${id}/recommendations`); const data = await res.json();
@@ -305,6 +309,7 @@ async function playMovie(id, title, type = 'movie', backdropPath = '') {
         } catch(e) { this.innerText = '❌ Error'; }
     };
 }
+
 function closePlayer() { history.back(); }
 
 function updateHero() {
