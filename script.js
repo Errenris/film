@@ -255,7 +255,7 @@ function renderTrendingCards(movies, container) {
     });
 }
 
-// UPDATE API KE AUTOEMBED
+// LOGIKA BARU AUTOEMBED BERDASARKAN DOKUMENTASI
 async function playMovie(id, title, type = 'movie', backdropPath = '') {
     addHistoryState('nonton'); saveToHistory(id, type, backdropPath); 
     const player = document.getElementById('playerContainer'); const iframe = document.getElementById('videoPlayer');
@@ -264,8 +264,14 @@ async function playMovie(id, title, type = 'movie', backdropPath = '') {
     
     if(backdropPath && backdropPath !== 'null') { bg.style.backgroundImage = `url('${BACK_PATH + backdropPath}')`; } else { bg.style.backgroundImage = 'none'; }
     
-    // INI BARIS YANG DIUBAH KE AUTOEMBED
-    const movieUrl = `https://player.autoembed.cc/embed/${type}/${id}`; 
+    // PEMBAGIAN URL AUTOEMBED (MOVIE vs TV SERIES)
+    let movieUrl = '';
+    if (type === 'movie') {
+        movieUrl = `https://player.autoembed.app/embed/movie/${id}`;
+    } else {
+        // Karena TV Butuh Season/Episode, default ke Season 1 Episode 1 dulu
+        movieUrl = `https://player.autoembed.app/embed/tv/${id}/1/1`;
+    }
     
     iframe.src = movieUrl; document.getElementById('playingTitle').innerText = title;
     
