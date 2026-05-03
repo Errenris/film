@@ -29,12 +29,10 @@
         .fade-in-up { animation: fadeInUp 0.5s ease forwards; opacity: 0; transform: translateY(20px); }
         @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
 
-        /* Mobile Nav Dot */
         .nav-btn { display: flex; flex-direction: column; align-items: center; gap: 4px; color: rgba(255,255,255,0.5); transition: all 0.3s ease; position: relative; }
         .nav-btn.active { color: #60a5fa; transform: translateY(-2px); }
         .nav-btn.active::after { content: ''; width: 4px; height: 4px; background: #60a5fa; border-radius: 50%; position: absolute; bottom: -8px; box-shadow: 0 0 8px #60a5fa; }
 
-        /* Desktop Nav Dot (Baru Ditambah) */
         .desk-nav-btn { position: relative; font-weight: 600; color: rgba(255,255,255,0.7); transition: all 0.3s ease; }
         .desk-nav-btn:hover { color: #60a5fa; }
         .desk-nav-btn.active { color: #60a5fa; }
@@ -43,13 +41,11 @@
 </head>
 <body class="pb-24">
 
-    <!-- Header Atas (PC) -->
     <header class="fixed top-2 md:top-4 w-full z-[100] px-3 md:px-8">
         <div class="glass-panel max-w-7xl mx-auto rounded-full px-4 py-3 flex justify-between items-center gap-3 shadow-[0_10px_30px_rgba(0,0,0,0.5)] border border-white/10">
             <div class="flex items-center gap-8">
                 <h1 class="text-[16px] md:text-2xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-500 cursor-pointer tracking-widest drop-shadow-md" onclick="goHome()">NOBARGASI</h1>
                 
-                <!-- Menu PC Ditambah ID & Class Baru -->
                 <nav class="hidden md:flex gap-6 text-sm">
                     <button id="desk-nav-home" onclick="goHome()" class="desk-nav-btn active">Home</button>
                     <button id="desk-nav-movies" onclick="loadCategory('movie/popular', 'Movies Popular', 'movies')" class="desk-nav-btn">Movies</button>
@@ -113,7 +109,7 @@
         </section>
 
         <div id="homeView" class="space-y-8">
-            <section class="flex gap-2 overflow-x-auto no-scrollbar py-1 px-1">
+            <section class="flex gap-2 overflow-x-auto no-scrollbar py-1 px-1 cursor-grab active:cursor-grabbing">
                 <button onclick="toggleFilterPanel()" class="glass-btn px-5 py-2 rounded-full text-xs font-bold whitespace-nowrap bg-blue-500/20 text-blue-300 border-blue-400/50 shadow-lg">⚙️ Filter Spesifik</button>
                 <button onclick="loadGenre(28, 'Aksi 💥')" class="glass-btn px-5 py-2 rounded-full text-xs font-bold whitespace-nowrap shadow-md">Aksi 💥</button>
                 <button onclick="loadGenre(27, 'Horor 👻')" class="glass-btn px-5 py-2 rounded-full text-xs font-bold whitespace-nowrap shadow-md">Horor 👻</button>
@@ -131,29 +127,27 @@
 
             <section id="historySection" class="hidden glass-panel rounded-3xl p-4 md:p-6 border border-blue-500/30 bg-blue-900/10 shadow-[0_10px_30px_rgba(0,0,0,0.3)]">
                 <div class="flex justify-between items-center mb-4"><h2 class="text-base md:text-xl font-black text-white tracking-wide">Lanjutkan Menonton 🍿</h2><button onclick="clearHistory()" class="bg-black/40 px-3 py-1 rounded-full border border-red-500/30 text-[10px] md:text-xs text-red-400 hover:bg-red-500 hover:text-white transition">Hapus Semua ✕</button></div>
-                <div id="rowHistory" class="flex gap-3 md:gap-4 overflow-x-auto no-scrollbar scroll-smooth pb-4 pt-1 px-1"></div>
+                <div id="rowHistory" class="flex gap-3 md:gap-4 overflow-x-auto no-scrollbar scroll-smooth pb-4 pt-1 px-1 cursor-grab active:cursor-grabbing"></div>
             </section>
 
             <section class="glass-panel rounded-3xl p-4 md:p-6 border border-yellow-500/30 bg-yellow-900/10 shadow-[0_10px_30px_rgba(0,0,0,0.3)]">
                 <div class="flex justify-between items-center mb-4"><h2 class="text-base md:text-xl font-black text-yellow-400 tracking-wide drop-shadow-[0_0_10px_rgba(250,204,21,0.3)]">🔥 Trending Malam Ini</h2><button onclick="loadCategory('trending/movie/day', 'Trending Malam Ini')" class="text-[10px] md:text-xs text-blue-400 hover:text-white transition font-bold">Lihat Semua ➔</button></div>
-                <div id="rowTrending" class="flex gap-3 md:gap-4 overflow-x-auto no-scrollbar scroll-smooth pb-4 pt-2 px-1"></div>
+                <div id="rowTrending" class="flex gap-3 md:gap-4 overflow-x-auto no-scrollbar scroll-smooth pb-4 pt-2 px-1 cursor-grab active:cursor-grabbing"></div>
             </section>
 
-            <section class="glass-panel rounded-3xl p-4 md:p-6"><div class="flex justify-between items-center mb-4"><h2 class="text-base md:text-xl font-black tracking-wide">Film Terpopuler ⭐</h2><button onclick="loadCategory('movie/popular', 'Film Terpopuler')" class="text-[10px] md:text-xs text-blue-400 hover:text-white font-bold">Lihat Semua ➔</button></div><div id="row1" class="flex gap-3 md:gap-4 overflow-x-auto no-scrollbar pb-4 pt-1 px-1"></div></section>
-            <section class="glass-panel rounded-3xl p-4 md:p-6"><div class="flex justify-between items-center mb-4"><h2 class="text-base md:text-xl font-black tracking-wide">Serial TV Pilihan 📺</h2><button onclick="loadCategory('tv/popular', 'Serial TV Pilihan')" class="text-[10px] md:text-xs text-blue-400 hover:text-white font-bold">Lihat Semua ➔</button></div><div id="row2" class="flex gap-3 md:gap-4 overflow-x-auto no-scrollbar pb-4 pt-1 px-1"></div></section>
-            <section class="glass-panel rounded-3xl p-4 md:p-6"><div class="flex justify-between items-center mb-4"><h2 class="text-base md:text-xl font-black tracking-wide">Anime Populer 🌸</h2><button onclick="loadCategory('discover/tv?with_original_language=ja&with_genres=16', 'Anime Populer')" class="text-[10px] md:text-xs text-blue-400 hover:text-white font-bold">Lihat Semua ➔</button></div><div id="row3" class="flex gap-3 md:gap-4 overflow-x-auto no-scrollbar pb-4 pt-1 px-1"></div></section>
-            <section class="glass-panel rounded-3xl p-4 md:p-6"><div class="flex justify-between items-center mb-4"><h2 class="text-base md:text-xl font-black tracking-wide">Drama Korea (Drakor) 🫰</h2><button onclick="loadCategory('discover/tv?with_original_language=ko', 'Drama Korea')" class="text-[10px] md:text-xs text-blue-400 hover:text-white font-bold">Lihat Semua ➔</button></div><div id="row4" class="flex gap-3 md:gap-4 overflow-x-auto no-scrollbar pb-4 pt-1 px-1"></div></section>
-            <section class="glass-panel rounded-3xl p-4 md:p-6"><div class="flex justify-between items-center mb-4"><h2 class="text-base md:text-xl font-black tracking-wide">Malam Jumat Mencekam 👻</h2><button onclick="loadCategory('discover/movie?with_genres=27', 'Film Horor')" class="text-[10px] md:text-xs text-blue-400 hover:text-white font-bold">Lihat Semua ➔</button></div><div id="row5" class="flex gap-3 md:gap-4 overflow-x-auto no-scrollbar pb-4 pt-1 px-1"></div></section>
+            <section class="glass-panel rounded-3xl p-4 md:p-6"><div class="flex justify-between items-center mb-4"><h2 class="text-base md:text-xl font-black tracking-wide">Film Terpopuler ⭐</h2><button onclick="loadCategory('movie/popular', 'Film Terpopuler')" class="text-[10px] md:text-xs text-blue-400 hover:text-white font-bold">Lihat Semua ➔</button></div><div id="row1" class="flex gap-3 md:gap-4 overflow-x-auto no-scrollbar pb-4 pt-1 px-1 cursor-grab active:cursor-grabbing"></div></section>
+            <section class="glass-panel rounded-3xl p-4 md:p-6"><div class="flex justify-between items-center mb-4"><h2 class="text-base md:text-xl font-black tracking-wide">Serial TV Pilihan 📺</h2><button onclick="loadCategory('tv/popular', 'Serial TV Pilihan')" class="text-[10px] md:text-xs text-blue-400 hover:text-white font-bold">Lihat Semua ➔</button></div><div id="row2" class="flex gap-3 md:gap-4 overflow-x-auto no-scrollbar pb-4 pt-1 px-1 cursor-grab active:cursor-grabbing"></div></section>
+            <section class="glass-panel rounded-3xl p-4 md:p-6"><div class="flex justify-between items-center mb-4"><h2 class="text-base md:text-xl font-black tracking-wide">Anime Populer 🌸</h2><button onclick="loadCategory('discover/tv?with_original_language=ja&with_genres=16', 'Anime Populer')" class="text-[10px] md:text-xs text-blue-400 hover:text-white font-bold">Lihat Semua ➔</button></div><div id="row3" class="flex gap-3 md:gap-4 overflow-x-auto no-scrollbar pb-4 pt-1 px-1 cursor-grab active:cursor-grabbing"></div></section>
+            <section class="glass-panel rounded-3xl p-4 md:p-6"><div class="flex justify-between items-center mb-4"><h2 class="text-base md:text-xl font-black tracking-wide">Drama Korea (Drakor) 🫰</h2><button onclick="loadCategory('discover/tv?with_original_language=ko', 'Drama Korea')" class="text-[10px] md:text-xs text-blue-400 hover:text-white font-bold">Lihat Semua ➔</button></div><div id="row4" class="flex gap-3 md:gap-4 overflow-x-auto no-scrollbar pb-4 pt-1 px-1 cursor-grab active:cursor-grabbing"></div></section>
+            <section class="glass-panel rounded-3xl p-4 md:p-6"><div class="flex justify-between items-center mb-4"><h2 class="text-base md:text-xl font-black tracking-wide">Malam Jumat Mencekam 👻</h2><button onclick="loadCategory('discover/movie?with_genres=27', 'Film Horor')" class="text-[10px] md:text-xs text-blue-400 hover:text-white font-bold">Lihat Semua ➔</button></div><div id="row5" class="flex gap-3 md:gap-4 overflow-x-auto no-scrollbar pb-4 pt-1 px-1 cursor-grab active:cursor-grabbing"></div></section>
         </div>
     </main>
 
-    <!-- Modal Player (ID Ditambahkan Biar Gak Error) -->
     <div id="playerContainer" class="hidden fixed inset-0 z-[200] flex items-end md:items-center justify-center md:p-4 overflow-hidden bg-[#05050a] md:bg-transparent">
         <div id="playerBg" class="hidden md:block absolute inset-0 bg-cover bg-center opacity-40 blur-[50px] transform scale-110 z-0 transition-all duration-1000"></div>
         <div class="hidden md:block absolute inset-0 bg-black/80 z-0" onclick="closePlayer()"></div>
         <button onclick="closePlayer()" class="hidden md:flex fixed top-4 right-4 md:top-6 md:right-6 bg-white/10 backdrop-blur-md text-white w-10 h-10 md:w-12 md:h-12 rounded-full items-center justify-center text-lg md:text-xl z-[300] hover:bg-red-600 hover:scale-110 transition border border-white/20">✕</button>
         
-        <!-- ID playerModalBox ditambahkan di sini -->
         <div id="playerModalBox" class="glass-panel relative w-full h-full md:h-auto md:max-w-5xl md:max-h-[85vh] md:rounded-3xl md:p-4 shadow-2xl z-10 flex flex-col overflow-y-auto no-scrollbar border border-white/10 bg-transparent fade-in-up">
             
             <div class="md:hidden sticky top-0 w-full bg-black/95 backdrop-blur-xl flex justify-between items-center px-4 py-3 z-50 border-b border-white/10 shadow-lg">
@@ -173,12 +167,12 @@
                 
                 <div class="mt-5">
                     <h4 class="text-[10px] font-bold text-white/50 uppercase tracking-widest mb-3">Pemeran Utama</h4>
-                    <div id="castContainer" class="flex gap-4 overflow-x-auto no-scrollbar pb-2 items-start"></div>
+                    <div id="castContainer" class="flex gap-4 overflow-x-auto no-scrollbar pb-2 items-start cursor-grab active:cursor-grabbing"></div>
                 </div>
 
                 <div class="mt-2 pt-5 border-t border-white/10 pb-12 md:pb-2">
                     <h4 class="text-[10px] font-bold text-white/50 uppercase tracking-widest mb-3">🍿 Mungkin Kamu Suka</h4>
-                    <div id="similarContainer" class="flex gap-3 overflow-x-auto no-scrollbar pb-2 items-start px-1"></div>
+                    <div id="similarContainer" class="flex gap-3 overflow-x-auto no-scrollbar pb-2 items-start px-1 cursor-grab active:cursor-grabbing"></div>
                 </div>
             </div>
             
