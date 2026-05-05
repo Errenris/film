@@ -31,22 +31,24 @@ function setupScrollEffects() {
 
 // --- INIT APP FULL CONTENT ---
 function initApp() {
-    // Siapkan Skeleton Loader untuk semua row
+    // FIX BUG: Hapus history lama yang gak punya poster biar gak nge-blank
+    let oldHist = JSON.parse(localStorage.getItem('nbg_history') || '[]');
+    if(oldHist.length > 0 && !oldHist[0].poster_path) {
+        localStorage.removeItem('nbg_history');
+    }
+
     const rows = ['rowTrending', 'rowActors', 'rowMarvel', 'rowDC', 'rowDisney', 'rowPixar', 'rowHoror', 'rowDrakor', 'rowAnime', 'row1', 'row2'];
     rows.forEach(r => renderSkeleton(r));
 
-    // Eksekusi Panggilan API
     loadHeroBanner();
     fetchAndRenderTrending('trending/movie/day', 'rowTrending');
     fetchAndRenderActors('trending/person/week', 'rowActors');
     
-    // Semua Universe
     fetchAndRender('discover/movie?with_companies=420&sort_by=revenue.desc', 'rowMarvel'); 
     fetchAndRender('discover/movie?with_companies=429&sort_by=popularity.desc', 'rowDC'); 
     fetchAndRender('discover/movie?with_companies=2&sort_by=popularity.desc', 'rowDisney'); 
     fetchAndRender('discover/movie?with_companies=3&sort_by=popularity.desc', 'rowPixar'); 
     
-    // Kategori
     fetchAndRender('discover/movie?with_genres=27', 'rowHoror'); 
     fetchAndRender('discover/tv?with_original_language=ko', 'rowDrakor', true); 
     fetchAndRender('discover/tv?with_original_language=ja&with_genres=16', 'rowAnime', true); 
@@ -78,7 +80,7 @@ function getMyList() { return JSON.parse(localStorage.getItem('nbg_mylist') || '
 function saveMyList(list) { localStorage.setItem('nbg_mylist', JSON.stringify(list)); }
 
 function toggleMyList(e, movieStr) {
-    e.stopPropagation(); // Biar film nggak keputar pas klik tombol love
+    e.stopPropagation(); 
     const movie = JSON.parse(decodeURIComponent(movieStr));
     let list = getMyList();
     const index = list.findIndex(m => m.id === movie.id);
@@ -94,7 +96,6 @@ function toggleMyList(e, movieStr) {
     }
     saveMyList(list);
     
-    // Kalau lagi di halaman My List, refresh tampilannya
     if (!document.getElementById('gridSection').classList.contains('hidden') && document.getElementById('gridTitle').innerText.includes('FAVORIT')) {
         showMyList(); 
     }
@@ -106,7 +107,7 @@ function showMyList() {
     document.getElementById('heroSection').classList.add('hidden');
     document.getElementById('gridSection').classList.remove('hidden');
     document.getElementById('gridTitle').innerText = 'Daftar Favorit Saya ❤️';
-    document.getElementById('loadMoreBtn').classList.add('hidden'); // Sembunyikan load more di My List
+    document.getElementById('loadMoreBtn').classList.add('hidden');
     
     const list = getMyList();
     const container = document.getElementById('gridResults');
@@ -144,16 +145,16 @@ async function fetchAndRenderTrending(path, id) {
             const sTitle = safeText(m.title || m.name);
             const type = m.media_type || 'movie';
             
-            // Logic Love Button
             const savedObj = { id: m.id, title: sTitle, poster_path: m.poster_path, backdrop_path: m.backdrop_path, media_type: type };
             const movieStr = encodeURIComponent(JSON.stringify(savedObj));
             const isFav = myList.some(x => x.id === m.id);
 
             const w = document.createElement('div'); w.className = "flex items-end relative flex-shrink-0 mr-12";
+            // FIX BUG: Nambahin m.poster_path ke argumen playMovie
             w.innerHTML = `<div class="netflix-number">${i+1}</div>
                 <div class="movie-card">
                     <button onclick="toggleMyList(event, '${movieStr}')" class="fav-btn" style="color: ${isFav ? '#ef4444' : 'white'}">${isFav ? '❤️' : '🤍'}</button>
-                    <div class="poster-container" onclick="playMovie(${m.id}, '${sTitle}', '${type}', '${m.backdrop_path || ''}')">
+                    <div class="poster-container" onclick="playMovie(${m.id}, '${sTitle}', '${type}', '${m.backdrop_path || ''}', '${m.poster_path || ''}')">
                         <img src="${IMG_PATH + m.poster_path}" class="w-full h-full object-cover" loading="lazy">
                     </div>
                 </div>`;
@@ -176,19 +177,19 @@ function renderCards(movies, container, append = false, isTV = false) {
 
     movies.forEach(m => {
         if (!m.poster_path) return;
-        const type = m.media_type || (isTV ? 'tv' : (m.title ? 'movie' : 'tv'));
+        const type = isTV ? 'tv' : (m.media_type || (m.title ? 'movie' : 'tv'));
         const sTitle = safeText(m.title || m.name);
         const progHTML = m.progress ? `<div class="resume-bar"><div class="resume-progress" style="width: ${m.progress}%"></div></div>` : '';
         
-        // Logic Love Button
         const savedObj = { id: m.id, title: sTitle, poster_path: m.poster_path, backdrop_path: m.backdrop_path, media_type: type };
         const movieStr = encodeURIComponent(JSON.stringify(savedObj));
         const isFav = myList.some(x => x.id === m.id);
 
         const card = document.createElement('div'); card.className = "movie-card";
+        // FIX BUG: Nambahin m.poster_path ke argumen playMovie
         card.innerHTML = `
             <button onclick="toggleMyList(event, '${movieStr}')" class="fav-btn" style="color: ${isFav ? '#ef4444' : 'white'}">${isFav ? '❤️' : '🤍'}</button>
-            <div class="poster-container" onclick="playMovie(${m.id}, '${sTitle}', '${type}', '${m.backdrop_path || ''}')">
+            <div class="poster-container" onclick="playMovie(${m.id}, '${sTitle}', '${type}', '${m.backdrop_path || ''}', '${m.poster_path || ''}')">
                 <img src="${IMG_PATH + m.poster_path}" class="w-full h-full object-cover" loading="lazy">
                 <div class="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 flex items-center justify-center transition-all duration-500"><div class="w-10 h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white">▶</div></div>
                 ${progHTML}
@@ -210,11 +211,11 @@ function changeServer(s) {
     if(active) active.className = "server-btn px-8 py-3 rounded-full text-[10px] font-black uppercase bg-white text-black shadow-xl transition active:scale-95";
 }
 
-async function playMovie(id, title, type, backdrop) {
+// FIX BUG: Tambah argumen "poster"
+async function playMovie(id, title, type, backdrop, poster) {
     currentPlayId = id; currentPlayType = type;
     const player = document.getElementById('playerContainer');
     
-    // Reset Data Awal
     document.getElementById('playingTitle').innerText = title;
     document.getElementById('playerOverview').innerText = "Memuat sinopsis...";
     document.getElementById('playerRating').innerText = "⭐ ...";
@@ -230,7 +231,6 @@ async function playMovie(id, title, type, backdrop) {
     document.body.style.overflow = 'hidden';
     if(backdrop && backdrop !== 'null') updateAmbient(backdrop);
 
-    // Ambil Data Sinopsis dan Rating TMDB
     try {
         const res = await fetch(`/api/movies?path=${type}/${id}`);
         const m = await res.json();
@@ -239,7 +239,8 @@ async function playMovie(id, title, type, backdrop) {
         document.getElementById('playerYear').innerText = (m.release_date || m.first_air_date || '2024').split('-')[0];
         document.getElementById('playerRuntime').innerText = m.runtime ? `${m.runtime}m` : (m.episode_run_time?.length ? `${m.episode_run_time[0]}m` : 'TV Series');
         
-        saveToHistory(id, type, backdrop || m.backdrop_path, title);
+        // FIX BUG: Simpan poster_path juga ke history
+        saveToHistory(id, type, backdrop || m.backdrop_path, poster || m.poster_path, title);
     } catch(e){}
 
     fetchDetails(id, type);
@@ -274,7 +275,7 @@ async function loadCategory(path, label) {
     document.getElementById('heroSection').classList.add('hidden');
     document.getElementById('gridSection').classList.remove('hidden');
     document.getElementById('gridTitle').innerText = label;
-    document.getElementById('loadMoreBtn').classList.remove('hidden'); // Munculkan tombol load more
+    document.getElementById('loadMoreBtn').classList.remove('hidden'); 
     currentPage = 1; currentPath = path;
     
     document.getElementById('gridResults').innerHTML = '';
@@ -327,12 +328,13 @@ function setupSearch() {
     });
 }
 
-// --- UTILS ---
-function saveToHistory(id, type, backdrop, title) {
+// --- UTILS HISTORY FIX ---
+function saveToHistory(id, type, backdrop, poster, title) {
     let h = JSON.parse(localStorage.getItem('nbg_history') || '[]');
     h = h.filter(x => x.id !== id);
     const prog = Math.floor(Math.random() * 50) + 25; 
-    h.unshift({id, type, backdrop_path: backdrop, title, progress: prog});
+    // FIX BUG: Simpan poster_path juga
+    h.unshift({id, type, backdrop_path: backdrop, poster_path: poster, title, progress: prog});
     localStorage.setItem('nbg_history', JSON.stringify(h.slice(0, 10)));
     renderHistory();
 }
@@ -372,7 +374,8 @@ function updateHero() {
     document.getElementById('heroContent').style.backgroundImage = `url('${BACK_PATH + m.backdrop_path}')`;
     document.getElementById('heroTitle').innerText = sTitle;
     document.getElementById('heroDesc').innerText = m.overview || '';
-    document.getElementById('heroPlayBtn').onclick = () => playMovie(m.id, sTitle, m.media_type || 'movie', m.backdrop_path || '');
+    // FIX BUG: Tambah m.poster_path
+    document.getElementById('heroPlayBtn').onclick = () => playMovie(m.id, sTitle, m.media_type || 'movie', m.backdrop_path || '', m.poster_path || '');
     updateAmbient(m.backdrop_path);
     
     let dots = ''; 
@@ -399,5 +402,5 @@ function shareMovie(t) {
 async function surpriseMe() { 
     if(featuredMovies.length === 0) return;
     const r = featuredMovies[Math.floor(Math.random()*featuredMovies.length)]; 
-    playMovie(r.id, safeText(r.title||r.name), r.media_type || 'movie', r.backdrop_path || ''); 
+    playMovie(r.id, safeText(r.title||r.name), r.media_type || 'movie', r.backdrop_path || '', r.poster_path || ''); 
 }
