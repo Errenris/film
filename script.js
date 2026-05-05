@@ -10,13 +10,10 @@ let currentPlayType = '';
 
 window.onload = () => { initApp(); setupScrollHide(); setupHeroSwipe(); setupDragToScroll(); };
 
-// OPTIMASI ANTI-LAG DRAG KE KANAN-KIRI (Pakai requestAnimationFrame)
 function setupDragToScroll() {
     const sliders = document.querySelectorAll('.overflow-x-auto');
     sliders.forEach(slider => {
-        let isDown = false; let startX; let scrollLeft;
-        let animationId;
-        
+        let isDown = false; let startX; let scrollLeft; let animationId;
         slider.addEventListener('mousedown', (e) => {
             isDown = true; slider.classList.add('cursor-grabbing');
             startX = e.pageX - slider.offsetLeft; scrollLeft = slider.scrollLeft;
@@ -25,40 +22,29 @@ function setupDragToScroll() {
         slider.addEventListener('mouseleave', () => { isDown = false; slider.classList.remove('cursor-grabbing'); });
         slider.addEventListener('mouseup', () => {
             isDown = false; slider.classList.remove('cursor-grabbing');
-            setTimeout(() => { slider.querySelectorAll('.movie-card, .glass-btn, img').forEach(el => el.style.pointerEvents = 'auto'); }, 50);
+            setTimeout(() => { slider.querySelectorAll('.movie-card, .actor-circle, .glass-btn, img').forEach(el => el.style.pointerEvents = 'auto'); }, 50);
         });
         slider.addEventListener('mousemove', (e) => {
-            if (!isDown) return;
-            e.preventDefault();
+            if (!isDown) return; e.preventDefault();
             const x = e.pageX - slider.offsetLeft; const walk = (x - startX) * 2;
-            if (Math.abs(walk) > 10) { slider.querySelectorAll('.movie-card, .glass-btn, img').forEach(el => el.style.pointerEvents = 'none'); }
-            
-            // Render pergeseran disinkronkan dengan Monitor (60 FPS) biar nggak patah-patah
+            if (Math.abs(walk) > 10) { slider.querySelectorAll('.movie-card, .actor-circle, .glass-btn, img').forEach(el => el.style.pointerEvents = 'none'); }
             cancelAnimationFrame(animationId);
-            animationId = requestAnimationFrame(() => {
-                slider.scrollLeft = scrollLeft - walk;
-            });
+            animationId = requestAnimationFrame(() => { slider.scrollLeft = scrollLeft - walk; });
         });
     });
 }
 
-// OPTIMASI SCROLL ATAS BAWAH (Anti-Lag Navigation)
 function setupScrollHide() {
-    let lastScrollY = window.scrollY; 
-    let ticking = false;
-    const nav = document.getElementById('mobileNav');
-    
+    let lastScrollY = window.scrollY; let ticking = false; const nav = document.getElementById('mobileNav');
     window.addEventListener('scroll', () => {
         if (!ticking) {
             window.requestAnimationFrame(() => {
                 if(window.scrollY > lastScrollY && window.scrollY > 150) { nav.classList.add('translate-y-32'); } 
                 else { nav.classList.remove('translate-y-32'); }
-                lastScrollY = window.scrollY;
-                ticking = false;
-            });
-            ticking = true;
+                lastScrollY = window.scrollY; ticking = false;
+            }); ticking = true;
         }
-    }, { passive: true }); // passive: true bikin browser nggak nunggu javascript buat scroll
+    }, { passive: true });
 }
 
 function setActiveNav(tab) {
@@ -79,14 +65,91 @@ function renderSkeleton(elementId, count = 10) {
     }
 }
 
+// === INIT APP (DIPERBARUI UNTUK MEMUAT FITUR BARU) ===
 async function initApp() {
     const res = await fetch(`/api/movies?path=trending/all/day`); const data = await res.json();
     if(data.results) { featuredMovies = data.results.slice(0, 10); updateHero(); startCarousel(); }
     renderHistory();
-    const rows = ['rowTrending', 'row1', 'row2', 'row3', 'row4'];
+    
+    // Skeleton Loaders
+    const rows = ['rowTrending', 'rowActors', 'rowUpcoming', 'rowMarvel', 'row1', 'row2', 'row3', 'row4'];
     rows.forEach(r => renderSkeleton(r));
-    fetchAndRenderTrending('trending/movie/day', 'rowTrending'); fetchAndRender('movie/popular', 'row1'); fetchAndRender('tv/popular', 'row2');
-    fetchAndRender('discover/tv?with_original_language=ja&with_genres=16', 'row3'); fetchAndRender('discover/tv?with_original_language=ko', 'row4');
+    
+    // Panggil API untuk Fitur Baru
+    fetchAndRenderActors('trending/person/week', 'rowActors');
+    fetchAndRenderUpcoming('movie/upcoming', 'rowUpcoming');
+    fetchAndRenderTrending('trending/movie/day', 'rowTrending');
+    fetchAndRender('discover/movie?with_companies=420&sort_by=revenue.desc', 'rowMarvel'); 
+    
+    // API Biasa
+    fetchAndRender('movie/popular', 'row1'); 
+    fetchAndRender('tv/popular', 'row2');
+    fetchAndRender('discover/tv?with_original_language=ja&with_genres=16', 'row3'); 
+    fetchAndRender('discover/tv?with_original_language=ko', 'row4');
+}
+
+// === FUNGSI RENDER AKTOR (BARU) ===
+async function fetchAndRenderActors(path, elementId) {
+    const res = await fetch(`/api/movies?path=${path.replace('?', '&')}`); const data = await res.json();
+    const container = document.getElementById(elementId); container.innerHTML = '';
+    if(data.results) {
+        data.results.slice(0, 15).forEach(actor => {
+            if(!actor.profile_path) return;
+            const el = document.createElement('div'); el.className = "flex flex-col items-center flex-shrink-0 group";
+            el.innerHTML = `<img src="${IMG_PATH + actor.profile_path}" class="actor-circle" onclick="loadActorFilms(${actor.id}, '${actor.name.replace(/'/g, "\\'")}')" loading="lazy">
+                            <p class="text-[10px] md:text-xs text-center text-white/80 mt-3 font-bold group-hover:text-blue-400 w-20 md:w-28 truncate select-none">${actor.name}</p>`;
+            container.appendChild(el);
+        });
+    }
+}
+
+// === FUNGSI RENDER SEGERA TAYANG (BARU) ===
+async function fetchAndRenderUpcoming(path, elementId) {
+    const res = await fetch(`/api/movies?path=${path.replace('?', '&')}`); const data = await res.json();
+    const container = document.getElementById(elementId); container.innerHTML = '';
+    if(data.results) {
+        data.results.slice(0, 15).forEach(movie => {
+            if (!movie.poster_path) return;
+            const releaseYear = movie.release_date ? movie.release_date.split('-')[0] : 'Upcoming';
+            const card = document.createElement('div'); card.className = "movie-card";
+            card.innerHTML = `
+                <div class="poster-container border-[3px] border-purple-500/50 shadow-[0_0_15px_rgba(168,85,247,0.3)]" onclick="playTrailerOnly(${movie.id}, '${(movie.title || movie.name).replace(/'/g, "\\'")}', 'movie', '${movie.backdrop_path}')">
+                    <img src="${IMG_PATH + movie.poster_path}" class="w-full h-full object-cover" loading="lazy">
+                    <div class="absolute inset-0 bg-black/50 opacity-0 hover:opacity-100 flex flex-col items-center justify-center transition-opacity duration-300 backdrop-blur-sm">
+                        <div class="w-12 h-12 rounded-full bg-purple-600/90 flex items-center justify-center text-white text-xl shadow-[0_0_20px_rgba(168,85,247,0.8)] animate-pulse">🎬</div>
+                        <span class="text-[9px] font-black mt-2 uppercase tracking-widest">Tonton Trailer</span>
+                    </div>
+                </div>
+                <div class="mt-3 px-1 text-center"><h3 class="text-xs font-bold truncate text-white/90 drop-shadow-md">${movie.title}</h3><p class="text-[10px] text-purple-400 font-bold mt-0.5">${releaseYear} • Bioskop</p></div>
+            `;
+            container.appendChild(card);
+        });
+    }
+}
+
+// === UPDATE RENDER TRENDING (JADI TOP 10 NETFLIX) ===
+function renderTrendingCards(movies, container) {
+    container.innerHTML = ''; const myList = getMyList(); 
+    movies.slice(0, 10).forEach((movie, index) => {
+        if (!movie.poster_path) return;
+        const type = movie.media_type || 'movie';
+        const savedObj = { id: movie.id, title: movie.title || movie.name, poster_path: movie.poster_path, backdrop_path: movie.backdrop_path, media_type: type, vote_average: movie.vote_average, release_date: movie.release_date || movie.first_air_date || '' };
+        const movieStr = encodeURIComponent(JSON.stringify(savedObj)); const isFav = myList.some(m => m.id === movie.id);
+        const rank = index + 1;
+
+        const wrapper = document.createElement('div'); wrapper.className = "trending-wrapper";
+        wrapper.innerHTML = `
+            <div class="netflix-number">${rank}</div>
+            <div class="movie-card" onclick="playMovie(${movie.id}, '${savedObj.title.replace(/'/g, "\\'")}', '${type}', '${movie.backdrop_path}')">
+                <div class="poster-container">
+                    <img src="${IMG_PATH + movie.poster_path}" class="w-full h-full object-cover" loading="lazy">
+                    <div class="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity duration-300 flex items-center justify-center"><div class="w-10 h-10 rounded-full glass-btn flex items-center justify-center pl-1 text-white text-lg">▶</div></div>
+                </div>
+                <button onclick="toggleMyList(event, '${movieStr}')" class="absolute top-2 right-2 bg-black/50 backdrop-blur-md w-7 h-7 rounded-full flex items-center justify-center text-xs z-[30] transition ${isFav ? 'text-red-500' : 'text-white'} hover:scale-125">${isFav ? '❤️' : '🤍'}</button>
+                <div class="mt-3 px-1 text-center"><h3 class="text-xs font-bold truncate text-white/90 drop-shadow-md">${savedObj.title}</h3></div>
+            </div>
+        `; container.appendChild(wrapper);
+    });
 }
 
 function toggleFilterPanel() { document.getElementById('filterPanel').classList.toggle('hidden'); }
@@ -109,7 +172,6 @@ async function saveToHistory(id, type, backdrop) {
     try {
         const res = await fetch(`/api/movies?path=${type}/${id}`); const data = await res.json();
         if(!data.poster_path) return;
-        
         const randomProgress = Math.floor(Math.random() * 70) + 15;
         const savedObj = { id: data.id, title: data.title || data.name, poster_path: data.poster_path, backdrop_path: backdrop || data.backdrop_path, media_type: type, vote_average: data.vote_average || 0, release_date: data.release_date || data.first_air_date || '', progress: randomProgress };
         let history = JSON.parse(localStorage.getItem('streamverse_history') || '[]');
@@ -126,16 +188,13 @@ function renderHistory() {
 }
 
 function clearHistory() { localStorage.removeItem('streamverse_history'); renderHistory(); }
-
 function addHistoryState(type) { history.pushState({ view: type }, '', `#${type}`); }
 window.addEventListener('popstate', () => {
     const player = document.getElementById('playerContainer');
     if (!player.classList.contains('hidden')) { player.classList.add('hidden'); document.getElementById('videoPlayer').src = ''; document.getElementById('playerBg').style.backgroundImage = 'none'; document.body.style.overflow = 'auto'; return; }
     closeSuggestions(); showSection('home'); setActiveNav('home');
 });
-
 function goHome() { history.pushState(null, null, ' '); showSection('home'); setActiveNav('home'); }
-
 function showSection(type) {
     const main = document.getElementById('mainContainer'); main.classList.remove('fade-in-up'); void main.offsetWidth; main.classList.add('fade-in-up');
     document.getElementById('homeView').style.display = type === 'home' ? 'block' : 'none'; document.getElementById('heroSection').style.display = type === 'home' ? 'block' : 'none';
@@ -169,7 +228,6 @@ async function handleLiveSearch(query) {
 function closeSuggestions() { document.getElementById('searchSuggestions').classList.add('hidden'); }
 document.addEventListener('click', (e) => { if (!e.target.closest('#searchInput') && !e.target.closest('#searchSuggestions')) closeSuggestions(); });
 function doSearch() { closeSuggestions(); searchMovie(); }
-
 function getMyList() { return JSON.parse(localStorage.getItem('streamverse_mylist') || '[]'); }
 function saveMyList(list) { localStorage.setItem('streamverse_mylist', JSON.stringify(list)); }
 function toggleMyList(event, movieStr) {
@@ -178,7 +236,6 @@ function toggleMyList(event, movieStr) {
     else { list.push(movie); event.target.innerText = '❤️'; event.target.classList.add('text-red-500'); }
     saveMyList(list); if (!document.getElementById('myListSection').classList.contains('hidden')) showMyList();
 }
-
 function showMyList() {
     addHistoryState('mylist'); setActiveNav('mylist'); showSection('mylist'); document.getElementById('myListSection').classList.remove('hidden');
     const list = getMyList(); const container = document.getElementById('myListResults');
@@ -199,7 +256,9 @@ async function loadCategory(path, label, tabId = '') {
 }
 
 async function loadActorFilms(actorId, actorName) {
-    closePlayer(); addHistoryState('aktor'); setActiveNav(''); showSection('grid'); document.getElementById('gridSection').classList.remove('hidden');
+    // Kalau Player Terbuka, Tutup Dulu
+    if(!document.getElementById('playerContainer').classList.contains('hidden')) { document.getElementById('playerContainer').classList.add('hidden'); document.getElementById('videoPlayer').src = ''; document.body.style.overflow = 'auto'; }
+    addHistoryState('aktor'); setActiveNav(''); showSection('grid'); document.getElementById('gridSection').classList.remove('hidden');
     document.getElementById('gridTitle').innerText = `Filmografi: ${actorName} 🎭`; currentPage = 1; currentAction = 'category'; currentPath = `discover/movie?with_cast=${actorId}&sort_by=popularity.desc`;
     renderSkeleton('gridResults', 15); document.getElementById('loadMoreBtn').classList.add('hidden');
     const res = await fetch(`/api/movies?path=${currentPath.replace('?', '&')}&page=${currentPage}`); const data = await res.json();
@@ -240,7 +299,6 @@ function renderCards(movies, container, append = false, isTV = false) {
         const savedObj = { id: movie.id, title: movie.title || movie.name, poster_path: movie.poster_path, backdrop_path: movie.backdrop_path, media_type: type, vote_average: movie.vote_average, release_date: movie.release_date || movie.first_air_date || '' };
         const movieStr = encodeURIComponent(JSON.stringify(savedObj)); const isFav = myList.some(m => m.id === movie.id); const releaseYear = savedObj.release_date ? savedObj.release_date.split('-')[0] : '';
         const newBadgeHTML = (releaseYear == currentYear) ? `<div class="absolute top-2 left-12 bg-gradient-to-r from-red-500 to-pink-500 text-white text-[8px] font-extrabold px-1.5 py-0.5 rounded-full shadow-[0_0_10px_rgba(255,0,0,0.8)] animate-pulse pointer-events-none z-10">NEW</div>` : '';
-
         const progressBarHTML = movie.progress ? `<div class="absolute bottom-0 left-0 w-full h-1 bg-black/50"><div class="h-full bg-red-600 shadow-[0_0_8px_rgba(220,38,38,0.8)]" style="width: ${movie.progress}%;"></div></div>` : '';
 
         const card = document.createElement('div'); card.className = "movie-card";
@@ -258,72 +316,56 @@ function renderCards(movies, container, append = false, isTV = false) {
     });
 }
 
-async function fetchAndRenderTrending(path, elementId) {
-    const res = await fetch(`/api/movies?path=${path.replace('?', '&')}`); const data = await res.json();
-    if(data.results) renderTrendingCards(data.results.slice(0, 10), document.getElementById(elementId));
-}
-
-function renderTrendingCards(movies, container) {
-    container.innerHTML = ''; const myList = getMyList(); 
-    movies.forEach((movie, index) => {
-        if (!movie.poster_path) return;
-        const type = movie.media_type || 'movie';
-        const savedObj = { id: movie.id, title: movie.title || movie.name, poster_path: movie.poster_path, backdrop_path: movie.backdrop_path, media_type: type, vote_average: movie.vote_average, release_date: movie.release_date || movie.first_air_date || '' };
-        const movieStr = encodeURIComponent(JSON.stringify(savedObj)); const isFav = myList.some(m => m.id === movie.id);
-        const rank = index + 1; const rankColor = rank <= 3 ? 'from-yellow-300 via-yellow-500 to-orange-500 text-black shadow-[0_0_15px_rgba(255,215,0,0.6)]' : 'from-gray-300 via-gray-400 to-gray-600 text-black shadow-[0_0_10px_rgba(255,255,255,0.2)]';
-
-        const card = document.createElement('div'); card.className = "movie-card";
-        card.innerHTML = `
-            <div class="poster-container" onclick="playMovie(${movie.id}, '${savedObj.title.replace(/'/g, "\\'")}', '${type}', '${movie.backdrop_path}')">
-                <img src="${IMG_PATH + movie.poster_path}" class="w-full h-full object-cover" loading="lazy">
-                <div class="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity duration-300 flex items-center justify-center"><div class="w-10 h-10 rounded-full glass-btn flex items-center justify-center pl-1 text-white text-lg">▶</div></div>
-            </div>
-            <div class="absolute -top-2 -left-2 bg-gradient-to-br ${rankColor} font-black text-sm px-2.5 py-1 rounded-br-xl rounded-tl-xl z-20 border border-white/40">#${rank}</div>
-            <button onclick="toggleMyList(event, '${movieStr}')" class="absolute top-2 right-2 bg-black/50 backdrop-blur-md w-7 h-7 rounded-full flex items-center justify-center text-xs z-[30] transition ${isFav ? 'text-red-500' : 'text-white'} hover:scale-125">${isFav ? '❤️' : '🤍'}</button>
-            <div class="mt-3 px-1 text-center"><h3 class="text-xs font-bold truncate text-white/90 drop-shadow-md">${savedObj.title}</h3></div>
-        `; container.appendChild(card);
-    });
-}
-
 function changeServer(serverName) {
-    const iframe = document.getElementById('videoPlayer');
-    let url = '';
+    const iframe = document.getElementById('videoPlayer'); let url = '';
     if (serverName === 'VidSrc') { url = currentPlayType === 'movie' ? `https://vidsrc.me/embed/movie?tmdb=${currentPlayId}` : `https://vidsrc.me/embed/tv?tmdb=${currentPlayId}&season=1&ep=1`; } 
     else if (serverName === 'AutoEmbed') { url = currentPlayType === 'movie' ? `https://player.autoembed.app/embed/movie/${currentPlayId}` : `https://player.autoembed.app/embed/tv/${currentPlayId}/1/1`; } 
     else if (serverName === 'VidLink') { url = currentPlayType === 'movie' ? `https://vidlink.pro/movie/${currentPlayId}` : `https://vidlink.pro/tv/${currentPlayId}/1/1`; }
     iframe.src = url;
-    
-    document.querySelectorAll('.server-btn').forEach(btn => {
-        btn.classList.remove('bg-blue-600', 'text-white', 'shadow-[0_0_15px_rgba(37,99,235,0.5)]', 'border-transparent');
-        btn.classList.add('bg-white/10', 'text-white/70', 'border-white/20');
-    });
+    document.querySelectorAll('.server-btn').forEach(btn => { btn.classList.remove('bg-blue-600', 'text-white', 'shadow-[0_0_15px_rgba(37,99,235,0.5)]', 'border-transparent'); btn.classList.add('bg-white/10', 'text-white/70', 'border-white/20'); });
     const activeBtn = document.getElementById(`server-${serverName}`);
-    if(activeBtn) {
-        activeBtn.classList.remove('bg-white/10', 'text-white/70', 'border-white/20');
-        activeBtn.classList.add('bg-blue-600', 'text-white', 'shadow-[0_0_15px_rgba(37,99,235,0.5)]', 'border-transparent');
-    }
+    if(activeBtn) { activeBtn.classList.remove('bg-white/10', 'text-white/70', 'border-white/20'); activeBtn.classList.add('bg-blue-600', 'text-white', 'shadow-[0_0_15px_rgba(37,99,235,0.5)]', 'border-transparent'); }
 }
 
 function shareMovie(title) {
-    if (navigator.share) {
-        navigator.share({
-            title: `Nonton ${title} di NOBARGASI`,
-            text: `Lagi seru nih nonton film ${title} gratis kualitas HD tanpa popup iklan! Buruan cek 🍿🔥`,
-            url: window.location.href
-        }).catch(console.error);
-    } else {
-        alert("Browser kamu belum mendukung fitur Share Otomatis. Silakan copy link di atas ya!");
-    }
+    if (navigator.share) { navigator.share({ title: `Nonton ${title} di NOBARGASI`, text: `Lagi seru nih nonton film ${title} gratis kualitas HD tanpa popup iklan! Buruan cek 🍿🔥`, url: window.location.href }).catch(console.error); } 
+    else { alert("Browser kamu belum mendukung fitur Share Otomatis. Silakan copy link di atas ya!"); }
+}
+
+// === FUNGSI KHUSUS UNTUK MEMUTAR TRAILER "SEGERA TAYANG" ===
+async function playTrailerOnly(id, title, type, backdropPath) {
+    addHistoryState('nonton');
+    const player = document.getElementById('playerContainer'); const controls = document.getElementById('playerControls'); const bg = document.getElementById('playerBg'); const iframe = document.getElementById('videoPlayer'); const castBox = document.getElementById('castContainer'); const similarBox = document.getElementById('similarContainer');
+    
+    if(backdropPath && backdropPath !== 'null') { bg.style.backgroundImage = `url('${BACK_PATH + backdropPath}')`; } else { bg.style.backgroundImage = 'none'; }
+    document.getElementById('playingTitle').innerText = `${title} (Segera Tayang)`;
+    
+    controls.innerHTML = `<span class="px-5 py-2 rounded-full bg-purple-600 text-white text-[10px] md:text-xs font-bold shadow-[0_0_15px_rgba(168,85,247,0.5)] border border-purple-400 animate-pulse">⏳ Belum Rilis di Server</span>`;
+    
+    document.getElementById('castBoxUI').classList.add('hidden');
+    document.getElementById('similarBoxUI').classList.add('hidden');
+    
+    iframe.src = ''; player.classList.remove('hidden'); 
+    const modalBox = document.getElementById('playerModalBox'); if(modalBox) { modalBox.classList.remove('fade-in-up'); void modalBox.offsetWidth; modalBox.classList.add('fade-in-up'); }
+    document.body.style.overflow = 'hidden';
+
+    try {
+        const res = await fetch(`/api/movies?path=${type}/${id}/videos`); const data = await res.json();
+        const trailer = data.results.find(vid => vid.type === 'Trailer' && vid.site === 'YouTube');
+        if (trailer) { iframe.src = `https://www.youtube.com/embed/${trailer.key}?autoplay=1`; } 
+        else { alert("Maaf, Trailer belum tersedia dari TMDB."); closePlayer(); }
+    } catch(e) { closePlayer(); }
 }
 
 async function playMovie(id, title, type = 'movie', backdropPath = '') {
     addHistoryState('nonton'); saveToHistory(id, type, backdropPath); 
     currentPlayId = id; currentPlayType = type;
     
-    const player = document.getElementById('playerContainer'); 
-    const controls = document.getElementById('playerControls'); const bg = document.getElementById('playerBg');
-    const castBox = document.getElementById('castContainer'); const similarBox = document.getElementById('similarContainer');
+    const player = document.getElementById('playerContainer'); const controls = document.getElementById('playerControls'); const bg = document.getElementById('playerBg'); const castBox = document.getElementById('castContainer'); const similarBox = document.getElementById('similarContainer');
     
+    document.getElementById('castBoxUI').classList.remove('hidden');
+    document.getElementById('similarBoxUI').classList.remove('hidden');
+
     if(backdropPath && backdropPath !== 'null') { bg.style.backgroundImage = `url('${BACK_PATH + backdropPath}')`; } else { bg.style.backgroundImage = 'none'; }
     document.getElementById('playingTitle').innerText = title;
     
@@ -340,9 +382,7 @@ async function playMovie(id, title, type = 'movie', backdropPath = '') {
     `;
     
     changeServer('VidSrc');
-    player.classList.remove('hidden'); 
-    const modalBox = document.getElementById('playerModalBox'); 
-    if(modalBox) { modalBox.classList.remove('fade-in-up'); void modalBox.offsetWidth; modalBox.classList.add('fade-in-up'); }
+    player.classList.remove('hidden'); const modalBox = document.getElementById('playerModalBox'); if(modalBox) { modalBox.classList.remove('fade-in-up'); void modalBox.offsetWidth; modalBox.classList.add('fade-in-up'); }
     document.body.style.overflow = 'hidden';
 
     castBox.innerHTML = '<p class="text-[10px] text-white/50 animate-pulse">Memuat pemeran...</p>';
@@ -393,14 +433,11 @@ function prevHero() { currentHeroIndex = (currentHeroIndex - 1 + featuredMovies.
 function startCarousel() { carouselTimer = setInterval(nextHero, 6000); }
 
 function setupHeroSwipe() {
-    let touchStartX = 0; let touchEndX = 0;
-    const hero = document.getElementById('heroSection');
-    // Tambahin passive: true buat usap layar HP biar responsif!
+    let touchStartX = 0; let touchEndX = 0; const hero = document.getElementById('heroSection');
     hero.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; clearInterval(carouselTimer); }, { passive: true });
     hero.addEventListener('touchend', e => {
         touchEndX = e.changedTouches[0].screenX;
-        if (touchEndX < touchStartX - 50) { nextHero(); } 
-        if (touchEndX > touchStartX + 50) { prevHero(); } 
+        if (touchEndX < touchStartX - 50) { nextHero(); } if (touchEndX > touchStartX + 50) { prevHero(); } 
         startCarousel();
     });
 }
