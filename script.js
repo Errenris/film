@@ -7,7 +7,7 @@ let currentPlayId = ''; let currentPlayType = ''; let liveSearchTimeout;
 
 window.onload = () => { initApp(); setupScrollEffects(); setupDragToScroll(); setupSearch(); };
 
-// --- CLEAN STRING (Anti Crash & Bold Ready) ---
+// --- CLEAN STRING (Anti Crash) ---
 function safeText(str) {
     if (!str) return 'Unknown';
     return str.replace(/['"\\`]/g, '');
@@ -67,7 +67,7 @@ async function loadHeroBanner() {
     } catch(e){}
 }
 
-// --- PLAYER ENGINE (VERSI ANTI-IKLAN & SANDBOX) ---
+// --- PLAYER ENGINE (SANDBOX REMOVED) ---
 function changeServer(s) {
     const f = document.getElementById('videoPlayer'); 
     let url = '';
@@ -80,8 +80,8 @@ function changeServer(s) {
         url = `https://embed.su/embed/${currentPlayType}/${currentPlayId}${currentPlayType==='tv'?'/1/1':''}`;
     }
     
-    // PENTING: Sandbox ini melumpuhkan Pop-up iklan
-    f.setAttribute('sandbox', 'allow-forms allow-pointer-lock allow-same-origin allow-scripts allow-top-navigation');
+    // DISABLE SANDBOX: Baris setAttribute sandbox dihapus agar player jalan normal
+    f.removeAttribute('sandbox'); 
     f.src = url;
     
     document.querySelectorAll('.server-btn').forEach(b => b.className = "server-btn px-8 py-3 rounded-full text-[10px] font-black uppercase border border-white/10 opacity-40 transition");
@@ -118,7 +118,7 @@ async function playMovie(id, title, type, backdrop, poster) {
     fetchDetails(id, type);
 }
 
-// --- RENDERERS (BOLD TITLES) ---
+// --- RENDERERS ---
 function renderCards(movies, container, append = false, isTV = false) {
     if (!container) return; if (!append) container.innerHTML = '';
     const myList = getMyList();
@@ -139,7 +139,7 @@ function renderCards(movies, container, append = false, isTV = false) {
                 <div class="absolute inset-0 bg-black/30 opacity-0 hover:opacity-100 flex items-center justify-center transition-all duration-500"><div class="w-12 h-12 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white text-xl">▶</div></div>
                 ${progHTML}
             </div>
-            <div class="mt-3 px-1 text-center"><h3 class="text-[11px] font-black truncate text-white uppercase tracking-wider leading-tight drop-shadow-md">${sTitle}</h3></div>`;
+            <div class="mt-3 px-1 text-center"><h3 class="text-[11px] font-[900] truncate text-white uppercase tracking-wider leading-tight drop-shadow-md">${sTitle}</h3></div>`;
         container.appendChild(card);
     });
 }
@@ -160,16 +160,15 @@ function renderTrendingCards(movies, container) {
                 <div class="poster-container" onclick="playMovie(${m.id}, '${sTitle}', '${type}', '${m.backdrop_path || ''}', '${m.poster_path || ''}')">
                     <img src="${IMG_PATH + m.poster_path}" class="w-full h-full object-cover" loading="lazy">
                 </div>
-                <div class="mt-3 px-1 text-center"><h3 class="text-[11px] font-black truncate text-white uppercase tracking-wider leading-tight drop-shadow-md">${sTitle}</h3></div>
+                <div class="mt-3 px-1 text-center"><h3 class="text-[11px] font-[900] truncate text-white uppercase tracking-wider leading-tight drop-shadow-md">${sTitle}</h3></div>
             </div>`;
         container.appendChild(w);
     });
 }
 
-// --- FAVORIT (MY LIST) ---
+// --- UTILS ---
 function getMyList() { return JSON.parse(localStorage.getItem('nbg_mylist') || '[]'); }
 function saveMyList(list) { localStorage.setItem('nbg_mylist', JSON.stringify(list)); }
-
 function toggleMyList(e, movieStr) {
     e.stopPropagation(); 
     const movie = JSON.parse(decodeURIComponent(movieStr));
@@ -191,7 +190,6 @@ function showMyList() {
     renderCards(getMyList(), document.getElementById('gridResults'));
 }
 
-// --- UTILS ---
 function saveToHistory(id, type, backdrop, poster, title) {
     let h = JSON.parse(localStorage.getItem('nbg_history') || '[]');
     h = h.filter(x => x.id !== id);
@@ -214,8 +212,8 @@ async function fetchAndRenderActors(path, id) {
     const res = await fetch(`/api/movies?path=${path}`); const data = await res.json();
     const c = document.getElementById(id); if(!c) return; c.innerHTML = '';
     data.results?.slice(0, 12).forEach(a => { if(a.profile_path) {
-            const dv = document.createElement('div'); dv.className="flex flex-col items-center flex-shrink-0";
-            dv.innerHTML=`<img src="${IMG_PATH+a.profile_path}" class="actor-circle" onclick="loadActorFilms(${a.id},'${a.name.replace(/'/g,'')}')"><p class="text-[8px] text-center text-white/30 mt-3 font-black uppercase tracking-widest truncate w-20">${a.name}</p>`;
+            const dv = document.createElement('div'); dv.className="flex flex-col items-center flex-shrink-0 group";
+            dv.innerHTML=`<img src="${IMG_PATH+a.profile_path}" class="actor-circle" onclick="loadActorFilms(${a.id},'${a.name.replace(/'/g,'')}')"><p class="text-[8px] text-center text-white/30 mt-3 font-black uppercase tracking-widest truncate w-20 transition">${a.name}</p>`;
             c.appendChild(dv);
     }});
 }
@@ -223,14 +221,14 @@ async function fetchDetails(id, type) {
     const res = await fetch(`/api/movies?path=${type}/${id}/credits`); const data = await res.json();
     const cBox = document.getElementById('castContainer'); cBox.innerHTML = '';
     data.cast?.slice(0, 10).forEach(a => { if(a.profile_path) {
-        const d = document.createElement('div'); d.className = "flex-shrink-0 text-center w-20 opacity-40 hover:opacity-100 transition cursor-pointer";
+        const d = document.createElement('div'); d.className = "flex-shrink-0 text-center w-20 opacity-60 hover:opacity-100 transition cursor-pointer";
         d.onclick = () => { closePlayer(); loadActorFilms(a.id, a.name); };
-        d.innerHTML = `<img src="${IMG_PATH + a.profile_path}" class="actor-circle mx-auto mb-3 shadow-lg"><p class="text-[7px] font-black uppercase tracking-tighter truncate w-full text-white">${a.name}</p>`;
+        d.innerHTML = `<img src="${IMG_PATH + a.profile_path}" class="actor-circle mx-auto mb-3 shadow-lg border border-white/10"><p class="text-[8px] font-black uppercase tracking-tighter truncate w-full text-white">${a.name}</p>`;
         cBox.appendChild(d);
     }});
 }
 async function loadCategory(path, label) { window.scrollTo(0,0); document.getElementById('homeView').classList.add('hidden'); document.getElementById('heroSection').classList.add('hidden'); document.getElementById('gridSection').classList.remove('hidden'); document.getElementById('gridTitle').innerText = label; document.getElementById('loadMoreBtn').classList.remove('hidden'); currentPage = 1; currentPath = path; document.getElementById('gridResults').innerHTML = ''; renderSkeleton('gridResults'); const res = await fetch(`/api/movies?path=${path.replace(/\?/g, '&')}&page=${currentPage}`); const data = await res.json(); renderCards(data.results || [], document.getElementById('gridResults')); }
-function setupSearch() { const i = document.getElementById('searchInput'); i.addEventListener('keypress', (e) => { if(e.key === 'Enter' && i.value) loadCategory(`search/multi?query=${encodeURIComponent(i.value)}`, `Hasil: ${i.value}`); }); }
+function setupSearch() { const i = document.getElementById('searchInput'); i.addEventListener('keypress', (e) => { if(e.key === 'Enter' && i.value) loadCategory(`search/multi?query=${encodeURIComponent(i.value)}`, `Hasil Pencarian: ${i.value}`); }); }
 function setupDragToScroll() { document.querySelectorAll('.overflow-x-auto').forEach(s => { let d = false, sx, sl; s.addEventListener('mousedown', (e) => { d = true; sx = e.pageX - s.offsetLeft; sl = s.scrollLeft; s.classList.add('cursor-grabbing'); }); s.addEventListener('mouseleave', () => d = false); s.addEventListener('mouseup', () => d = false); s.addEventListener('mousemove', (e) => { if(!d) return; e.preventDefault(); const x = e.pageX - s.offsetLeft; const w = (x - sx) * 2; s.scrollLeft = sl - w; }); }); }
 function updateHero() {
     const m = featuredMovies[currentHeroIndex]; if(!m) return;
