@@ -64,10 +64,10 @@ async function initApp() {
     const res = await fetch(`/api/movies?path=trending/all/day`); const data = await res.json();
     if(data.results) { featuredMovies = data.results.slice(0, 10); updateHero(); startCarousel(); }
     renderHistory();
-    const rows = ['rowTrending', 'row1', 'row2', 'row3', 'row4', 'row5'];
+    const rows = ['rowTrending', 'row1', 'row2', 'row3', 'row4'];
     rows.forEach(r => renderSkeleton(r));
     fetchAndRenderTrending('trending/movie/day', 'rowTrending'); fetchAndRender('movie/popular', 'row1'); fetchAndRender('tv/popular', 'row2');
-    fetchAndRender('discover/tv?with_original_language=ja&with_genres=16', 'row3'); fetchAndRender('discover/tv?with_original_language=ko', 'row4'); fetchAndRender('discover/movie?with_genres=27', 'row5');                        
+    fetchAndRender('discover/tv?with_original_language=ja&with_genres=16', 'row3'); fetchAndRender('discover/tv?with_original_language=ko', 'row4');
 }
 
 function toggleFilterPanel() { document.getElementById('filterPanel').classList.toggle('hidden'); }
@@ -90,7 +90,11 @@ async function saveToHistory(id, type, backdrop) {
     try {
         const res = await fetch(`/api/movies?path=${type}/${id}`); const data = await res.json();
         if(!data.poster_path) return;
-        const savedObj = { id: data.id, title: data.title || data.name, poster_path: data.poster_path, backdrop_path: backdrop || data.backdrop_path, media_type: type, vote_average: data.vote_average || 0, release_date: data.release_date || data.first_air_date || '' };
+        
+        // FAKE PROGRESS BAR 15% - 85% Ala Netflix
+        const randomProgress = Math.floor(Math.random() * 70) + 15;
+        
+        const savedObj = { id: data.id, title: data.title || data.name, poster_path: data.poster_path, backdrop_path: backdrop || data.backdrop_path, media_type: type, vote_average: data.vote_average || 0, release_date: data.release_date || data.first_air_date || '', progress: randomProgress };
         let history = JSON.parse(localStorage.getItem('streamverse_history') || '[]');
         history = history.filter(m => m.id !== id); history.unshift(savedObj); 
         if (history.length > 15) history.pop(); 
@@ -220,11 +224,15 @@ function renderCards(movies, container, append = false, isTV = false) {
         const movieStr = encodeURIComponent(JSON.stringify(savedObj)); const isFav = myList.some(m => m.id === movie.id); const releaseYear = savedObj.release_date ? savedObj.release_date.split('-')[0] : '';
         const newBadgeHTML = (releaseYear == currentYear) ? `<div class="absolute top-2 left-12 bg-gradient-to-r from-red-500 to-pink-500 text-white text-[8px] font-extrabold px-1.5 py-0.5 rounded-full shadow-[0_0_10px_rgba(255,0,0,0.8)] animate-pulse pointer-events-none z-10">NEW</div>` : '';
 
+        // TAMPILKAN PROGRESS BAR JIKA ADA DATA PROGRESS DI HISTORY
+        const progressBarHTML = movie.progress ? `<div class="absolute bottom-0 left-0 w-full h-1 bg-black/50"><div class="h-full bg-red-600 shadow-[0_0_8px_rgba(220,38,38,0.8)]" style="width: ${movie.progress}%;"></div></div>` : '';
+
         const card = document.createElement('div'); card.className = "movie-card";
         card.innerHTML = `
             <div class="poster-container" onclick="playMovie(${movie.id}, '${savedObj.title.replace(/'/g, "\\'")}', '${type}', '${movie.backdrop_path}')">
                 <img src="${IMG_PATH + movie.poster_path}" class="w-full h-full object-cover" loading="lazy">
                 <div class="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity duration-300 flex items-center justify-center"><div class="w-10 h-10 rounded-full glass-btn flex items-center justify-center pl-1 text-white text-lg shadow-[0_0_15px_rgba(255,255,255,0.5)]">▶</div></div>
+                ${progressBarHTML}
             </div>
             <button onclick="toggleMyList(event, '${movieStr}')" class="absolute top-2 right-2 bg-black/50 backdrop-blur-md w-7 h-7 rounded-full flex items-center justify-center text-xs z-[30] transition ${isFav ? 'text-red-500' : 'text-white'} hover:scale-125 border border-white/20">${isFav ? '❤️' : '🤍'}</button>
             <div class="absolute top-2 left-2 bg-black/60 backdrop-blur-md text-white text-[9px] font-bold px-2 py-0.5 rounded-full pointer-events-none z-10 border border-white/10"><span class="text-yellow-400">⭐</span> ${savedObj.vote_average.toFixed(1)}</div>
@@ -287,6 +295,19 @@ function changeServer(serverName) {
     }
 }
 
+// FUNGSI SHARE PINTAR NATIVE (BARU)
+function shareMovie(title) {
+    if (navigator.share) {
+        navigator.share({
+            title: `Nonton ${title} di NOBARGASI`,
+            text: `Lagi seru nih nonton film ${title} gratis kualitas HD tanpa popup iklan! Buruan cek 🍿🔥`,
+            url: window.location.href
+        }).catch(console.error);
+    } else {
+        alert("Browser kamu belum mendukung fitur Share Otomatis. Silakan copy link di atas ya!");
+    }
+}
+
 async function playMovie(id, title, type = 'movie', backdropPath = '') {
     addHistoryState('nonton'); saveToHistory(id, type, backdropPath); 
     
@@ -300,19 +321,19 @@ async function playMovie(id, title, type = 'movie', backdropPath = '') {
     
     document.getElementById('playingTitle').innerText = title;
     
-    // HTML Tombol Server: VidSrc sekarang jadi "Utama"
+    // TAMBAH TOMBOL SHARE DI SEBELAH TRAILER
     controls.innerHTML = `
-        <div class="flex flex-wrap gap-2 items-center w-full md:w-auto">
-            <span class="text-[10px] md:text-xs text-white/50 uppercase font-bold mr-1">Server:</span>
+        <div class="flex flex-wrap gap-2 items-center w-full md:w-auto mt-2 md:mt-0">
+            <span class="text-[10px] md:text-xs text-white/50 uppercase font-bold mr-1 hidden sm:block">Server:</span>
             <button id="server-VidSrc" onclick="changeServer('VidSrc')" class="server-btn px-3 py-1.5 rounded-full text-[10px] md:text-xs font-bold transition border border-transparent">Utama</button>
             <button id="server-AutoEmbed" onclick="changeServer('AutoEmbed')" class="server-btn px-3 py-1.5 rounded-full text-[10px] md:text-xs font-bold transition border border-white/20">Cadangan 1</button>
             <button id="server-VidLink" onclick="changeServer('VidLink')" class="server-btn px-3 py-1.5 rounded-full text-[10px] md:text-xs font-bold transition border border-white/20">Cadangan 2</button>
             <div class="hidden md:block w-[1px] h-4 bg-white/20 mx-1"></div>
+            <button onclick="shareMovie('${title.replace(/'/g, "\\'")}')" class="bg-green-500/20 text-green-400 hover:bg-green-500 hover:text-white px-3 py-1.5 rounded-full text-[10px] md:text-xs font-bold flex items-center gap-1 transition border border-green-500/50">📤 Share</button>
             <button id="trailerBtn" class="bg-red-500/20 text-red-400 hover:bg-red-600 hover:text-white px-3 py-1.5 rounded-full text-[10px] md:text-xs font-bold flex items-center gap-1 transition border border-red-500/50">🎬 Trailer</button>
         </div>
     `;
     
-    // Panggil VidSrc pertama kali secara otomatis
     changeServer('VidSrc');
     
     player.classList.remove('hidden'); 
