@@ -3,12 +3,17 @@ const BACK_PATH = "https://image.tmdb.org/t/p/original";
 
 let currentPage = 1; let currentPath = ''; let currentAction = '';
 let featuredMovies = []; let currentHeroIndex = 0; let carouselTimer;
-let currentPlayId = ''; let currentPlayType = '';
+let currentPlayId = ''; let currentPlayType = ''; let liveSearchTimeout;
 
 window.onload = () => { initApp(); setupScrollEffects(); setupDragToScroll(); setupSearch(); };
 
-function safeText(str) { return str ? str.replace(/['"\\`]/g, '') : 'Unknown'; }
+// --- CLEAN STRING (Anti Crash & Bold Ready) ---
+function safeText(str) {
+    if (!str) return 'Unknown';
+    return str.replace(/['"\\`]/g, '');
+}
 
+// --- AMBIENT BG ---
 function updateAmbient(img) {
     const bg = document.getElementById('ambientBg');
     if(img && bg) bg.style.backgroundImage = `url('${BACK_PATH + img}')`;
@@ -24,8 +29,8 @@ function setupScrollEffects() {
     }, { passive: true });
 }
 
+// --- INIT APP ---
 function initApp() {
-    // Bersihkan data history lama yang corrupt
     let oldHist = JSON.parse(localStorage.getItem('nbg_history') || '[]');
     if(oldHist.length > 0 && !oldHist[0].poster_path) { localStorage.removeItem('nbg_history'); }
 
@@ -62,39 +67,58 @@ async function loadHeroBanner() {
     } catch(e){}
 }
 
-// --- FAVORIT (MY LIST) ---
-function getMyList() { return JSON.parse(localStorage.getItem('nbg_mylist') || '[]'); }
-function saveMyList(list) { localStorage.setItem('nbg_mylist', JSON.stringify(list)); }
-
-function toggleMyList(e, movieStr) {
-    e.stopPropagation(); 
-    const movie = JSON.parse(decodeURIComponent(movieStr));
-    let list = getMyList();
-    const idx = list.findIndex(m => m.id === movie.id);
+// --- PLAYER ENGINE (VERSI ANTI-IKLAN & SANDBOX) ---
+function changeServer(s) {
+    const f = document.getElementById('videoPlayer'); 
+    let url = '';
     
-    if (idx > -1) {
-        list.splice(idx, 1);
-        e.target.innerText = '🤍'; e.target.style.color = 'white';
-    } else {
-        list.push(movie);
-        e.target.innerText = '❤️'; e.target.style.color = '#ef4444';
+    if(s === 'VidLink') {
+        url = `https://vidlink.pro/${currentPlayType}/${currentPlayId}${currentPlayType==='tv'?'/1/1':''}`;
+    } else if(s === 'VidsrcCC') {
+        url = `https://vidsrc.cc/v2/embed/${currentPlayType}/${currentPlayId}${currentPlayType==='tv'?'/1/1':''}`;
+    } else if(s === 'EmbedSu') {
+        url = `https://embed.su/embed/${currentPlayType}/${currentPlayId}${currentPlayType==='tv'?'/1/1':''}`;
     }
-    saveMyList(list);
-    if (!document.getElementById('gridSection').classList.contains('hidden') && document.getElementById('gridTitle').innerText.includes('MY LIST')) showMyList();
+    
+    // PENTING: Sandbox ini melumpuhkan Pop-up iklan
+    f.setAttribute('sandbox', 'allow-forms allow-pointer-lock allow-same-origin allow-scripts allow-top-navigation');
+    f.src = url;
+    
+    document.querySelectorAll('.server-btn').forEach(b => b.className = "server-btn px-8 py-3 rounded-full text-[10px] font-black uppercase border border-white/10 opacity-40 transition");
+    const active = document.getElementById('btn-'+s);
+    if(active) active.className = "server-btn px-8 py-3 rounded-full text-[10px] font-black uppercase bg-white text-black shadow-xl transition active:scale-95";
 }
 
-function showMyList() {
-    window.scrollTo(0,0);
-    const gs = document.getElementById('gridSection');
-    document.getElementById('homeView').classList.add('hidden');
-    document.getElementById('heroSection').classList.add('hidden');
-    gs.classList.remove('hidden');
-    document.getElementById('gridTitle').innerText = '❤️ My List';
-    document.getElementById('loadMoreBtn').classList.add('hidden');
-    renderCards(getMyList(), document.getElementById('gridResults'));
+async function playMovie(id, title, type, backdrop, poster) {
+    currentPlayId = id; currentPlayType = type;
+    const player = document.getElementById('playerContainer');
+    document.getElementById('playingTitle').innerText = title;
+    document.getElementById('playerOverview').innerText = "Memuat data...";
+    
+    document.getElementById('playerControls').innerHTML = `
+        <button id="btn-VidLink" onclick="changeServer('VidLink')" class="server-btn px-8 py-3 rounded-full text-[10px] font-black uppercase bg-white text-black shadow-xl">Server 1 (Clean)</button>
+        <button id="btn-VidsrcCC" onclick="changeServer('VidsrcCC')" class="server-btn px-8 py-3 rounded-full text-[10px] font-black uppercase border border-white/10 opacity-40">Server 2 (Fast)</button>
+        <button id="btn-EmbedSu" onclick="changeServer('EmbedSu')" class="server-btn px-8 py-3 rounded-full text-[10px] font-black uppercase border border-white/10 opacity-40">Server 3 (HD)</button>
+        <button onclick="shareMovie('${title.replace(/'/g, "\\'")}')" class="px-8 py-3 rounded-full text-[10px] font-black uppercase bg-white/5 border border-white/10 hover:bg-white hover:text-black transition">Share</button>`;
+    
+    changeServer('VidLink');
+    player.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+    if(backdrop && backdrop !== 'null') updateAmbient(backdrop);
+
+    try {
+        const res = await fetch(`/api/movies?path=${type}/${id}`);
+        const m = await res.json();
+        document.getElementById('playerOverview').innerText = m.overview || 'Sinopsis tidak tersedia.';
+        document.getElementById('playerRating').innerText = `⭐ ${m.vote_average ? m.vote_average.toFixed(1) : 'N/A'}`;
+        document.getElementById('playerYear').innerText = (m.release_date || m.first_air_date || '2024').split('-')[0];
+        document.getElementById('playerRuntime').innerText = m.runtime ? `${m.runtime}m` : (m.episode_run_time?.length ? `${m.episode_run_time[0]}m` : 'TV Series');
+        saveToHistory(id, type, backdrop || m.backdrop_path, poster || m.poster_path, title);
+    } catch(e){}
+    fetchDetails(id, type);
 }
 
-// --- RENDERERS ---
+// --- RENDERERS (BOLD TITLES) ---
 function renderCards(movies, container, append = false, isTV = false) {
     if (!container) return; if (!append) container.innerHTML = '';
     const myList = getMyList();
@@ -115,7 +139,7 @@ function renderCards(movies, container, append = false, isTV = false) {
                 <div class="absolute inset-0 bg-black/30 opacity-0 hover:opacity-100 flex items-center justify-center transition-all duration-500"><div class="w-12 h-12 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white text-xl">▶</div></div>
                 ${progHTML}
             </div>
-            <div class="mt-3 px-1 text-center"><h3 class="text-[11px] font-[900] truncate text-white uppercase tracking-wider leading-tight">${sTitle}</h3></div>`;
+            <div class="mt-3 px-1 text-center"><h3 class="text-[11px] font-black truncate text-white uppercase tracking-wider leading-tight drop-shadow-md">${sTitle}</h3></div>`;
         container.appendChild(card);
     });
 }
@@ -136,51 +160,35 @@ function renderTrendingCards(movies, container) {
                 <div class="poster-container" onclick="playMovie(${m.id}, '${sTitle}', '${type}', '${m.backdrop_path || ''}', '${m.poster_path || ''}')">
                     <img src="${IMG_PATH + m.poster_path}" class="w-full h-full object-cover" loading="lazy">
                 </div>
-                <div class="mt-3 px-1 text-center"><h3 class="text-[11px] font-[900] truncate text-white uppercase tracking-wider leading-tight">${sTitle}</h3></div>
+                <div class="mt-3 px-1 text-center"><h3 class="text-[11px] font-black truncate text-white uppercase tracking-wider leading-tight drop-shadow-md">${sTitle}</h3></div>
             </div>`;
         container.appendChild(w);
     });
 }
 
-// --- PLAYER ENGINE ---
-function changeServer(s) {
-    const f = document.getElementById('videoPlayer'); let url = '';
-    if(s==='VidLink') url = `https://vidlink.pro/${currentPlayType}/${currentPlayId}${currentPlayType==='tv'?'/1/1':''}`;
-    else if(s==='VidSrc') url = `https://vidsrc.me/embed/${currentPlayType}?tmdb=${currentPlayId}`;
-    else url = `https://player.autoembed.app/embed/${currentPlayType}/${currentPlayId}${currentPlayType==='tv'?'/1/1':''}`;
-    
-    f.src = url;
-    document.querySelectorAll('.server-btn').forEach(b => b.className = "server-btn px-8 py-3 rounded-full text-[10px] font-black uppercase border border-white/10 opacity-30 transition");
-    const active = document.getElementById('btn-'+s);
-    if(active) active.className = "server-btn px-8 py-3 rounded-full text-[10px] font-black uppercase bg-white text-black shadow-xl transition active:scale-95";
+// --- FAVORIT (MY LIST) ---
+function getMyList() { return JSON.parse(localStorage.getItem('nbg_mylist') || '[]'); }
+function saveMyList(list) { localStorage.setItem('nbg_mylist', JSON.stringify(list)); }
+
+function toggleMyList(e, movieStr) {
+    e.stopPropagation(); 
+    const movie = JSON.parse(decodeURIComponent(movieStr));
+    let list = getMyList();
+    const idx = list.findIndex(m => m.id === movie.id);
+    if (idx > -1) { list.splice(idx, 1); e.target.innerText = '🤍'; e.target.style.color = 'white'; } 
+    else { list.push(movie); e.target.innerText = '❤️'; e.target.style.color = '#ef4444'; }
+    saveMyList(list);
+    if (!document.getElementById('gridSection').classList.contains('hidden') && document.getElementById('gridTitle').innerText.includes('MY LIST')) showMyList();
 }
 
-async function playMovie(id, title, type, backdrop, poster) {
-    currentPlayId = id; currentPlayType = type;
-    const player = document.getElementById('playerContainer');
-    document.getElementById('playingTitle').innerText = title;
-    document.getElementById('playerOverview').innerText = "...";
-    
-    document.getElementById('playerControls').innerHTML = `
-        <button id="btn-VidLink" onclick="changeServer('VidLink')" class="server-btn px-8 py-3 rounded-full text-[10px] font-black uppercase bg-white text-black shadow-xl">SERVER 1 (Utama)</button>
-        <button id="btn-VidSrc" onclick="changeServer('VidSrc')" class="server-btn px-8 py-3 rounded-full text-[10px] font-black uppercase border border-white/10 opacity-30">SERVER 2</button>
-        <button onclick="shareMovie('${title}')" class="px-8 py-3 rounded-full text-[10px] font-black uppercase bg-white/5 border border-white/10 hover:bg-white hover:text-black transition">Share</button>`;
-    
-    changeServer('VidLink');
-    player.classList.remove('hidden');
-    document.body.style.overflow = 'hidden';
-    if(backdrop && backdrop !== 'null') updateAmbient(backdrop);
-
-    try {
-        const res = await fetch(`/api/movies?path=${type}/${id}`);
-        const m = await res.json();
-        document.getElementById('playerOverview').innerText = m.overview || 'Sinopsis tidak tersedia.';
-        document.getElementById('playerRating').innerText = `⭐ ${m.vote_average ? m.vote_average.toFixed(1) : 'N/A'}`;
-        document.getElementById('playerYear').innerText = (m.release_date || m.first_air_date || '2024').split('-')[0];
-        document.getElementById('playerRuntime').innerText = m.runtime ? `${m.runtime}m` : (m.episode_run_time?.length ? `${m.episode_run_time[0]}m` : 'TV Series');
-        saveToHistory(id, type, backdrop || m.backdrop_path, poster || m.poster_path, title);
-    } catch(e){}
-    fetchDetails(id, type);
+function showMyList() {
+    window.scrollTo(0,0);
+    document.getElementById('homeView').classList.add('hidden');
+    document.getElementById('heroSection').classList.add('hidden');
+    document.getElementById('gridSection').classList.remove('hidden');
+    document.getElementById('gridTitle').innerText = '❤️ My List';
+    document.getElementById('loadMoreBtn').classList.add('hidden');
+    renderCards(getMyList(), document.getElementById('gridResults'));
 }
 
 // --- UTILS ---
@@ -193,7 +201,8 @@ function saveToHistory(id, type, backdrop, poster, title) {
 }
 function renderHistory() {
     const h = JSON.parse(localStorage.getItem('nbg_history') || '[]');
-    if(h.length > 0) { document.getElementById('historySection').classList.remove('hidden'); renderCards(h, document.getElementById('rowHistory')); }
+    const sect = document.getElementById('historySection');
+    if(h.length > 0 && sect) { sect.classList.remove('hidden'); renderCards(h, document.getElementById('rowHistory')); }
 }
 function clearHistory() { localStorage.removeItem('nbg_history'); document.getElementById('historySection').classList.add('hidden'); }
 function closePlayer() { document.getElementById('playerContainer').classList.add('hidden'); document.getElementById('videoPlayer').src = ''; document.body.style.overflow = 'auto'; }
@@ -216,7 +225,7 @@ async function fetchDetails(id, type) {
     data.cast?.slice(0, 10).forEach(a => { if(a.profile_path) {
         const d = document.createElement('div'); d.className = "flex-shrink-0 text-center w-20 opacity-40 hover:opacity-100 transition cursor-pointer";
         d.onclick = () => { closePlayer(); loadActorFilms(a.id, a.name); };
-        d.innerHTML = `<img src="${IMG_PATH + a.profile_path}" class="actor-circle mx-auto mb-3"><p class="text-[7px] font-black uppercase tracking-tighter truncate w-full text-white">${a.name}</p>`;
+        d.innerHTML = `<img src="${IMG_PATH + a.profile_path}" class="actor-circle mx-auto mb-3 shadow-lg"><p class="text-[7px] font-black uppercase tracking-tighter truncate w-full text-white">${a.name}</p>`;
         cBox.appendChild(d);
     }});
 }
@@ -229,7 +238,7 @@ function updateHero() {
     document.getElementById('heroContent').style.backgroundImage = `url('${BACK_PATH + m.backdrop_path}')`;
     document.getElementById('heroTitle').innerText = title;
     document.getElementById('heroDesc').innerText = m.overview || '';
-    document.getElementById('heroPlayBtn').onclick = () => playMovie(m.id, title, m.media_type || 'movie', m.backdrop_path || '', m.poster_path || '');
+    document.getElementById('heroPlayBtn').onclick = () => playMovie(m.id, title, m.media_type, m.backdrop_path, m.poster_path);
     updateAmbient(m.backdrop_path);
     let dots = ''; featuredMovies.forEach((_, i) => dots += `<div class="w-1 h-5 rounded-full transition-all ${i===currentHeroIndex?'bg-blue-500 shadow-[0_0_10px_#3b82f6]':'bg-white/10'}"></div>`);
     if(document.getElementById('heroDots')) document.getElementById('heroDots').innerHTML = dots;
