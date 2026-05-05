@@ -10,7 +10,6 @@ let currentPlayType = '';
 
 window.onload = () => { initApp(); setupScrollHide(); setupHeroSwipe(); setupDragToScroll(); };
 
-// OPTIMASI ANTI-LAG DRAG
 function setupDragToScroll() {
     const sliders = document.querySelectorAll('.overflow-x-auto');
     sliders.forEach(slider => {
@@ -35,7 +34,6 @@ function setupDragToScroll() {
     });
 }
 
-// OPTIMASI SCROLL HIDE
 function setupScrollHide() {
     let lastScrollY = window.scrollY; let ticking = false; const nav = document.getElementById('mobileNav');
     window.addEventListener('scroll', () => {
@@ -67,35 +65,35 @@ function renderSkeleton(elementId, count = 10) {
     }
 }
 
-// === INIT APP (FULL UPDATE DENGAN PENGAMAN BUG) ===
 async function initApp() {
     try {
         const res = await fetch(`/api/movies?path=trending/all/day`); const data = await res.json();
         if(data.results) { featuredMovies = data.results.slice(0, 10); updateHero(); startCarousel(); }
         renderHistory();
         
-        // Panggil Loader Dulu Biar Keren
-        const rows = ['rowTrending', 'rowActors', 'rowUpcoming', 'rowMarvel', 'row1', 'row2', 'row3', 'row4', 'row5'];
+        // Loader untuk semua row
+        const rows = ['rowTrending', 'rowActors', 'rowUpcoming', 'rowMarvel', 'rowDC', 'rowDisney', 'rowPixar', 'row1', 'row2', 'row3', 'row4'];
         rows.forEach(r => renderSkeleton(r));
         
         // Panggil Fitur Baru
         fetchAndRenderActors('trending/person/week', 'rowActors');
         fetchAndRenderUpcoming('movie/upcoming', 'rowUpcoming');
         fetchAndRenderTrending('trending/movie/day', 'rowTrending');
-        fetchAndRender('discover/movie?with_companies=420&sort_by=revenue.desc', 'rowMarvel'); 
         
-        // Panggil Fitur Biasa
+        // Koleksi Universe (Marvel ID: 420, DC ID: 429, Disney ID: 2, Pixar ID: 3)
+        fetchAndRender('discover/movie?with_companies=420&sort_by=revenue.desc', 'rowMarvel'); 
+        fetchAndRender('discover/movie?with_companies=429&sort_by=popularity.desc', 'rowDC'); 
+        fetchAndRender('discover/movie?with_companies=2&sort_by=popularity.desc', 'rowDisney'); 
+        fetchAndRender('discover/movie?with_companies=3&sort_by=popularity.desc', 'rowPixar'); 
+        
+        // Fitur Biasa
         fetchAndRender('movie/popular', 'row1'); 
         fetchAndRender('tv/popular', 'row2');
         fetchAndRender('discover/tv?with_original_language=ja&with_genres=16', 'row3'); 
         fetchAndRender('discover/tv?with_original_language=ko', 'row4');
-        fetchAndRender('discover/movie?with_genres=27', 'row5');
-    } catch(e) {
-        console.error("Gagal memuat API Utama", e);
-    }
+    } catch(e) {}
 }
 
-// === FUNGSI AKTOR PANGGUNG ===
 async function fetchAndRenderActors(path, elementId) {
     try {
         const res = await fetch(`/api/movies?path=${path.replace('?', '&')}`); const data = await res.json();
@@ -112,7 +110,6 @@ async function fetchAndRenderActors(path, elementId) {
     } catch(e) {}
 }
 
-// === FUNGSI SEGERA TAYANG ===
 async function fetchAndRenderUpcoming(path, elementId) {
     try {
         const res = await fetch(`/api/movies?path=${path.replace('?', '&')}`); const data = await res.json();
@@ -138,7 +135,6 @@ async function fetchAndRenderUpcoming(path, elementId) {
     } catch(e) {}
 }
 
-// === FUNGSI TRENDING TOP 10 NETFLIX ===
 function renderTrendingCards(movies, container) {
     if(!container) return; container.innerHTML = ''; const myList = getMyList(); 
     movies.slice(0, 10).forEach((movie, index) => {
@@ -147,10 +143,8 @@ function renderTrendingCards(movies, container) {
         const savedObj = { id: movie.id, title: movie.title || movie.name, poster_path: movie.poster_path, backdrop_path: movie.backdrop_path, media_type: type, vote_average: movie.vote_average, release_date: movie.release_date || movie.first_air_date || '' };
         const movieStr = encodeURIComponent(JSON.stringify(savedObj)); const isFav = myList.some(m => m.id === movie.id);
         const rank = index + 1;
-
         const wrapper = document.createElement('div'); wrapper.className = "trending-wrapper";
-        wrapper.innerHTML = `
-            <div class="netflix-number">${rank}</div>
+        wrapper.innerHTML = `<div class="netflix-number">${rank}</div>
             <div class="movie-card" onclick="playMovie(${movie.id}, '${savedObj.title.replace(/'/g, "\\'")}', '${type}', '${movie.backdrop_path}')">
                 <div class="poster-container">
                     <img src="${IMG_PATH + movie.poster_path}" class="w-full h-full object-cover" loading="lazy">
@@ -158,8 +152,7 @@ function renderTrendingCards(movies, container) {
                 </div>
                 <button onclick="toggleMyList(event, '${movieStr}')" class="absolute top-2 right-2 bg-black/50 backdrop-blur-md w-7 h-7 rounded-full flex items-center justify-center text-xs z-[30] transition ${isFav ? 'text-red-500' : 'text-white'} hover:scale-125">${isFav ? '❤️' : '🤍'}</button>
                 <div class="mt-3 px-1 text-center"><h3 class="text-xs font-bold truncate text-white/90 drop-shadow-md">${savedObj.title}</h3></div>
-            </div>
-        `; container.appendChild(wrapper);
+            </div>`; container.appendChild(wrapper);
     });
 }
 
@@ -202,7 +195,7 @@ function clearHistory() { localStorage.removeItem('streamverse_history'); render
 function addHistoryState(type) { history.pushState({ view: type }, '', `#${type}`); }
 window.addEventListener('popstate', () => {
     const player = document.getElementById('playerContainer');
-    if (!player.classList.contains('hidden')) { player.classList.add('hidden'); document.getElementById('videoPlayer').src = ''; document.getElementById('playerBg').style.backgroundImage = 'none'; document.body.style.overflow = 'auto'; return; }
+    if (!player.classList.contains('hidden')) { player.classList.add('hidden'); document.getElementById('videoPlayer').src = ''; document.body.style.overflow = 'auto'; return; }
     closeSuggestions(); showSection('home'); setActiveNav('home');
 });
 function goHome() { history.pushState(null, null, ' '); showSection('home'); setActiveNav('home'); }
@@ -299,8 +292,7 @@ async function loadMore() {
 async function fetchAndRender(path, elementId) {
     try {
         const res = await fetch(`/api/movies?path=${path.replace('?', '&')}`); const data = await res.json();
-        const container = document.getElementById(elementId);
-        if(data.results && container) renderCards(data.results, container, false, path.includes('tv'));
+        const container = document.getElementById(elementId); if(data.results && container) renderCards(data.results, container, false, path.includes('tv'));
     } catch(e){}
 }
 
@@ -316,25 +308,21 @@ function renderCards(movies, container, append = false, isTV = false) {
         const progressBarHTML = movie.progress ? `<div class="absolute bottom-0 left-0 w-full h-1 bg-black/50"><div class="h-full bg-red-600 shadow-[0_0_8px_rgba(220,38,38,0.8)]" style="width: ${movie.progress}%;"></div></div>` : '';
 
         const card = document.createElement('div'); card.className = "movie-card";
-        card.innerHTML = `
-            <div class="poster-container" onclick="playMovie(${movie.id}, '${savedObj.title.replace(/'/g, "\\'")}', '${type}', '${movie.backdrop_path}')">
+        card.innerHTML = `<div class="poster-container" onclick="playMovie(${movie.id}, '${savedObj.title.replace(/'/g, "\\'")}', '${type}', '${movie.backdrop_path}')">
                 <img src="${IMG_PATH + movie.poster_path}" class="w-full h-full object-cover" loading="lazy">
                 <div class="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity duration-300 flex items-center justify-center"><div class="w-10 h-10 rounded-full glass-btn flex items-center justify-center pl-1 text-white text-lg shadow-[0_0_15px_rgba(255,255,255,0.5)]">▶</div></div>
-                ${progressBarHTML}
-            </div>
+                ${progressBarHTML}</div>
             <button onclick="toggleMyList(event, '${movieStr}')" class="absolute top-2 right-2 bg-black/50 backdrop-blur-md w-7 h-7 rounded-full flex items-center justify-center text-xs z-[30] transition ${isFav ? 'text-red-500' : 'text-white'} hover:scale-125 border border-white/20">${isFav ? '❤️' : '🤍'}</button>
             <div class="absolute top-2 left-2 bg-black/60 backdrop-blur-md text-white text-[9px] font-bold px-2 py-0.5 rounded-full pointer-events-none z-10 border border-white/10"><span class="text-yellow-400">⭐</span> ${savedObj.vote_average.toFixed(1)}</div>
             ${newBadgeHTML}
-            <div class="mt-3 px-1 text-center"><h3 class="text-xs font-bold truncate text-white/90 drop-shadow-md">${savedObj.title}</h3><p class="text-[10px] text-white/50">${releaseYear} • <span class="uppercase text-blue-400">${type}</span></p></div>
-        `; container.appendChild(card);
+            <div class="mt-3 px-1 text-center"><h3 class="text-xs font-bold truncate text-white/90 drop-shadow-md">${savedObj.title}</h3><p class="text-[10px] text-white/50">${releaseYear} • <span class="uppercase text-blue-400">${type}</span></p></div>`; container.appendChild(card);
     });
 }
 
 async function fetchAndRenderTrending(path, elementId) {
     try {
         const res = await fetch(`/api/movies?path=${path.replace('?', '&')}`); const data = await res.json();
-        const container = document.getElementById(elementId);
-        if(data.results && container) renderTrendingCards(data.results, container);
+        const container = document.getElementById(elementId); if(data.results && container) renderTrendingCards(data.results, container);
     } catch(e){}
 }
 
@@ -351,68 +339,53 @@ function changeServer(serverName) {
 
 function shareMovie(title) {
     if (navigator.share) { navigator.share({ title: `Nonton ${title} di NOBARGASI`, text: `Lagi seru nih nonton film ${title} gratis kualitas HD tanpa popup iklan! Buruan cek 🍿🔥`, url: window.location.href }).catch(console.error); } 
-    else { alert("Browser kamu belum mendukung fitur Share Otomatis. Silakan copy link di atas ya!"); }
+    else { alert("Browser kamu belum mendukung fitur Share Otomatis."); }
 }
 
 async function playTrailerOnly(id, title, type, backdropPath) {
     addHistoryState('nonton');
     const player = document.getElementById('playerContainer'); const controls = document.getElementById('playerControls'); const bg = document.getElementById('playerBg'); const iframe = document.getElementById('videoPlayer');
-    
     if(backdropPath && backdropPath !== 'null') { bg.style.backgroundImage = `url('${BACK_PATH + backdropPath}')`; } else { bg.style.backgroundImage = 'none'; }
-    document.getElementById('playingTitle').innerText = `${title} (Segera Tayang)`;
-    controls.innerHTML = `<span class="px-5 py-2 rounded-full bg-purple-600 text-white text-[10px] md:text-xs font-bold shadow-[0_0_15px_rgba(168,85,247,0.5)] border border-purple-400 animate-pulse">⏳ Belum Rilis di Server</span>`;
-    
+    document.getElementById('playingTitle').innerText = `${title} (Coming Soon)`;
+    controls.innerHTML = `<span class="px-5 py-2 rounded-full bg-purple-600 text-white text-[10px] md:text-xs font-bold shadow-[0_0_15px_rgba(168,85,247,0.5)] border border-purple-400 animate-pulse">⏳ Menunggu Rilis</span>`;
     document.getElementById('castBoxUI').classList.add('hidden'); document.getElementById('similarBoxUI').classList.add('hidden');
-    
     iframe.src = ''; player.classList.remove('hidden'); 
     const modalBox = document.getElementById('playerModalBox'); if(modalBox) { modalBox.classList.remove('fade-in-up'); void modalBox.offsetWidth; modalBox.classList.add('fade-in-up'); }
     document.body.style.overflow = 'hidden';
-
     try {
         const res = await fetch(`/api/movies?path=${type}/${id}/videos`); const data = await res.json();
         const trailer = data.results.find(vid => vid.type === 'Trailer' && vid.site === 'YouTube');
-        if (trailer) { iframe.src = `https://www.youtube.com/embed/${trailer.key}?autoplay=1`; } 
-        else { alert("Maaf, Trailer belum tersedia dari TMDB."); closePlayer(); }
+        if (trailer) { iframe.src = `https://www.youtube.com/embed/${trailer.key}?autoplay=1`; } else { alert("Maaf, Trailer belum tersedia."); closePlayer(); }
     } catch(e) { closePlayer(); }
 }
 
 async function playMovie(id, title, type = 'movie', backdropPath = '') {
     addHistoryState('nonton'); saveToHistory(id, type, backdropPath); 
     currentPlayId = id; currentPlayType = type;
-    
     const player = document.getElementById('playerContainer'); const controls = document.getElementById('playerControls'); const bg = document.getElementById('playerBg'); const castBox = document.getElementById('castContainer'); const similarBox = document.getElementById('similarContainer');
-    
     document.getElementById('castBoxUI').classList.remove('hidden'); document.getElementById('similarBoxUI').classList.remove('hidden');
-
     if(backdropPath && backdropPath !== 'null') { bg.style.backgroundImage = `url('${BACK_PATH + backdropPath}')`; } else { bg.style.backgroundImage = 'none'; }
     document.getElementById('playingTitle').innerText = title;
-    
-    controls.innerHTML = `
-        <div class="flex flex-wrap gap-2 items-center w-full md:w-auto mt-2 md:mt-0">
+    controls.innerHTML = `<div class="flex flex-wrap gap-2 items-center w-full md:w-auto mt-2 md:mt-0">
             <span class="text-[10px] md:text-xs text-white/50 uppercase font-bold mr-1 hidden sm:block">Server:</span>
             <button id="server-VidSrc" onclick="changeServer('VidSrc')" class="server-btn px-3 py-1.5 rounded-full text-[10px] md:text-xs font-bold transition border border-transparent">Utama</button>
             <button id="server-AutoEmbed" onclick="changeServer('AutoEmbed')" class="server-btn px-3 py-1.5 rounded-full text-[10px] md:text-xs font-bold transition border border-white/20">Cadangan 1</button>
             <button id="server-VidLink" onclick="changeServer('VidLink')" class="server-btn px-3 py-1.5 rounded-full text-[10px] md:text-xs font-bold transition border border-white/20">Cadangan 2</button>
             <div class="hidden md:block w-[1px] h-4 bg-white/20 mx-1"></div>
             <button onclick="shareMovie('${title.replace(/'/g, "\\'")}')" class="bg-green-500/20 text-green-400 hover:bg-green-500 hover:text-white px-3 py-1.5 rounded-full text-[10px] md:text-xs font-bold flex items-center gap-1 transition border border-green-500/50">📤 Share</button>
-            <button id="trailerBtn" class="bg-red-500/20 text-red-400 hover:bg-red-600 hover:text-white px-3 py-1.5 rounded-full text-[10px] md:text-xs font-bold flex items-center gap-1 transition border border-red-500/50">🎬 Trailer</button>
-        </div>
-    `;
-    
+            <button id="trailerBtn" class="bg-red-500/20 text-red-400 hover:bg-red-600 hover:text-white px-3 py-1.5 rounded-full text-[10px] md:text-xs font-bold flex items-center gap-1 transition border border-red-500/50">🎬 Trailer</button></div>`;
     changeServer('VidSrc');
     player.classList.remove('hidden'); const modalBox = document.getElementById('playerModalBox'); if(modalBox) { modalBox.classList.remove('fade-in-up'); void modalBox.offsetWidth; modalBox.classList.add('fade-in-up'); }
     document.body.style.overflow = 'hidden';
-
     castBox.innerHTML = '<p class="text-[10px] text-white/50 animate-pulse">Memuat pemeran...</p>';
     try {
         const res = await fetch(`/api/movies?path=${type}/${id}/credits`); const data = await res.json();
         if(data.cast && data.cast.length > 0) {
             let html = ''; data.cast.slice(0, 10).forEach(actor => {
-                if(actor.profile_path) { html += `<div onclick="loadActorFilms(${actor.id}, '${actor.name.replace(/'/g, "\\'")}')" class="flex flex-col items-center w-16 flex-shrink-0 cursor-pointer hover:scale-110 transition duration-300 group"><img src="${IMG_PATH + actor.profile_path}" class="w-12 h-12 rounded-full object-cover shadow-lg border-2 border-transparent group-hover:border-blue-400"><p class="text-[9px] text-center text-white/80 mt-1.5 w-full truncate leading-tight group-hover:text-blue-300">${actor.name}</p></div>`; }
+                if(actor.profile_path) { html += `<div onclick="loadActorFilms(${actor.id}, '${actor.name.replace(/'/g, "\\'")}')" class="flex flex-col items-center w-16 flex-shrink-0 cursor-pointer hover:scale-110 transition duration-300 group"><img src="${IMG_PATH + actor.profile_path}" class="actor-circle" style="width:50px; height:50px;"><p class="text-[9px] text-center text-white/80 mt-1.5 w-full truncate leading-tight group-hover:text-blue-300">${actor.name}</p></div>`; }
             }); castBox.innerHTML = html || '<p class="text-[10px] text-white/50">Data tidak tersedia</p>';
         } else { castBox.innerHTML = '<p class="text-[10px] text-white/50">Data tidak tersedia</p>'; }
     } catch(e) { castBox.innerHTML = '<p class="text-[10px] text-red-400">Gagal memuat cast</p>'; }
-
     similarBox.innerHTML = '<p class="text-[10px] text-white/50 animate-pulse">Mencari rekomendasi...</p>';
     try {
         const res = await fetch(`/api/movies?path=${type}/${id}/recommendations`); const data = await res.json();
@@ -421,7 +394,6 @@ async function playMovie(id, title, type = 'movie', backdropPath = '') {
             if(valid.length > 0) renderCards(valid, similarBox, false, type === 'tv'); else similarBox.innerHTML = '<p class="text-[10px] text-white/50">Tidak ada rekomendasi.</p>';
         } else similarBox.innerHTML = '<p class="text-[10px] text-white/50">Tidak ada rekomendasi.</p>';
     } catch(e) { similarBox.innerHTML = '<p class="text-[10px] text-white/50">Gagal memuat.</p>'; }
-
     document.getElementById('trailerBtn').onclick = async function() {
         this.innerText = 'Loading...';
         try {
@@ -440,7 +412,6 @@ function updateHero() {
     document.getElementById('heroContent').style.backgroundImage = `url('${BACK_PATH + movie.backdrop_path}')`;
     document.getElementById('heroTitle').innerText = movie.title || movie.name; document.getElementById('heroDesc').innerText = movie.overview;
     document.getElementById('heroPlayBtn').onclick = () => playMovie(movie.id, movie.title || movie.name, movie.media_type, movie.backdrop_path);
-    
     let dotsHTML = '';
     featuredMovies.forEach((_, i) => { dotsHTML += `<div class="h-1.5 rounded-full transition-all duration-500 ease-out ${i === currentHeroIndex ? 'w-6 bg-blue-400 shadow-[0_0_10px_rgba(96,165,250,0.8)]' : 'w-1.5 bg-white/40'}"></div>`; });
     document.getElementById('heroDots').innerHTML = dotsHTML;
