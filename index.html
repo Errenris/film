@@ -23,15 +23,17 @@
         .glass-btn { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.2); transition: all 0.3s ease; }
         .glass-btn:hover { background: rgba(255, 255, 255, 0.2); transform: scale(1.05); }
         
-        .movie-card { width: 130px; flex-shrink: 0; cursor: pointer; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); position: relative; user-select: none; -webkit-user-select: none; }
+        /* OPTIMASI HARDWARE ACCELERATION (ANTI-LAG) */
+        .movie-card { width: 130px; flex-shrink: 0; cursor: pointer; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); position: relative; user-select: none; -webkit-user-select: none; will-change: transform; transform: translateZ(0); }
         .movie-card img { -webkit-user-drag: none; pointer-events: none; } 
-        .overflow-x-auto { user-select: none; -webkit-user-select: none; } 
+        .overflow-x-auto { user-select: none; -webkit-user-select: none; will-change: scroll-position; } 
 
         @media (min-width: 768px) { .movie-card { width: 165px; } }
-        .movie-card:hover { transform: translateY(-10px) scale(1.05); z-index: 20; }
+        /* GPU FORCED RENDER PADA HOVER */
+        .movie-card:hover { transform: translateY(-10px) scale(1.05) translateZ(0); z-index: 20; }
         .movie-card:hover .poster-container { box-shadow: 0 15px 30px rgba(96, 165, 250, 0.3); border-color: rgba(96, 165, 250, 0.5); }
         
-        .poster-container { aspect-ratio: 2/3; border-radius: 12px; overflow: hidden; position: relative; box-shadow: 0 10px 20px rgba(0,0,0,0.5); border: 1px solid transparent; transition: all 0.3s ease; }
+        .poster-container { aspect-ratio: 2/3; border-radius: 12px; overflow: hidden; position: relative; box-shadow: 0 10px 20px rgba(0,0,0,0.5); border: 1px solid transparent; transition: border-color 0.3s ease, box-shadow 0.3s ease; }
         
         .skeleton { background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.15) 50%, rgba(255,255,255,0.05) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 12px; aspect-ratio: 2/3; width: 100%; }
         @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
@@ -77,7 +79,6 @@
         </div>
     </header>
 
-    <!-- FLOATING BUTTONS (Kiri: Request Telegram, Kanan: Random) -->
     <a href="https://t.me/nobargasi1" target="_blank" class="md:hidden fixed bottom-24 left-4 z-[150] glass-panel bg-gradient-to-tr from-blue-600 to-cyan-500 text-white w-12 h-12 rounded-full flex items-center justify-center text-xl shadow-[0_0_20px_rgba(59,130,246,0.6)] hover:scale-110 transition animate-pulse select-none" title="Request Film">💬</a>
     
     <button onclick="surpriseMe()" class="fixed bottom-24 right-4 md:bottom-8 md:right-8 z-[150] glass-panel bg-gradient-to-tr from-purple-600 to-pink-500 text-white w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center text-xl md:text-2xl shadow-[0_0_20px_rgba(168,85,247,0.6)] hover:scale-110 transition animate-bounce select-none" title="Acak Film">🎲</button>
@@ -149,7 +150,6 @@
             <section class="glass-panel rounded-3xl p-4 md:p-6"><div class="flex justify-between items-center mb-4"><h2 class="text-base md:text-xl font-black tracking-wide select-none">Drama Korea (Drakor) 🫰</h2><button onclick="loadCategory('discover/tv?with_original_language=ko', 'Drama Korea')" class="text-[10px] md:text-xs text-blue-400 hover:text-white font-bold">Lihat Semua ➔</button></div><div id="row4" class="flex gap-3 md:gap-4 overflow-x-auto custom-scrollbar-x pb-4 pt-1 px-1 cursor-grab active:cursor-grabbing select-none"></div></section>
         </div>
 
-        <!-- FOOTER & VISITOR COUNTER -->
         <footer class="mt-8 pb-32 md:pb-12 text-center select-none fade-in-up">
             <div class="inline-flex items-center justify-center gap-3 bg-black/40 backdrop-blur-md px-6 py-3 rounded-full border border-white/10 shadow-lg">
                 <span class="relative flex h-3 w-3"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span><span class="relative inline-flex rounded-full h-3 w-3 bg-blue-500"></span></span>
