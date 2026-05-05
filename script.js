@@ -10,6 +10,7 @@ let currentPlayType = '';
 
 window.onload = () => { initApp(); setupScrollHide(); setupHeroSwipe(); setupDragToScroll(); };
 
+// OPTIMASI ANTI-LAG DRAG
 function setupDragToScroll() {
     const sliders = document.querySelectorAll('.overflow-x-auto');
     sliders.forEach(slider => {
@@ -34,6 +35,7 @@ function setupDragToScroll() {
     });
 }
 
+// OPTIMASI SCROLL HIDE
 function setupScrollHide() {
     let lastScrollY = window.scrollY; let ticking = false; const nav = document.getElementById('mobileNav');
     window.addEventListener('scroll', () => {
@@ -65,71 +67,80 @@ function renderSkeleton(elementId, count = 10) {
     }
 }
 
-// === INIT APP (DIPERBARUI UNTUK MEMUAT FITUR BARU) ===
+// === INIT APP (FULL UPDATE DENGAN PENGAMAN BUG) ===
 async function initApp() {
-    const res = await fetch(`/api/movies?path=trending/all/day`); const data = await res.json();
-    if(data.results) { featuredMovies = data.results.slice(0, 10); updateHero(); startCarousel(); }
-    renderHistory();
-    
-    // Skeleton Loaders
-    const rows = ['rowTrending', 'rowActors', 'rowUpcoming', 'rowMarvel', 'row1', 'row2', 'row3', 'row4'];
-    rows.forEach(r => renderSkeleton(r));
-    
-    // Panggil API untuk Fitur Baru
-    fetchAndRenderActors('trending/person/week', 'rowActors');
-    fetchAndRenderUpcoming('movie/upcoming', 'rowUpcoming');
-    fetchAndRenderTrending('trending/movie/day', 'rowTrending');
-    fetchAndRender('discover/movie?with_companies=420&sort_by=revenue.desc', 'rowMarvel'); 
-    
-    // API Biasa
-    fetchAndRender('movie/popular', 'row1'); 
-    fetchAndRender('tv/popular', 'row2');
-    fetchAndRender('discover/tv?with_original_language=ja&with_genres=16', 'row3'); 
-    fetchAndRender('discover/tv?with_original_language=ko', 'row4');
+    try {
+        const res = await fetch(`/api/movies?path=trending/all/day`); const data = await res.json();
+        if(data.results) { featuredMovies = data.results.slice(0, 10); updateHero(); startCarousel(); }
+        renderHistory();
+        
+        // Panggil Loader Dulu Biar Keren
+        const rows = ['rowTrending', 'rowActors', 'rowUpcoming', 'rowMarvel', 'row1', 'row2', 'row3', 'row4', 'row5'];
+        rows.forEach(r => renderSkeleton(r));
+        
+        // Panggil Fitur Baru
+        fetchAndRenderActors('trending/person/week', 'rowActors');
+        fetchAndRenderUpcoming('movie/upcoming', 'rowUpcoming');
+        fetchAndRenderTrending('trending/movie/day', 'rowTrending');
+        fetchAndRender('discover/movie?with_companies=420&sort_by=revenue.desc', 'rowMarvel'); 
+        
+        // Panggil Fitur Biasa
+        fetchAndRender('movie/popular', 'row1'); 
+        fetchAndRender('tv/popular', 'row2');
+        fetchAndRender('discover/tv?with_original_language=ja&with_genres=16', 'row3'); 
+        fetchAndRender('discover/tv?with_original_language=ko', 'row4');
+        fetchAndRender('discover/movie?with_genres=27', 'row5');
+    } catch(e) {
+        console.error("Gagal memuat API Utama", e);
+    }
 }
 
-// === FUNGSI RENDER AKTOR (BARU) ===
+// === FUNGSI AKTOR PANGGUNG ===
 async function fetchAndRenderActors(path, elementId) {
-    const res = await fetch(`/api/movies?path=${path.replace('?', '&')}`); const data = await res.json();
-    const container = document.getElementById(elementId); container.innerHTML = '';
-    if(data.results) {
-        data.results.slice(0, 15).forEach(actor => {
-            if(!actor.profile_path) return;
-            const el = document.createElement('div'); el.className = "flex flex-col items-center flex-shrink-0 group";
-            el.innerHTML = `<img src="${IMG_PATH + actor.profile_path}" class="actor-circle" onclick="loadActorFilms(${actor.id}, '${actor.name.replace(/'/g, "\\'")}')" loading="lazy">
-                            <p class="text-[10px] md:text-xs text-center text-white/80 mt-3 font-bold group-hover:text-blue-400 w-20 md:w-28 truncate select-none">${actor.name}</p>`;
-            container.appendChild(el);
-        });
-    }
+    try {
+        const res = await fetch(`/api/movies?path=${path.replace('?', '&')}`); const data = await res.json();
+        const container = document.getElementById(elementId); if(!container) return; container.innerHTML = '';
+        if(data.results) {
+            data.results.slice(0, 15).forEach(actor => {
+                if(!actor.profile_path) return;
+                const el = document.createElement('div'); el.className = "flex flex-col items-center flex-shrink-0 group";
+                el.innerHTML = `<img src="${IMG_PATH + actor.profile_path}" class="actor-circle" onclick="loadActorFilms(${actor.id}, '${actor.name.replace(/'/g, "\\'")}')" loading="lazy">
+                                <p class="text-[10px] md:text-xs text-center text-white/80 mt-3 font-bold group-hover:text-blue-400 w-20 md:w-28 truncate select-none">${actor.name}</p>`;
+                container.appendChild(el);
+            });
+        }
+    } catch(e) {}
 }
 
-// === FUNGSI RENDER SEGERA TAYANG (BARU) ===
+// === FUNGSI SEGERA TAYANG ===
 async function fetchAndRenderUpcoming(path, elementId) {
-    const res = await fetch(`/api/movies?path=${path.replace('?', '&')}`); const data = await res.json();
-    const container = document.getElementById(elementId); container.innerHTML = '';
-    if(data.results) {
-        data.results.slice(0, 15).forEach(movie => {
-            if (!movie.poster_path) return;
-            const releaseYear = movie.release_date ? movie.release_date.split('-')[0] : 'Upcoming';
-            const card = document.createElement('div'); card.className = "movie-card";
-            card.innerHTML = `
-                <div class="poster-container border-[3px] border-purple-500/50 shadow-[0_0_15px_rgba(168,85,247,0.3)]" onclick="playTrailerOnly(${movie.id}, '${(movie.title || movie.name).replace(/'/g, "\\'")}', 'movie', '${movie.backdrop_path}')">
-                    <img src="${IMG_PATH + movie.poster_path}" class="w-full h-full object-cover" loading="lazy">
-                    <div class="absolute inset-0 bg-black/50 opacity-0 hover:opacity-100 flex flex-col items-center justify-center transition-opacity duration-300 backdrop-blur-sm">
-                        <div class="w-12 h-12 rounded-full bg-purple-600/90 flex items-center justify-center text-white text-xl shadow-[0_0_20px_rgba(168,85,247,0.8)] animate-pulse">🎬</div>
-                        <span class="text-[9px] font-black mt-2 uppercase tracking-widest">Tonton Trailer</span>
+    try {
+        const res = await fetch(`/api/movies?path=${path.replace('?', '&')}`); const data = await res.json();
+        const container = document.getElementById(elementId); if(!container) return; container.innerHTML = '';
+        if(data.results) {
+            data.results.slice(0, 15).forEach(movie => {
+                if (!movie.poster_path) return;
+                const releaseYear = movie.release_date ? movie.release_date.split('-')[0] : 'Upcoming';
+                const card = document.createElement('div'); card.className = "movie-card";
+                card.innerHTML = `
+                    <div class="poster-container border-[3px] border-purple-500/50 shadow-[0_0_15px_rgba(168,85,247,0.3)]" onclick="playTrailerOnly(${movie.id}, '${(movie.title || movie.name).replace(/'/g, "\\'")}', 'movie', '${movie.backdrop_path}')">
+                        <img src="${IMG_PATH + movie.poster_path}" class="w-full h-full object-cover" loading="lazy">
+                        <div class="absolute inset-0 bg-black/50 opacity-0 hover:opacity-100 flex flex-col items-center justify-center transition-opacity duration-300 backdrop-blur-sm">
+                            <div class="w-12 h-12 rounded-full bg-purple-600/90 flex items-center justify-center text-white text-xl shadow-[0_0_20px_rgba(168,85,247,0.8)] animate-pulse">🎬</div>
+                            <span class="text-[9px] font-black mt-2 uppercase tracking-widest">Tonton Trailer</span>
+                        </div>
                     </div>
-                </div>
-                <div class="mt-3 px-1 text-center"><h3 class="text-xs font-bold truncate text-white/90 drop-shadow-md">${movie.title}</h3><p class="text-[10px] text-purple-400 font-bold mt-0.5">${releaseYear} • Bioskop</p></div>
-            `;
-            container.appendChild(card);
-        });
-    }
+                    <div class="mt-3 px-1 text-center"><h3 class="text-xs font-bold truncate text-white/90 drop-shadow-md">${movie.title}</h3><p class="text-[10px] text-purple-400 font-bold mt-0.5">${releaseYear} • Bioskop</p></div>
+                `;
+                container.appendChild(card);
+            });
+        }
+    } catch(e) {}
 }
 
-// === UPDATE RENDER TRENDING (JADI TOP 10 NETFLIX) ===
+// === FUNGSI TRENDING TOP 10 NETFLIX ===
 function renderTrendingCards(movies, container) {
-    container.innerHTML = ''; const myList = getMyList(); 
+    if(!container) return; container.innerHTML = ''; const myList = getMyList(); 
     movies.slice(0, 10).forEach((movie, index) => {
         if (!movie.poster_path) return;
         const type = movie.media_type || 'movie';
@@ -256,7 +267,6 @@ async function loadCategory(path, label, tabId = '') {
 }
 
 async function loadActorFilms(actorId, actorName) {
-    // Kalau Player Terbuka, Tutup Dulu
     if(!document.getElementById('playerContainer').classList.contains('hidden')) { document.getElementById('playerContainer').classList.add('hidden'); document.getElementById('videoPlayer').src = ''; document.body.style.overflow = 'auto'; }
     addHistoryState('aktor'); setActiveNav(''); showSection('grid'); document.getElementById('gridSection').classList.remove('hidden');
     document.getElementById('gridTitle').innerText = `Filmografi: ${actorName} 🎭`; currentPage = 1; currentAction = 'category'; currentPath = `discover/movie?with_cast=${actorId}&sort_by=popularity.desc`;
@@ -287,11 +297,15 @@ async function loadMore() {
 }
 
 async function fetchAndRender(path, elementId) {
-    const res = await fetch(`/api/movies?path=${path.replace('?', '&')}`); const data = await res.json();
-    if(data.results) renderCards(data.results, document.getElementById(elementId), false, path.includes('tv'));
+    try {
+        const res = await fetch(`/api/movies?path=${path.replace('?', '&')}`); const data = await res.json();
+        const container = document.getElementById(elementId);
+        if(data.results && container) renderCards(data.results, container, false, path.includes('tv'));
+    } catch(e){}
 }
 
 function renderCards(movies, container, append = false, isTV = false) {
+    if (!container) return;
     if (!append) container.innerHTML = ''; const myList = getMyList(); const currentYear = new Date().getFullYear(); 
     movies.forEach(movie => {
         if (!movie.poster_path) return;
@@ -316,6 +330,14 @@ function renderCards(movies, container, append = false, isTV = false) {
     });
 }
 
+async function fetchAndRenderTrending(path, elementId) {
+    try {
+        const res = await fetch(`/api/movies?path=${path.replace('?', '&')}`); const data = await res.json();
+        const container = document.getElementById(elementId);
+        if(data.results && container) renderTrendingCards(data.results, container);
+    } catch(e){}
+}
+
 function changeServer(serverName) {
     const iframe = document.getElementById('videoPlayer'); let url = '';
     if (serverName === 'VidSrc') { url = currentPlayType === 'movie' ? `https://vidsrc.me/embed/movie?tmdb=${currentPlayId}` : `https://vidsrc.me/embed/tv?tmdb=${currentPlayId}&season=1&ep=1`; } 
@@ -332,18 +354,15 @@ function shareMovie(title) {
     else { alert("Browser kamu belum mendukung fitur Share Otomatis. Silakan copy link di atas ya!"); }
 }
 
-// === FUNGSI KHUSUS UNTUK MEMUTAR TRAILER "SEGERA TAYANG" ===
 async function playTrailerOnly(id, title, type, backdropPath) {
     addHistoryState('nonton');
-    const player = document.getElementById('playerContainer'); const controls = document.getElementById('playerControls'); const bg = document.getElementById('playerBg'); const iframe = document.getElementById('videoPlayer'); const castBox = document.getElementById('castContainer'); const similarBox = document.getElementById('similarContainer');
+    const player = document.getElementById('playerContainer'); const controls = document.getElementById('playerControls'); const bg = document.getElementById('playerBg'); const iframe = document.getElementById('videoPlayer');
     
     if(backdropPath && backdropPath !== 'null') { bg.style.backgroundImage = `url('${BACK_PATH + backdropPath}')`; } else { bg.style.backgroundImage = 'none'; }
     document.getElementById('playingTitle').innerText = `${title} (Segera Tayang)`;
-    
     controls.innerHTML = `<span class="px-5 py-2 rounded-full bg-purple-600 text-white text-[10px] md:text-xs font-bold shadow-[0_0_15px_rgba(168,85,247,0.5)] border border-purple-400 animate-pulse">⏳ Belum Rilis di Server</span>`;
     
-    document.getElementById('castBoxUI').classList.add('hidden');
-    document.getElementById('similarBoxUI').classList.add('hidden');
+    document.getElementById('castBoxUI').classList.add('hidden'); document.getElementById('similarBoxUI').classList.add('hidden');
     
     iframe.src = ''; player.classList.remove('hidden'); 
     const modalBox = document.getElementById('playerModalBox'); if(modalBox) { modalBox.classList.remove('fade-in-up'); void modalBox.offsetWidth; modalBox.classList.add('fade-in-up'); }
@@ -363,8 +382,7 @@ async function playMovie(id, title, type = 'movie', backdropPath = '') {
     
     const player = document.getElementById('playerContainer'); const controls = document.getElementById('playerControls'); const bg = document.getElementById('playerBg'); const castBox = document.getElementById('castContainer'); const similarBox = document.getElementById('similarContainer');
     
-    document.getElementById('castBoxUI').classList.remove('hidden');
-    document.getElementById('similarBoxUI').classList.remove('hidden');
+    document.getElementById('castBoxUI').classList.remove('hidden'); document.getElementById('similarBoxUI').classList.remove('hidden');
 
     if(backdropPath && backdropPath !== 'null') { bg.style.backgroundImage = `url('${BACK_PATH + backdropPath}')`; } else { bg.style.backgroundImage = 'none'; }
     document.getElementById('playingTitle').innerText = title;
