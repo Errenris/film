@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NOBARGASI | Premium</title>
+    <title>NOBARGASI | Premium Zen</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
@@ -30,12 +30,17 @@
         .netflix-number { position: absolute; left: -25px; bottom: -10px; font-size: 110px; font-weight: 900; color: transparent; -webkit-text-stroke: 2px rgba(255,255,255,0.15); line-height: 1; z-index: 1; pointer-events: none; }
         @media (min-width: 768px) { .netflix-number { font-size: 160px; left: -35px; } }
 
-        .row-title { font-size: 11px; font-weight: 900; letter-spacing: 0.4em; text-transform: uppercase; color: rgba(255,255,255,0.4); margin-bottom: 20px; padding-left: 10px; }
+        /* UI ROW HEADER & LIHAT SEMUA */
+        .row-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px; padding: 0 10px; }
+        .row-title { font-size: 11px; font-weight: 900; letter-spacing: 0.4em; text-transform: uppercase; color: rgba(255,255,255,0.6); margin-bottom: 0; }
+        .explore-btn { font-size: 9px; font-weight: 800; color: var(--accent); opacity: 0.7; transition: 0.3s; text-transform: uppercase; letter-spacing: 0.2em; }
+        .explore-btn:hover { opacity: 1; transform: translateX(5px); }
+
         .actor-circle { width: 75px; height: 75px; border-radius: 50%; object-fit: cover; border: 2px solid transparent; transition: 0.4s; cursor: pointer; }
         .actor-circle:hover { border-color: var(--accent); transform: scale(1.1); box-shadow: 0 0 20px rgba(59,130,246,0.3); }
 
         /* PROGRESS BAR RESUME */
-        .resume-bar { position: absolute; bottom: 0; left: 0; height: 3px; background: rgba(0,0,0,0.5); width: 100%; border-radius: 0 0 20px 20px; overflow: hidden; }
+        .resume-bar { position: absolute; bottom: 0; left: 0; height: 4px; background: rgba(0,0,0,0.5); width: 100%; border-radius: 0 0 20px 20px; overflow: hidden; }
         .resume-progress { height: 100%; background: #ef4444; box-shadow: 0 0 10px #ef4444; }
 
         /* HEART BTN (FAVORIT) */
@@ -72,7 +77,7 @@
             </nav>
 
             <div class="flex items-center gap-4 border-l border-white/10 pl-6">
-                <input type="text" id="searchInput" placeholder="Search..." class="bg-transparent text-xs focus:outline-none w-24 focus:w-48 transition-all text-white placeholder-white/20">
+                <input type="text" id="searchInput" placeholder="Search..." class="bg-transparent text-xs font-bold focus:outline-none w-24 focus:w-48 transition-all text-white placeholder-white/40">
                 <div id="searchSuggestions" class="hidden absolute top-full mt-5 right-0 w-[320px] bg-[#111115] rounded-[30px] max-h-96 overflow-y-auto no-scrollbar p-3 border border-white/10 shadow-2xl"></div>
             </div>
         </header>
@@ -89,12 +94,12 @@
     <main id="mainContainer" class="max-w-[1550px] mx-auto pt-24 px-4 md:px-10 space-y-24 fade-in">
         
         <!-- HERO -->
-        <section id="heroSection" class="relative w-full h-[60vh] md:h-[82vh] rounded-[45px] overflow-hidden group cursor-grab active:cursor-grabbing border border-white/5">
+        <section id="heroSection" class="relative w-full h-[60vh] md:h-[82vh] rounded-[45px] overflow-hidden group cursor-grab active:cursor-grabbing border border-white/5 shadow-2xl">
             <div id="heroContent" class="absolute inset-0 bg-cover bg-center transition-transform duration-[2.5s] group-hover:scale-105"></div>
             <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent"></div>
             <div class="absolute bottom-0 left-0 w-full p-8 md:p-20 flex flex-col items-center text-center z-10">
-                <h2 id="heroTitle" class="text-3xl md:text-8xl font-black mb-4 tracking-tighter leading-none uppercase drop-shadow-2xl"></h2>
-                <p id="heroDesc" class="text-white/40 text-xs md:text-lg line-clamp-2 mb-10 max-w-2xl font-light"></p>
+                <h2 id="heroTitle" class="text-3xl md:text-8xl font-black mb-4 tracking-tighter leading-none uppercase drop-shadow-2xl text-white"></h2>
+                <p id="heroDesc" class="text-white/60 text-xs md:text-lg line-clamp-2 mb-10 max-w-2xl font-light"></p>
                 <div class="flex items-center gap-4">
                     <button id="heroPlayBtn" class="bg-white text-black hover:bg-blue-500 hover:text-white px-12 py-4 rounded-full font-black text-[11px] uppercase tracking-[0.2em] transition-all shadow-2xl hover:scale-110">Nonton Sekarang</button>
                     <button onclick="surpriseMe()" class="w-12 h-12 rounded-full bg-white/5 backdrop-blur-md flex items-center justify-center text-xl hover:bg-white/20 transition border border-white/10 shadow-lg">🎲</button>
@@ -108,73 +113,123 @@
             
             <!-- HISTORY -->
             <section id="historySection" class="hidden">
-                <div class="flex justify-between items-end mb-6 px-2">
-                    <p class="row-title !mb-0 text-white">Lanjutkan Menonton 🍿</p>
-                    <button onclick="clearHistory()" class="text-[9px] font-bold text-red-500/50 hover:text-red-400 uppercase tracking-widest transition">Hapus Semua ✕</button>
+                <div class="row-header">
+                    <h2 class="row-title text-white">Lanjutkan Menonton 🍿</h2>
+                    <button onclick="clearHistory()" class="explore-btn text-red-500 hover:text-red-400">Hapus Semua ✕</button>
                 </div>
                 <div id="rowHistory" class="flex gap-6 overflow-x-auto custom-scrollbar-x pb-4 px-2 cursor-grab active:cursor-grabbing"></div>
             </section>
 
             <!-- TRENDING -->
             <section>
-                <p class="row-title">Populer Hari Ini 🔥</p>
+                <div class="row-header">
+                    <h2 class="row-title text-red-500">Populer Hari Ini 🔥</h2>
+                    <button onclick="loadCategory('trending/movie/day', 'Paling Populer')" class="explore-btn">Lihat Semua ➔</button>
+                </div>
                 <div id="rowTrending" class="flex gap-10 overflow-x-auto no-scrollbar pb-10 pl-10 cursor-grab active:cursor-grabbing"></div>
             </section>
 
             <!-- AKTOR -->
             <section>
-                <p class="row-title mb-8 px-2">Bintang Papan Atas 🌟</p>
+                <div class="row-header"><h2 class="row-title">Bintang Papan Atas 🌟</h2></div>
                 <div id="rowActors" class="flex gap-8 overflow-x-auto no-scrollbar pb-4 px-2 cursor-grab active:cursor-grabbing"></div>
             </section>
 
             <!-- UNIVERSES & KATEGORI -->
             <section class="relative overflow-hidden">
                 <div class="universe-bg-text">AVENGERS</div>
-                <p class="row-title relative z-10">Marvel Cinematic Universe 🦸‍♂️</p>
+                <div class="row-header relative z-10">
+                    <h2 class="row-title text-white">Marvel Cinematic Universe 🦸‍♂️</h2>
+                    <button onclick="loadCategory('discover/movie?with_companies=420&sort_by=revenue.desc', 'Koleksi Marvel')" class="explore-btn">Lihat Semua ➔</button>
+                </div>
                 <div id="rowMarvel" class="flex gap-6 overflow-x-auto no-scrollbar cursor-grab active:cursor-grabbing relative z-10 px-2"></div>
             </section>
 
             <section class="relative overflow-hidden">
                 <div class="universe-bg-text">JUSTICE LEAGUE</div>
-                <p class="row-title relative z-10">DC Extended Universe 🦇</p>
+                <div class="row-header relative z-10">
+                    <h2 class="row-title text-white">DC Extended Universe 🦇</h2>
+                    <button onclick="loadCategory('discover/movie?with_companies=429&sort_by=popularity.desc', 'Koleksi DC')" class="explore-btn">Lihat Semua ➔</button>
+                </div>
                 <div id="rowDC" class="flex gap-6 overflow-x-auto no-scrollbar cursor-grab active:cursor-grabbing relative z-10 px-2"></div>
             </section>
 
             <section class="relative overflow-hidden">
                 <div class="universe-bg-text">DISNEY+</div>
-                <p class="row-title relative z-10">Disney+ Originals 🧚‍♂️</p>
+                <div class="row-header relative z-10">
+                    <h2 class="row-title text-white">Disney+ Originals 🧚‍♂️</h2>
+                    <button onclick="loadCategory('discover/movie?with_companies=2&sort_by=popularity.desc', 'Koleksi Disney')" class="explore-btn">Lihat Semua ➔</button>
+                </div>
                 <div id="rowDisney" class="flex gap-6 overflow-x-auto no-scrollbar cursor-grab active:cursor-grabbing relative z-10 px-2"></div>
             </section>
 
             <section class="relative overflow-hidden">
                 <div class="universe-bg-text">PIXAR STUDIO</div>
-                <p class="row-title relative z-10">Dunia Fantasi Pixar 🎨</p>
+                <div class="row-header relative z-10">
+                    <h2 class="row-title text-white">Dunia Fantasi Pixar 🎨</h2>
+                    <button onclick="loadCategory('discover/movie?with_companies=3&sort_by=popularity.desc', 'Koleksi Pixar')" class="explore-btn">Lihat Semua ➔</button>
+                </div>
                 <div id="rowPixar" class="flex gap-6 overflow-x-auto no-scrollbar cursor-grab active:cursor-grabbing relative z-10 px-2"></div>
             </section>
 
-            <section><p class="row-title">Malam Mencekam (Horor) 👻</p><div id="rowHoror" class="flex gap-6 overflow-x-auto no-scrollbar px-2 cursor-grab active:cursor-grabbing"></div></section>
-            <section><p class="row-title">Drama Korea (Drakor) 🫰</p><div id="rowDrakor" class="flex gap-6 overflow-x-auto no-scrollbar px-2 cursor-grab active:cursor-grabbing"></div></section>
-            <section><p class="row-title">Koleksi Anime 🌸</p><div id="rowAnime" class="flex gap-6 overflow-x-auto no-scrollbar px-2 cursor-grab active:cursor-grabbing"></div></section>
-            <section><p class="row-title">Film Terpopuler ⭐</p><div id="row1" class="flex gap-6 overflow-x-auto no-scrollbar px-2 cursor-grab active:cursor-grabbing"></div></section>
-            <section><p class="row-title">Serial TV Pilihan 📺</p><div id="row2" class="flex gap-6 overflow-x-auto no-scrollbar px-2 cursor-grab active:cursor-grabbing"></div></section>
+            <section>
+                <div class="row-header">
+                    <h2 class="row-title">Malam Mencekam (Horor) 👻</h2>
+                    <button onclick="loadCategory('discover/movie?with_genres=27', 'Film Horor')" class="explore-btn">Lihat Semua ➔</button>
+                </div>
+                <div id="rowHoror" class="flex gap-6 overflow-x-auto no-scrollbar px-2 cursor-grab active:cursor-grabbing"></div>
+            </section>
+            
+            <section>
+                <div class="row-header">
+                    <h2 class="row-title">Drama Korea (Drakor) 🫰</h2>
+                    <button onclick="loadCategory('discover/tv?with_original_language=ko', 'Drakor Terbaru')" class="explore-btn">Lihat Semua ➔</button>
+                </div>
+                <div id="rowDrakor" class="flex gap-6 overflow-x-auto no-scrollbar px-2 cursor-grab active:cursor-grabbing"></div>
+            </section>
+            
+            <section>
+                <div class="row-header">
+                    <h2 class="row-title">Koleksi Anime 🌸</h2>
+                    <button onclick="loadCategory('discover/tv?with_original_language=ja&with_genres=16', 'Anime Populer')" class="explore-btn">Lihat Semua ➔</button>
+                </div>
+                <div id="rowAnime" class="flex gap-6 overflow-x-auto no-scrollbar px-2 cursor-grab active:cursor-grabbing"></div>
+            </section>
+            
+            <section>
+                <div class="row-header">
+                    <h2 class="row-title text-white">Film Terpopuler ⭐</h2>
+                    <button onclick="loadCategory('movie/popular', 'Film Terpopuler')" class="explore-btn">Lihat Semua ➔</button>
+                </div>
+                <div id="row1" class="flex gap-6 overflow-x-auto no-scrollbar px-2 cursor-grab active:cursor-grabbing"></div>
+            </section>
+            
+            <section>
+                <div class="row-header">
+                    <h2 class="row-title text-white">Serial TV Pilihan 📺</h2>
+                    <button onclick="loadCategory('tv/popular', 'Serial TV Populer')" class="explore-btn">Lihat Semua ➔</button>
+                </div>
+                <div id="row2" class="flex gap-6 overflow-x-auto no-scrollbar px-2 cursor-grab active:cursor-grabbing"></div>
+            </section>
+
         </div>
 
         <!-- GRID/MYLIST VIEW -->
         <section id="gridSection" class="hidden space-y-12">
-            <h2 id="gridTitle" class="text-3xl md:text-6xl font-black tracking-tighter opacity-30 uppercase text-center"></h2>
+            <h2 id="gridTitle" class="text-3xl md:text-5xl font-black tracking-tighter text-blue-500 uppercase text-center drop-shadow-lg"></h2>
             <div id="gridResults" class="flex flex-wrap justify-center sm:justify-start gap-6 md:gap-10"></div>
-            <div class="flex justify-center pt-20"><button id="loadMoreBtn" onclick="loadMore()" class="hidden bg-white/5 backdrop-blur-md px-12 py-5 rounded-full font-black text-xs uppercase tracking-widest hover:bg-white hover:text-black transition border border-white/10">Muat Lebih Banyak</button></div>
+            <div class="flex justify-center pt-20"><button id="loadMoreBtn" onclick="loadMore()" class="hidden bg-white/10 backdrop-blur-md px-12 py-5 rounded-full font-black text-xs uppercase tracking-widest hover:bg-white hover:text-black transition border border-white/20">Muat Lebih Banyak</button></div>
         </section>
 
-        <footer class="pt-32 pb-12 text-center opacity-30">
-            <img src="https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fnobargasi.vercel.app&countColor=%233b82f6&style=flat-square" class="h-4 mx-auto mb-6 opacity-50">
+        <footer class="pt-32 pb-12 text-center opacity-40">
+            <img src="https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fnobargasi.vercel.app&countColor=%233b82f6&style=flat-square" class="h-4 mx-auto mb-6 opacity-70">
             <p class="text-[10px] font-black uppercase tracking-[0.6em]">NOBARGASI ENTERTAINMENT © 2026</p>
         </footer>
     </main>
 
     <!-- PLAYER -->
     <div id="playerContainer" class="hidden fixed inset-0 z-[500] flex items-center justify-center bg-black/95 transition-all">
-        <button onclick="closePlayer()" class="fixed top-6 right-6 md:top-8 md:right-8 z-[600] text-white/30 hover:text-red-500 text-3xl transition">✕</button>
+        <button onclick="closePlayer()" class="fixed top-6 right-6 md:top-8 md:right-8 z-[600] text-white/40 hover:text-red-500 text-3xl transition font-black">✕</button>
         
         <div id="playerModalBox" class="relative w-full h-full md:h-[95vh] md:max-w-6xl md:rounded-[45px] overflow-y-auto no-scrollbar bg-[#0a0a0f] border border-white/5 flex flex-col shadow-2xl">
             
@@ -187,23 +242,23 @@
                     <div class="space-y-4 flex-1">
                         <div class="flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-blue-400">
                             <span id="playerRating" class="bg-blue-500/20 px-3 py-1 rounded-full border border-blue-500/30">⭐ 0.0</span>
-                            <span id="playerYear">2024</span>
-                            <span id="playerRuntime" class="text-white/40">...</span>
+                            <span id="playerYear" class="bg-white/10 px-3 py-1 rounded-full text-white">2024</span>
+                            <span id="playerRuntime" class="text-white/60">...</span>
                         </div>
-                        <h3 id="playingTitle" class="text-3xl md:text-6xl font-black tracking-tighter uppercase leading-none"></h3>
-                        <p id="playerOverview" class="text-white/50 text-sm md:text-lg leading-relaxed max-w-4xl font-light italic"></p>
+                        <h3 id="playingTitle" class="text-3xl md:text-6xl font-black tracking-tighter uppercase leading-none text-white drop-shadow-md"></h3>
+                        <p id="playerOverview" class="text-white/70 text-sm md:text-lg leading-relaxed max-w-4xl font-light"></p>
                     </div>
                     
                     <div id="playerControls" class="flex flex-wrap gap-3"></div>
                 </div>
 
                 <div class="player-info-card">
-                    <h4 class="text-[10px] font-black uppercase tracking-[0.3em] text-white/30 mb-8">Pemeran Utama</h4>
+                    <div class="row-header"><h4 class="row-title">Pemeran Utama</h4></div>
                     <div id="castContainer" class="flex gap-8 overflow-x-auto no-scrollbar"></div>
                 </div>
 
                 <div>
-                    <h4 class="text-[10px] font-black uppercase tracking-[0.3em] text-white/30 mb-8">Rekomendasi Serupa</h4>
+                    <div class="row-header"><h4 class="row-title">Rekomendasi Serupa</h4></div>
                     <div id="similarContainer" class="flex gap-6 overflow-x-auto no-scrollbar pb-10"></div>
                 </div>
             </div>
