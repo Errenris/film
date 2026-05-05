@@ -11,43 +11,50 @@
     <style>
         :root { 
             --bg: #030305; 
-            --accent: #ffffff; 
+            --accent: #3b82f6; 
             --glass: rgba(255, 255, 255, 0.03);
             --border: rgba(255, 255, 255, 0.07);
         }
         body { background-color: var(--bg); color: white; font-family: 'Outfit', sans-serif; overflow-x: hidden; }
         
-        /* AMBIENT BACKGROUND (BUNGLON) */
-        #ambientBg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; transition: background 1.5s ease; filter: blur(120px) saturate(1.5); opacity: 0.35; transform: scale(1.1); }
-        .overlay { position: fixed; inset: 0; background: linear-gradient(to bottom, transparent, var(--bg) 80%); z-index: -1; }
+        #ambientBg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; transition: background 2s ease; filter: blur(100px) saturate(1.8); opacity: 0.25; transform: scale(1.1); }
+        .overlay { position: fixed; inset: 0; background: linear-gradient(to bottom, transparent, var(--bg) 90%); z-index: -1; }
 
         .no-scrollbar::-webkit-scrollbar { display: none; }
+        .custom-scrollbar-x::-webkit-scrollbar { height: 4px; }
+        .custom-scrollbar-x::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+
+        /* HEADER KAPSUL */
+        .header-capsule { background: rgba(10, 10, 15, 0.7); backdrop-filter: blur(30px); border: 1px solid var(--border); padding: 10px 24px; border-radius: 100px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); transition: 0.4s; }
         
-        /* DYNAMIC ISLAND HEADER */
-        #mainHeader { transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
-        .header-capsule { background: rgba(10, 10, 15, 0.6); backdrop-filter: blur(25px); border: 1px solid var(--border); padding: 8px 24px; border-radius: 100px; box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
-        
-        /* ZEN MOVIE CARD */
-        .movie-card { width: 140px; flex-shrink: 0; cursor: pointer; transition: 0.5s cubic-bezier(0.2, 1, 0.3, 1); position: relative; }
-        @media (min-width: 768px) { .movie-card { width: 190px; } }
-        .movie-card:hover { transform: scale(1.05); z-index: 10; }
+        /* MOVIE CARD ZEN */
+        .movie-card { width: 135px; flex-shrink: 0; cursor: pointer; transition: 0.5s cubic-bezier(0.2, 1, 0.3, 1); position: relative; }
+        @media (min-width: 768px) { .movie-card { width: 185px; } }
+        .movie-card:hover { transform: translateY(-10px); z-index: 10; }
         .poster-container { aspect-ratio: 2/3; border-radius: 20px; overflow: hidden; position: relative; border: 1px solid transparent; transition: 0.3s; background: var(--glass); }
-        .movie-card:hover .poster-container { border-color: rgba(255,255,255,0.3); box-shadow: 0 15px 40px rgba(0,0,0,0.8); }
+        .movie-card:hover .poster-container { border-color: var(--accent); box-shadow: 0 15px 45px rgba(59, 130, 246, 0.4); }
 
-        /* NETFLIX NUMBERS (MINIMAL VERSION) */
-        .netflix-number { position: absolute; left: -20px; bottom: -10px; font-size: 100px; font-weight: 900; color: transparent; -webkit-text-stroke: 1.5px rgba(255,255,255,0.2); line-height: 1; z-index: 1; pointer-events: none; }
-        @media (min-width: 768px) { .netflix-number { font-size: 160px; left: -30px; } }
+        /* NETFLIX NUMBERS */
+        .netflix-number { position: absolute; left: -25px; bottom: -10px; font-size: 110px; font-weight: 900; color: transparent; -webkit-text-stroke: 2px rgba(255,255,255,0.15); line-height: 1; z-index: 1; pointer-events: none; }
+        @media (min-width: 768px) { .netflix-number { font-size: 160px; left: -35px; } }
 
-        .universe-title { font-size: 10px; font-weight: 900; letter-spacing: 0.5em; text-transform: uppercase; color: rgba(255,255,255,0.3); margin-bottom: 12px; padding-left: 8px; }
-        
-        /* PLAYER ZEN */
-        .glass-panel { background: rgba(15, 15, 20, 0.7); backdrop-filter: blur(30px); border: 1px solid var(--border); }
-        
-        #liveNotif { position: fixed; left: 30px; bottom: 30px; z-index: 1000; opacity: 0; transform: translateY(20px); transition: 0.5s; pointer-events: none; }
-        #liveNotif.show { opacity: 1; transform: translateY(0); }
+        /* UNIVERSE TITLES */
+        .row-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px; padding: 0 10px; }
+        .row-title { font-size: 11px; font-weight: 900; letter-spacing: 0.4em; text-transform: uppercase; color: rgba(255,255,255,0.4); }
+        .explore-btn { font-size: 10px; font-weight: 700; color: var(--accent); opacity: 0.6; transition: 0.3s; }
+        .explore-btn:hover { opacity: 1; transform: translateX(5px); }
 
-        .fade-out { opacity: 0.2; filter: blur(5px); pointer-events: none; }
-        .magnetic { transition: 0.2s cubic-bezier(0.2, 1, 0.3, 1); }
+        .universe-bg-text { position: absolute; right: -5%; top: -15%; font-size: 150px; font-weight: 900; font-style: italic; color: white; opacity: 0.03; pointer-events: none; user-select: none; white-space: nowrap; letter-spacing: -5px; }
+        @media (min-width: 768px) { .universe-bg-text { font-size: 250px; } }
+
+        .actor-circle { width: 85px; height: 85px; border-radius: 50%; object-fit: cover; border: 2px solid transparent; transition: 0.4s; cursor: pointer; }
+        .actor-circle:hover { border-color: var(--accent); transform: scale(1.1); box-shadow: 0 0 20px rgba(59, 130, 246, 0.3); }
+
+        .skeleton { background: linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.06), rgba(255,255,255,0.02)); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 20px; width: 100%; aspect-ratio: 2/3; }
+        @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+
+        .fade-in { animation: fadeIn 0.8s ease forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body class="pb-20">
@@ -55,96 +62,114 @@
     <div id="ambientBg"></div>
     <div class="overlay"></div>
 
-    <div id="liveNotif" class="glass-panel px-5 py-3 rounded-full flex items-center gap-3 shadow-2xl">
-        <div id="notifImg" class="w-8 h-8 rounded-full bg-cover"></div>
-        <p id="notifText" class="text-[11px] font-bold tracking-tight text-white/80"></p>
-    </div>
-
     <div class="fixed top-6 w-full z-[100] flex justify-center px-4">
-        <header id="mainHeader" class="header-capsule flex items-center gap-8">
-            <h1 class="text-xl font-black tracking-tighter cursor-pointer" onclick="goHome()">N<span class="opacity-30">G</span></h1>
+        <header id="mainHeader" class="header-capsule flex items-center gap-6 md:gap-10">
+            <h1 class="text-xl font-black tracking-tighter cursor-pointer" onclick="goHome()">N<span class="text-blue-500">G</span></h1>
             
-            <nav class="hidden md:flex items-center gap-6 text-[11px] font-bold uppercase tracking-[0.2em] text-white/50">
+            <nav class="hidden lg:flex items-center gap-8 text-[11px] font-bold uppercase tracking-[0.2em] text-white/40">
                 <button onclick="goHome()" class="hover:text-white transition">Home</button>
                 <button onclick="loadCategory('movie/popular', 'Movies')" class="hover:text-white transition">Movies</button>
                 <button onclick="loadCategory('tv/popular', 'Series')" class="hover:text-white transition">Series</button>
                 <button onclick="showMyList()" class="hover:text-white transition">My List</button>
             </nav>
 
-            <div class="flex items-center gap-4 border-l border-white/10 pl-4">
-                <input type="text" id="searchInput" placeholder="Search..." class="bg-transparent text-xs focus:outline-none w-20 focus:w-40 transition-all text-white placeholder-white/20">
-                <div id="searchSuggestions" class="hidden absolute top-full mt-4 right-0 w-[320px] glass-panel rounded-[25px] max-h-96 overflow-y-auto no-scrollbar p-3"></div>
+            <div class="flex items-center gap-4 border-l border-white/10 pl-6">
+                <input type="text" id="searchInput" placeholder="Search..." class="bg-transparent text-xs focus:outline-none w-24 focus:w-48 transition-all text-white placeholder-white/20">
+                <div id="searchSuggestions" class="hidden absolute top-full mt-5 right-0 w-[320px] glass-panel rounded-[30px] max-h-96 overflow-y-auto no-scrollbar p-3 border border-white/10 shadow-2xl"></div>
             </div>
         </header>
     </div>
 
-    <main id="mainContainer" class="max-w-[1500px] mx-auto pt-28 px-6 space-y-24">
+    <main id="mainContainer" class="max-w-[1550px] mx-auto pt-24 px-4 md:px-10 space-y-24 fade-in">
         
-        <section id="heroSection" class="relative w-full h-[60vh] md:h-[80vh] rounded-[45px] overflow-hidden group cursor-grab active:cursor-grabbing">
-            <div id="heroContent" class="absolute inset-0 bg-cover bg-center transition-all duration-[2s]"></div>
-            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+        <section id="heroSection" class="relative w-full h-[60vh] md:h-[82vh] rounded-[45px] overflow-hidden group cursor-grab active:cursor-grabbing border border-white/5">
+            <div id="heroContent" class="absolute inset-0 bg-cover bg-center transition-transform duration-[2.5s] group-hover:scale-105"></div>
+            <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent"></div>
             <div class="absolute bottom-0 left-0 w-full p-8 md:p-20 flex flex-col items-center text-center">
-                <h2 id="heroTitle" class="text-4xl md:text-8xl font-black mb-4 tracking-tighter leading-none uppercase"></h2>
-                <p id="heroDesc" class="text-white/50 text-xs md:text-lg line-clamp-2 mb-10 max-w-2xl font-light"></p>
-                <button id="heroPlayBtn" class="bg-white text-black hover:scale-110 px-12 py-4 rounded-full font-black text-xs uppercase tracking-widest transition-all shadow-2xl">Play Now</button>
+                <h2 id="heroTitle" class="text-3xl md:text-8xl font-black mb-4 tracking-tighter leading-none uppercase drop-shadow-2xl"></h2>
+                <p id="heroDesc" class="text-white/40 text-xs md:text-lg line-clamp-2 mb-10 max-w-2xl font-light"></p>
+                <div class="flex items-center gap-4">
+                    <button id="heroPlayBtn" class="bg-white text-black hover:bg-blue-500 hover:text-white px-12 py-4 rounded-full font-black text-[11px] uppercase tracking-[0.2em] transition-all shadow-2xl hover:scale-110">Play Now</button>
+                    <button onclick="surpriseMe()" class="w-12 h-12 rounded-full glass-panel flex items-center justify-center text-xl hover:bg-white/10 transition border border-white/10">🎲</button>
+                </div>
             </div>
             <div id="heroDots" class="absolute bottom-10 right-10 flex flex-col gap-2"></div>
         </section>
 
-        <div id="homeView" class="space-y-24">
+        <div id="homeView" class="space-y-28">
             
             <section>
-                <p class="universe-title">Top 10 Trending</p>
+                <div class="row-header"><p class="row-title">Top 10 Global 🔥</p><button onclick="loadCategory('trending/movie/day', 'Paling Populer')" class="explore-btn">Explore All ➔</button></div>
                 <div id="rowTrending" class="flex gap-10 overflow-x-auto no-scrollbar pb-10 pl-10 cursor-grab active:cursor-grabbing"></div>
             </section>
 
-            <section id="historySection" class="hidden">
-                <p class="universe-title">Continue Watching</p>
-                <div id="rowHistory" class="flex gap-6 overflow-x-auto no-scrollbar pb-4 cursor-grab active:cursor-grabbing"></div>
+            <section class="relative overflow-hidden">
+                <div class="universe-bg-text">AVENGERS</div>
+                <div class="row-header relative z-10"><p class="row-title">Marvel Universe 🦸‍♂️</p><button onclick="loadCategory('discover/movie?with_companies=420&sort_by=revenue.desc', 'Koleksi Marvel')" class="explore-btn">Explore ➔</button></div>
+                <div id="rowMarvel" class="flex gap-6 overflow-x-auto no-scrollbar cursor-grab active:cursor-grabbing relative z-10"></div>
+            </section>
+
+            <section class="relative overflow-hidden">
+                <div class="universe-bg-text">JUSTICE LEAGUE</div>
+                <div class="row-header relative z-10"><p class="row-title">DC Collection 🦇</p><button onclick="loadCategory('discover/movie?with_companies=429&sort_by=popularity.desc', 'Koleksi DC')" class="explore-btn">Explore ➔</button></div>
+                <div id="rowDC" class="flex gap-6 overflow-x-auto no-scrollbar cursor-grab active:cursor-grabbing relative z-10"></div>
             </section>
 
             <section>
-                <p class="universe-title">Marvel Studio</p>
-                <div id="rowMarvel" class="flex gap-6 overflow-x-auto no-scrollbar cursor-grab active:cursor-grabbing"></div>
+                <p class="row-title mb-8 px-2">Bintang Papan Atas 🌟</p>
+                <div id="rowActors" class="flex gap-8 overflow-x-auto no-scrollbar pb-4 px-2 cursor-grab active:cursor-grabbing"></div>
             </section>
 
             <section>
-                <p class="universe-title">DC Universe</p>
-                <div id="rowDC" class="flex gap-6 overflow-x-auto no-scrollbar cursor-grab active:cursor-grabbing"></div>
+                <div class="row-header"><p class="row-title">Malam Mencekam 👻</p><button onclick="loadCategory('discover/movie?with_genres=27', 'Film Horor')" class="explore-btn">Explore ➔</button></div>
+                <div id="rowHoror" class="flex gap-6 overflow-x-auto no-scrollbar cursor-grab active:cursor-grabbing"></div>
+            </section>
+
+            <section class="relative overflow-hidden">
+                <div class="universe-bg-text">PIXAR STUDIO</div>
+                <div class="row-header relative z-10"><p class="row-title">Dunia Fantasi Pixar 🎨</p><button onclick="loadCategory('discover/movie?with_companies=3', 'Koleksi Pixar')" class="explore-btn">Explore ➔</button></div>
+                <div id="rowPixar" class="flex gap-6 overflow-x-auto no-scrollbar cursor-grab active:cursor-grabbing relative z-10"></div>
             </section>
 
             <section>
-                <p class="universe-title">Pixar Animation</p>
-                <div id="rowPixar" class="flex gap-6 overflow-x-auto no-scrollbar cursor-grab active:cursor-grabbing"></div>
+                <div class="row-header"><p class="row-title">Drama Korea 🫰</p><button onclick="loadCategory('discover/tv?with_original_language=ko', 'Drakor Terbaru')" class="explore-btn">Explore ➔</button></div>
+                <div id="rowDrakor" class="flex gap-6 overflow-x-auto no-scrollbar cursor-grab active:cursor-grabbing"></div>
             </section>
 
             <section>
-                <p class="universe-title">Trending People</p>
-                <div id="rowActors" class="flex gap-8 overflow-x-auto no-scrollbar pb-4 cursor-grab active:cursor-grabbing"></div>
+                <div class="row-header"><p class="row-title">Dunia Anime 🌸</p><button onclick="loadCategory('discover/tv?with_original_language=ja&with_genres=16', 'Anime Populer')" class="explore-btn">Explore ➔</button></div>
+                <div id="rowAnime" class="flex gap-6 overflow-x-auto no-scrollbar cursor-grab active:cursor-grabbing"></div>
             </section>
 
-            <section><p class="universe-title">Most Popular</p><div id="row1" class="flex gap-6 overflow-x-auto no-scrollbar cursor-grab active:cursor-grabbing"></div></section>
-            <section><p class="universe-title">Anime Collection</p><div id="row3" class="flex gap-6 overflow-x-auto no-scrollbar cursor-grab active:cursor-grabbing"></div></section>
+            <section>
+                <div class="row-header"><p class="row-title">Film Terpopuler ⭐</p><button onclick="loadCategory('movie/popular', 'Terpopuler')" class="explore-btn">Explore ➔</button></div>
+                <div id="row1" class="flex gap-6 overflow-x-auto no-scrollbar cursor-grab active:cursor-grabbing"></div>
+            </section>
+
         </div>
 
         <section id="gridSection" class="hidden space-y-12">
-            <h2 id="gridTitle" class="text-4xl md:text-7xl font-black tracking-tighter opacity-20 uppercase"></h2>
-            <div id="gridResults" class="flex flex-wrap justify-center sm:justify-start gap-8"></div>
-            <div class="flex justify-center pt-20"><button id="loadMoreBtn" onclick="loadMore()" class="glass-panel px-12 py-5 rounded-full font-black text-xs uppercase tracking-widest hover:bg-white hover:text-black transition">Load More Content</button></div>
+            <h2 id="gridTitle" class="text-4xl md:text-7xl font-black tracking-tighter opacity-10 uppercase"></h2>
+            <div id="gridResults" class="flex flex-wrap justify-center sm:justify-start gap-6 md:gap-10"></div>
+            <div class="flex justify-center pt-20"><button id="loadMoreBtn" onclick="loadMore()" class="glass-panel px-12 py-5 rounded-full font-black text-xs uppercase tracking-widest hover:bg-white hover:text-black transition border border-white/10">Load More Content</button></div>
         </section>
 
+        <footer class="pt-32 pb-12 text-center opacity-30">
+            <img src="https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fnobargasi.vercel.app&countColor=%233b82f6&style=flat-square" class="h-4 mx-auto mb-6 opacity-50">
+            <p class="text-[10px] font-black uppercase tracking-[0.6em]">NOBARGASI ENTERTAINMENT © 2026</p>
+        </footer>
     </main>
 
     <div id="playerContainer" class="hidden fixed inset-0 z-[500] flex items-center justify-center bg-black/95 transition-all">
-        <button onclick="closePlayer()" class="fixed top-8 right-8 z-[600] text-white/20 hover:text-white text-3xl transition">✕</button>
-        <div id="playerModalBox" class="relative w-full h-full md:h-[90vh] md:max-w-6xl md:rounded-[40px] overflow-hidden glass-panel border-white/5 flex flex-col">
+        <button onclick="closePlayer()" class="fixed top-8 right-8 z-[600] text-white/30 hover:text-white text-3xl transition">✕</button>
+        <div id="playerModalBox" class="relative w-full h-full md:h-[92vh] md:max-w-6xl md:rounded-[45px] overflow-hidden glass-panel border-white/5 flex flex-col shadow-2xl">
             <div class="aspect-video w-full bg-black flex-shrink-0">
                 <iframe id="videoPlayer" src="" class="w-full h-full" frameborder="0" allowfullscreen></iframe>
             </div>
-            <div class="p-8 md:p-12 space-y-10 overflow-y-auto no-scrollbar">
-                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 border-b border-white/5 pb-10">
-                    <h3 id="playingTitle" class="text-3xl md:text-5xl font-black tracking-tighter uppercase"></h3>
-                    <div id="playerControls" class="flex gap-3"></div>
+            <div class="p-8 md:p-14 space-y-12 overflow-y-auto no-scrollbar">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 border-b border-white/5 pb-12">
+                    <h3 id="playingTitle" class="text-3xl md:text-6xl font-black tracking-tighter uppercase leading-none"></h3>
+                    <div id="playerControls" class="flex flex-wrap gap-3"></div>
                 </div>
                 <div id="castContainer" class="flex gap-8 overflow-x-auto no-scrollbar"></div>
                 <div id="similarContainer" class="flex gap-6 overflow-x-auto no-scrollbar pb-10"></div>
