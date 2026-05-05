@@ -10,13 +10,17 @@ let currentPlayType = '';
 
 window.onload = () => { initApp(); setupScrollHide(); setupHeroSwipe(); setupDragToScroll(); };
 
+// OPTIMASI ANTI-LAG DRAG KE KANAN-KIRI (Pakai requestAnimationFrame)
 function setupDragToScroll() {
     const sliders = document.querySelectorAll('.overflow-x-auto');
     sliders.forEach(slider => {
         let isDown = false; let startX; let scrollLeft;
+        let animationId;
+        
         slider.addEventListener('mousedown', (e) => {
             isDown = true; slider.classList.add('cursor-grabbing');
             startX = e.pageX - slider.offsetLeft; scrollLeft = slider.scrollLeft;
+            cancelAnimationFrame(animationId);
         });
         slider.addEventListener('mouseleave', () => { isDown = false; slider.classList.remove('cursor-grabbing'); });
         slider.addEventListener('mouseup', () => {
@@ -28,18 +32,33 @@ function setupDragToScroll() {
             e.preventDefault();
             const x = e.pageX - slider.offsetLeft; const walk = (x - startX) * 2;
             if (Math.abs(walk) > 10) { slider.querySelectorAll('.movie-card, .glass-btn, img').forEach(el => el.style.pointerEvents = 'none'); }
-            slider.scrollLeft = scrollLeft - walk;
+            
+            // Render pergeseran disinkronkan dengan Monitor (60 FPS) biar nggak patah-patah
+            cancelAnimationFrame(animationId);
+            animationId = requestAnimationFrame(() => {
+                slider.scrollLeft = scrollLeft - walk;
+            });
         });
     });
 }
 
+// OPTIMASI SCROLL ATAS BAWAH (Anti-Lag Navigation)
 function setupScrollHide() {
-    let lastScrollY = window.scrollY; const nav = document.getElementById('mobileNav');
+    let lastScrollY = window.scrollY; 
+    let ticking = false;
+    const nav = document.getElementById('mobileNav');
+    
     window.addEventListener('scroll', () => {
-        if(window.scrollY > lastScrollY && window.scrollY > 150) { nav.classList.add('translate-y-32'); } 
-        else { nav.classList.remove('translate-y-32'); }
-        lastScrollY = window.scrollY;
-    });
+        if (!ticking) {
+            window.requestAnimationFrame(() => {
+                if(window.scrollY > lastScrollY && window.scrollY > 150) { nav.classList.add('translate-y-32'); } 
+                else { nav.classList.remove('translate-y-32'); }
+                lastScrollY = window.scrollY;
+                ticking = false;
+            });
+            ticking = true;
+        }
+    }, { passive: true }); // passive: true bikin browser nggak nunggu javascript buat scroll
 }
 
 function setActiveNav(tab) {
@@ -91,9 +110,7 @@ async function saveToHistory(id, type, backdrop) {
         const res = await fetch(`/api/movies?path=${type}/${id}`); const data = await res.json();
         if(!data.poster_path) return;
         
-        // FAKE PROGRESS BAR 15% - 85% Ala Netflix
         const randomProgress = Math.floor(Math.random() * 70) + 15;
-        
         const savedObj = { id: data.id, title: data.title || data.name, poster_path: data.poster_path, backdrop_path: backdrop || data.backdrop_path, media_type: type, vote_average: data.vote_average || 0, release_date: data.release_date || data.first_air_date || '', progress: randomProgress };
         let history = JSON.parse(localStorage.getItem('streamverse_history') || '[]');
         history = history.filter(m => m.id !== id); history.unshift(savedObj); 
@@ -224,7 +241,6 @@ function renderCards(movies, container, append = false, isTV = false) {
         const movieStr = encodeURIComponent(JSON.stringify(savedObj)); const isFav = myList.some(m => m.id === movie.id); const releaseYear = savedObj.release_date ? savedObj.release_date.split('-')[0] : '';
         const newBadgeHTML = (releaseYear == currentYear) ? `<div class="absolute top-2 left-12 bg-gradient-to-r from-red-500 to-pink-500 text-white text-[8px] font-extrabold px-1.5 py-0.5 rounded-full shadow-[0_0_10px_rgba(255,0,0,0.8)] animate-pulse pointer-events-none z-10">NEW</div>` : '';
 
-        // TAMPILKAN PROGRESS BAR JIKA ADA DATA PROGRESS DI HISTORY
         const progressBarHTML = movie.progress ? `<div class="absolute bottom-0 left-0 w-full h-1 bg-black/50"><div class="h-full bg-red-600 shadow-[0_0_8px_rgba(220,38,38,0.8)]" style="width: ${movie.progress}%;"></div></div>` : '';
 
         const card = document.createElement('div'); card.className = "movie-card";
@@ -272,22 +288,15 @@ function renderTrendingCards(movies, container) {
 function changeServer(serverName) {
     const iframe = document.getElementById('videoPlayer');
     let url = '';
-    
-    if (serverName === 'VidSrc') {
-        url = currentPlayType === 'movie' ? `https://vidsrc.me/embed/movie?tmdb=${currentPlayId}` : `https://vidsrc.me/embed/tv?tmdb=${currentPlayId}&season=1&ep=1`;
-    } else if (serverName === 'AutoEmbed') {
-        url = currentPlayType === 'movie' ? `https://player.autoembed.app/embed/movie/${currentPlayId}` : `https://player.autoembed.app/embed/tv/${currentPlayId}/1/1`;
-    } else if (serverName === 'VidLink') {
-        url = currentPlayType === 'movie' ? `https://vidlink.pro/movie/${currentPlayId}` : `https://vidlink.pro/tv/${currentPlayId}/1/1`;
-    }
-    
+    if (serverName === 'VidSrc') { url = currentPlayType === 'movie' ? `https://vidsrc.me/embed/movie?tmdb=${currentPlayId}` : `https://vidsrc.me/embed/tv?tmdb=${currentPlayId}&season=1&ep=1`; } 
+    else if (serverName === 'AutoEmbed') { url = currentPlayType === 'movie' ? `https://player.autoembed.app/embed/movie/${currentPlayId}` : `https://player.autoembed.app/embed/tv/${currentPlayId}/1/1`; } 
+    else if (serverName === 'VidLink') { url = currentPlayType === 'movie' ? `https://vidlink.pro/movie/${currentPlayId}` : `https://vidlink.pro/tv/${currentPlayId}/1/1`; }
     iframe.src = url;
     
     document.querySelectorAll('.server-btn').forEach(btn => {
         btn.classList.remove('bg-blue-600', 'text-white', 'shadow-[0_0_15px_rgba(37,99,235,0.5)]', 'border-transparent');
         btn.classList.add('bg-white/10', 'text-white/70', 'border-white/20');
     });
-    
     const activeBtn = document.getElementById(`server-${serverName}`);
     if(activeBtn) {
         activeBtn.classList.remove('bg-white/10', 'text-white/70', 'border-white/20');
@@ -295,7 +304,6 @@ function changeServer(serverName) {
     }
 }
 
-// FUNGSI SHARE PINTAR NATIVE (BARU)
 function shareMovie(title) {
     if (navigator.share) {
         navigator.share({
@@ -310,7 +318,6 @@ function shareMovie(title) {
 
 async function playMovie(id, title, type = 'movie', backdropPath = '') {
     addHistoryState('nonton'); saveToHistory(id, type, backdropPath); 
-    
     currentPlayId = id; currentPlayType = type;
     
     const player = document.getElementById('playerContainer'); 
@@ -318,10 +325,8 @@ async function playMovie(id, title, type = 'movie', backdropPath = '') {
     const castBox = document.getElementById('castContainer'); const similarBox = document.getElementById('similarContainer');
     
     if(backdropPath && backdropPath !== 'null') { bg.style.backgroundImage = `url('${BACK_PATH + backdropPath}')`; } else { bg.style.backgroundImage = 'none'; }
-    
     document.getElementById('playingTitle').innerText = title;
     
-    // TAMBAH TOMBOL SHARE DI SEBELAH TRAILER
     controls.innerHTML = `
         <div class="flex flex-wrap gap-2 items-center w-full md:w-auto mt-2 md:mt-0">
             <span class="text-[10px] md:text-xs text-white/50 uppercase font-bold mr-1 hidden sm:block">Server:</span>
@@ -335,7 +340,6 @@ async function playMovie(id, title, type = 'movie', backdropPath = '') {
     `;
     
     changeServer('VidSrc');
-    
     player.classList.remove('hidden'); 
     const modalBox = document.getElementById('playerModalBox'); 
     if(modalBox) { modalBox.classList.remove('fade-in-up'); void modalBox.offsetWidth; modalBox.classList.add('fade-in-up'); }
@@ -391,7 +395,8 @@ function startCarousel() { carouselTimer = setInterval(nextHero, 6000); }
 function setupHeroSwipe() {
     let touchStartX = 0; let touchEndX = 0;
     const hero = document.getElementById('heroSection');
-    hero.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; clearInterval(carouselTimer); });
+    // Tambahin passive: true buat usap layar HP biar responsif!
+    hero.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; clearInterval(carouselTimer); }, { passive: true });
     hero.addEventListener('touchend', e => {
         touchEndX = e.changedTouches[0].screenX;
         if (touchEndX < touchStartX - 50) { nextHero(); } 
