@@ -328,16 +328,10 @@ function renderCards(movies, container, append = false, isTV = false) {
 
 // --- PLAYER & METADATA ---
 function changeServer(s) {
-    const f = document.getElementById('videoPlayer');
+    let f = document.getElementById('videoPlayer');
     if (!f) return;
 
     let url = '';
-
-    f.setAttribute('allow', 'autoplay; fullscreen; encrypted-media; picture-in-picture');
-    f.setAttribute('allowfullscreen', 'true');
-    f.setAttribute('webkitallowfullscreen', 'true');
-    f.setAttribute('mozallowfullscreen', 'true');
-    f.setAttribute('referrerpolicy', 'no-referrer');
 
     if (s === 'VidSrc') {
         url = `https://vidsrc.me/embed/${currentPlayType}?tmdb=${currentPlayId}`;
@@ -353,7 +347,31 @@ function changeServer(s) {
         }
     }
 
-    f.src = url;
+    /*
+        FIX FULLSCREEN SERVER 1:
+        Rebuild iframe supaya izin fullscreen native dari player tidak macet.
+    */
+    const freshFrame = f.cloneNode(false);
+
+    freshFrame.id = 'videoPlayer';
+    freshFrame.className = 'w-full h-full';
+    freshFrame.setAttribute('frameborder', '0');
+    freshFrame.setAttribute('allow', 'autoplay; fullscreen; encrypted-media; picture-in-picture');
+    freshFrame.setAttribute('allowfullscreen', '');
+    freshFrame.setAttribute('webkitallowfullscreen', '');
+    freshFrame.setAttribute('mozallowfullscreen', '');
+    freshFrame.setAttribute('referrerpolicy', 'no-referrer');
+
+    freshFrame.allowFullscreen = true;
+    freshFrame.webkitAllowFullscreen = true;
+    freshFrame.mozAllowFullscreen = true;
+
+    f.replaceWith(freshFrame);
+
+    // Set src setelah iframe baru punya permission fullscreen
+    setTimeout(() => {
+        freshFrame.src = url;
+    }, 50);
 
     document.querySelectorAll('.server-btn').forEach(b => {
         b.className = "server-btn px-8 py-3 rounded-full text-[10px] font-black uppercase border border-white/10 opacity-40 transition";
