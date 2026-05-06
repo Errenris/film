@@ -200,7 +200,7 @@ function changeServer(s) {
     const f = document.getElementById('videoPlayer');
     if (!f) return;
 
-    // FIX BLACK SCREEN
+    // === FIX BLACK SCREEN (wajib) ===
     f.src = 'about:blank';
 
     setTimeout(() => {
@@ -210,19 +210,23 @@ function changeServer(s) {
             case 'VidSrcTo':
                 url = `https://vidsrc.to/embed/${currentPlayType}/${currentPlayId}`;
                 break;
-            case 'SuperEmbed':
-                url = `https://www.superembed.stream/embed/${currentPlayType}/${currentPlayId}`;
+            case 'MultiEmbed':
+                url = `https://multiembed.mov/?video_id=${currentPlayId}&tmdb=1`;
+                if (currentPlayType === 'tv') url += '&s=1&e=1'; // default episode 1
+                break;
+            case 'VikingEmbed':
+                url = `https://vembed.click/play/${currentPlayId}`;
                 break;
             default:
                 url = `https://vidsrc.to/embed/${currentPlayType}/${currentPlayId}`;
         }
 
-        // cache buster
+        // Cache buster supaya selalu fresh
         url += (url.includes('?') ? '&' : '?') + 't=' + Date.now();
 
         f.src = url;
 
-        // update tombol
+        // Update tombol aktif
         document.querySelectorAll('.server-btn').forEach(b => {
             b.className = "server-btn px-8 py-3 rounded-full text-[10px] font-black uppercase border border-white/10 opacity-40 transition";
         });
@@ -234,6 +238,7 @@ function changeServer(s) {
     }, 300);
 }
 
+
 async function playMovie(id, title, type, backdrop, poster) {
     currentPlayId = id; currentPlayType = type;
     const player = document.getElementById('playerContainer');
@@ -243,9 +248,10 @@ async function playMovie(id, title, type, backdrop, poster) {
     document.getElementById('playerRating').innerText = "⭐ ...";
     document.getElementById('playerRuntime').innerText = "...";
     
-    document.getElementById('playerControls').innerHTML = `
+        document.getElementById('playerControls').innerHTML = `
         <button id="btn-VidSrcTo" onclick="changeServer('VidSrcTo')" class="server-btn px-8 py-3 rounded-full text-[10px] font-black uppercase bg-white text-black shadow-xl">VidSrc.to</button>
-        <button id="btn-SuperEmbed" onclick="changeServer('SuperEmbed')" class="server-btn px-8 py-3 rounded-full text-[10px] font-black uppercase border border-white/10 opacity-40">SuperEmbed</button>
+        <button id="btn-MultiEmbed" onclick="changeServer('MultiEmbed')" class="server-btn px-8 py-3 rounded-full text-[10px] font-black uppercase border border-white/10 opacity-40">MultiEmbed</button>
+        <button id="btn-VikingEmbed" onclick="changeServer('VikingEmbed')" class="server-btn px-8 py-3 rounded-full text-[10px] font-black uppercase border border-white/10 opacity-40">VikingEmbed</button>
         <button onclick="shareMovie('${title.replace(/'/g, "\\'")}')" class="px-8 py-3 rounded-full text-[10px] font-black uppercase bg-white/5 border border-white/10 hover:bg-white hover:text-black transition">Share</button>`;
     
     changeServer('VidSrcTo');
