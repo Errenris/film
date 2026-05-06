@@ -195,39 +195,49 @@ function renderCards(movies, container, append = false, isTV = false) {
     });
 }
 
-// --- PLAYER & METADATA ---
+// --- PLAYER & METADATA ---  (ganti dari sini)
 function changeServer(s) {
     const f = document.getElementById('videoPlayer');
-    let url = '';
+    if (!f) return;
 
-    switch(s) {
-        case 'VidSrcTo':
-            url = `https://vidsrc.to/embed/\( {currentPlayType}/ \){currentPlayId}`;
-            break;
-        case 'Godrive':
-            url = `https://godriveplayer.com/embed/\( {currentPlayType}/ \){currentPlayType === 'tv' ? currentPlayId + '/1/1' : currentPlayId}`;
-            break;
-        case 'EmbedSu':
-            url = `https://embed.su/embed/\( {currentPlayType}?tmdb= \){currentPlayId}`;
-            break;
-        case 'AutoEmbed':
-            url = `https://player.autoembed.app/embed/\( {currentPlayType}/ \){currentPlayId}${currentPlayType==='tv'?'/1/1':''}`;
-            break;
-        default: // fallback terbaik
-            url = `https://vidsrc.to/embed/\( {currentPlayType}/ \){currentPlayId}`;
-    }
+    // === FIX BLACK SCREEN (paling penting) ===
+    f.src = 'about:blank';                    // unload embed lama dulu
 
-    f.src = url;
+    setTimeout(() => {                        // delay biar browser reset bersih
+        let url = '';
 
-    // Update tampilan tombol
-    document.querySelectorAll('.server-btn').forEach(b => {
-        b.className = "server-btn px-8 py-3 rounded-full text-[10px] font-black uppercase border border-white/10 opacity-40 transition";
-    });
+        switch(s) {
+            case 'VidSrcTo':
+                url = `https://vidsrc.to/embed/${currentPlayType}/${currentPlayId}`;
+                break;
+            case 'Godrive':
+                url = `https://godriveplayer.com/embed/${currentPlayType}/${currentPlayType === 'tv' ? currentPlayId + '/1/1' : currentPlayId}`;
+                break;
+            case 'EmbedSu':
+                url = `https://embed.su/embed/${currentPlayType}?tmdb=${currentPlayId}`;
+                break;
+            case 'AutoEmbed':
+                url = `https://player.autoembed.app/embed/${currentPlayType}/${currentPlayId}${currentPlayType==='tv'?'/1/1':''}`;
+                break;
+            default: // fallback terbaik
+                url = `https://vidsrc.to/embed/${currentPlayType}/${currentPlayId}`;
+        }
 
-    const active = document.getElementById('btn-'+s);
-    if(active) {
-        active.className = "server-btn px-8 py-3 rounded-full text-[10px] font-black uppercase bg-white text-black shadow-xl transition active:scale-95";
-    }
+        // Cache buster biar selalu fresh
+        url += (url.includes('?') ? '&' : '?') + 't=' + Date.now();
+
+        f.src = url;
+
+        // Update tombol aktif
+        document.querySelectorAll('.server-btn').forEach(b => {
+            b.className = "server-btn px-8 py-3 rounded-full text-[10px] font-black uppercase border border-white/10 opacity-40 transition";
+        });
+
+        const active = document.getElementById('btn-'+s);
+        if(active) {
+            active.className = "server-btn px-8 py-3 rounded-full text-[10px] font-black uppercase bg-white text-black shadow-xl transition active:scale-95";
+        }
+    }, 300); // delay 300ms paling ampuh
 }
 
 async function playMovie(id, title, type, backdrop, poster) {
