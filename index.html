@@ -353,6 +353,24 @@ body.fullscreen-video.cursor-idle button {
     opacity: 0 !important;
     pointer-events: none !important;
 }
+
+
+        /* ===================================================== */
+        /* MOUSE SHIELD: BANTU CONTROL IFRAME HILANG SAAT IDLE */
+        /* ===================================================== */
+
+        #playerMouseShield {
+            display: none;
+        }
+
+        body.fullscreen-video.cursor-idle #playerMouseShield {
+            display: block;
+            position: fixed;
+            inset: 0;
+            z-index: 999999;
+            background: transparent;
+            cursor: none;
+        }
     </style>
 </head>
 
@@ -569,6 +587,8 @@ body.fullscreen-video.cursor-idle button {
                     allowfullscreen
                     referrerpolicy="no-referrer"
                 ></iframe>
+
+                <div id="playerMouseShield"></div>
             </div>
 
             <div class="p-6 md:p-12 space-y-12">
