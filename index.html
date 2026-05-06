@@ -304,56 +304,56 @@
         #videoPlayer {
             background: #000;
         }
+
         /* ===================================================== */
-/* FIX FULLSCREEN PLAYER: HILANGKAN INFO & CURSOR IDLE */
-/* ===================================================== */
+        /* FIX FULLSCREEN PLAYER LAMA */
+        /* ===================================================== */
 
-body.fullscreen-video #playerModalBox {
-    max-width: 100vw !important;
-    width: 100vw !important;
-    height: 100vh !important;
-    border-radius: 0 !important;
-    border: none !important;
-    background: #000 !important;
-    overflow: hidden !important;
-}
+        body.fullscreen-video #playerModalBox {
+            max-width: 100vw !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            border-radius: 0 !important;
+            border: none !important;
+            background: #000 !important;
+            overflow: hidden !important;
+        }
 
-body.fullscreen-video #playerModalBox > .p-6,
-body.fullscreen-video #playerModalBox > .md\:p-12,
-body.fullscreen-video .player-info-card,
-body.fullscreen-video #playerControls,
-body.fullscreen-video #playingTitle,
-body.fullscreen-video #playerOverview,
-body.fullscreen-video #playerRating,
-body.fullscreen-video #playerYear,
-body.fullscreen-video #playerRuntime,
-body.fullscreen-video #castContainer,
-body.fullscreen-video #similarContainer {
-    display: none !important;
-}
+        body.fullscreen-video #playerModalBox > .p-6,
+        body.fullscreen-video #playerModalBox > .md\:p-12,
+        body.fullscreen-video .player-info-card,
+        body.fullscreen-video #playerControls,
+        body.fullscreen-video #playingTitle,
+        body.fullscreen-video #playerOverview,
+        body.fullscreen-video #playerRating,
+        body.fullscreen-video #playerYear,
+        body.fullscreen-video #playerRuntime,
+        body.fullscreen-video #castContainer,
+        body.fullscreen-video #similarContainer {
+            display: none !important;
+        }
 
-body.fullscreen-video #playerModalBox .aspect-video {
-    width: 100vw !important;
-    height: 100vh !important;
-    aspect-ratio: unset !important;
-}
+        body.fullscreen-video #playerModalBox .aspect-video {
+            width: 100vw !important;
+            height: 100vh !important;
+            aspect-ratio: unset !important;
+        }
 
-body.fullscreen-video #videoPlayer {
-    width: 100vw !important;
-    height: 100vh !important;
-    background: #000 !important;
-}
+        body.fullscreen-video #videoPlayer {
+            width: 100vw !important;
+            height: 100vh !important;
+            background: #000 !important;
+        }
 
-body.fullscreen-video.cursor-idle,
-body.fullscreen-video.cursor-idle * {
-    cursor: none !important;
-}
+        body.fullscreen-video.cursor-idle,
+        body.fullscreen-video.cursor-idle * {
+            cursor: none !important;
+        }
 
-body.fullscreen-video.cursor-idle button {
-    opacity: 0 !important;
-    pointer-events: none !important;
-}
-
+        body.fullscreen-video.cursor-idle button {
+            opacity: 0 !important;
+            pointer-events: none !important;
+        }
 
         /* ===================================================== */
         /* MOUSE SHIELD: BANTU CONTROL IFRAME HILANG SAAT IDLE */
@@ -371,11 +371,71 @@ body.fullscreen-video.cursor-idle button {
             background: transparent;
             cursor: none;
         }
+
+        /* ===================================================== */
+        /* CUSTOM FULLSCREEN ALA YOUTUBE */
+        /* Mouse hilang setelah 3 detik */
+        /* ===================================================== */
+
+        body.clean-fullscreen #playerModalBox {
+            max-width: 100vw !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            border-radius: 0 !important;
+            border: none !important;
+            background: #000 !important;
+            overflow: hidden !important;
+        }
+
+        body.clean-fullscreen #playerModalBox .aspect-video {
+            width: 100vw !important;
+            height: 100vh !important;
+            aspect-ratio: unset !important;
+        }
+
+        body.clean-fullscreen #videoPlayer {
+            width: 100vw !important;
+            height: 100vh !important;
+            background: #000 !important;
+        }
+
+        body.clean-fullscreen #playerModalBox > .p-6,
+        body.clean-fullscreen #playerModalBox > .md\:p-12,
+        body.clean-fullscreen .player-info-card,
+        body.clean-fullscreen #castContainer,
+        body.clean-fullscreen #similarContainer,
+        body.clean-fullscreen #playingTitle,
+        body.clean-fullscreen #playerOverview,
+        body.clean-fullscreen #playerRating,
+        body.clean-fullscreen #playerYear,
+        body.clean-fullscreen #playerRuntime,
+        body.clean-fullscreen #playerControls {
+            display: none !important;
+        }
+
+        body.clean-fullscreen.fs-idle,
+        body.clean-fullscreen.fs-idle * {
+            cursor: none !important;
+        }
+
+        #cleanFsMouseShield {
+            display: none;
+        }
+
+        body.clean-fullscreen.fs-idle #cleanFsMouseShield {
+            display: block;
+            position: fixed;
+            inset: 0;
+            z-index: 9999999;
+            background: transparent;
+            cursor: none !important;
+        }
     </style>
 </head>
 
 <body class="pb-20">
-<button id="focusTrapBtn" style="position:fixed;left:-9999px;top:-9999px;width:1px;height:1px;opacity:0;">focus</button>
+    <button id="focusTrapBtn" style="position:fixed;left:-9999px;top:-9999px;width:1px;height:1px;opacity:0;">focus</button>
+
     <div id="ambientBg"></div>
     <div class="overlay"></div>
 
@@ -589,6 +649,7 @@ body.fullscreen-video.cursor-idle button {
                 ></iframe>
 
                 <div id="playerMouseShield"></div>
+                <div id="cleanFsMouseShield"></div>
             </div>
 
             <div class="p-6 md:p-12 space-y-12">
