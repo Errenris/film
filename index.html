@@ -304,6 +304,55 @@
         #videoPlayer {
             background: #000;
         }
+        /* ===================================================== */
+/* FIX FULLSCREEN PLAYER: HILANGKAN INFO & CURSOR IDLE */
+/* ===================================================== */
+
+body.fullscreen-video #playerModalBox {
+    max-width: 100vw !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    border-radius: 0 !important;
+    border: none !important;
+    background: #000 !important;
+    overflow: hidden !important;
+}
+
+body.fullscreen-video #playerModalBox > .p-6,
+body.fullscreen-video #playerModalBox > .md\:p-12,
+body.fullscreen-video .player-info-card,
+body.fullscreen-video #playerControls,
+body.fullscreen-video #playingTitle,
+body.fullscreen-video #playerOverview,
+body.fullscreen-video #playerRating,
+body.fullscreen-video #playerYear,
+body.fullscreen-video #playerRuntime,
+body.fullscreen-video #castContainer,
+body.fullscreen-video #similarContainer {
+    display: none !important;
+}
+
+body.fullscreen-video #playerModalBox .aspect-video {
+    width: 100vw !important;
+    height: 100vh !important;
+    aspect-ratio: unset !important;
+}
+
+body.fullscreen-video #videoPlayer {
+    width: 100vw !important;
+    height: 100vh !important;
+    background: #000 !important;
+}
+
+body.fullscreen-video.cursor-idle,
+body.fullscreen-video.cursor-idle * {
+    cursor: none !important;
+}
+
+body.fullscreen-video.cursor-idle button {
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
     </style>
 </head>
 
