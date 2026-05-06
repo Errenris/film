@@ -10,8 +10,6 @@ let carouselTimer;
 let currentPlayId = '';
 let currentPlayType = '';
 let liveSearchTimeout;
-let fullscreenCursorTimer = null;
-let cleanFsTimer = null;
 
 let currentSeason = 1;
 let currentEpisode = 1;
@@ -335,24 +333,21 @@ function changeServer(s) {
 
     let url = '';
 
-    // Pastikan izin fullscreen tetap ada
     f.setAttribute('allow', 'autoplay; fullscreen; encrypted-media; picture-in-picture');
     f.setAttribute('allowfullscreen', 'true');
+    f.setAttribute('webkitallowfullscreen', 'true');
+    f.setAttribute('mozallowfullscreen', 'true');
     f.setAttribute('referrerpolicy', 'no-referrer');
 
     if (s === 'VidSrc') {
-        // Balik ke format lama yang sebelumnya bisa fullscreen
         url = `https://vidsrc.me/embed/${currentPlayType}?tmdb=${currentPlayId}`;
 
-        // Kalau TV, tambahkan season/episode dengan cara aman
         if (currentPlayType === 'tv') {
             url += `&season=${currentSeason}&episode=${currentEpisode}`;
         }
     } else {
-        // Balik ke format lama AutoEmbed
         url = `https://player.autoembed.app/embed/${currentPlayType}/${currentPlayId}`;
 
-        // Kalau TV, pakai season/episode aktif
         if (currentPlayType === 'tv') {
             url += `/${currentSeason}/${currentEpisode}`;
         }
@@ -481,10 +476,6 @@ async function playMovie(id, title, type, backdrop, poster) {
                 Server 2
             </button>
 
-            <button onclick="enterCleanFullscreen()" class="px-8 py-3 rounded-full text-[10px] font-black uppercase bg-blue-500 text-white border border-blue-400 hover:bg-blue-400 transition">
-                Fullscreen
-            </button>
-
             <button onclick="shareMovie('${title.replace(/'/g, "\\'")}')" class="px-8 py-3 rounded-full text-[10px] font-black uppercase bg-white/5 border border-white/10 hover:bg-white hover:text-black transition">
                 Share
             </button>
@@ -587,9 +578,6 @@ function closePlayer() {
         document.exitFullscreen().catch(() => {});
     }
 
-    disableFullscreenCleanMode();
-    exitCleanFullscreen(false);
-
     if (player) {
         player.classList.add('hidden');
     }
@@ -607,278 +595,12 @@ function closePlayer() {
     }
 }
 
-// --- FULLSCREEN CLEAN MODE LAMA ---
-function getPlayerMouseShield() {
-    return document.getElementById('playerMouseShield');
-}
-
-function setCursorIdleTimer() {
-    if (document.body.classList.contains('cursor-idle')) {
-        return;
-    }
-
-    clearTimeout(fullscreenCursorTimer);
-
-    fullscreenCursorTimer = setTimeout(() => {
-        if (document.fullscreenElement) {
-            nudgePlayerControlsToHide(true);
-            document.body.classList.add('cursor-idle');
-        }
-    }, 2200);
-}
-
-function wakePlayerMouseShield() {
-    document.body.classList.remove('cursor-idle');
-    clearTimeout(fullscreenCursorTimer);
-    setCursorIdleTimer();
-}
-
-function enableFullscreenCleanMode() {
-    if (document.body.classList.contains('clean-fullscreen')) return;
-
-    document.body.classList.add('fullscreen-video');
-
-    const focusTrap = document.getElementById('focusTrapBtn');
-
-    setTimeout(() => {
-        if (focusTrap) {
-            focusTrap.focus();
-            focusTrap.blur();
-        }
-
-        if (document.activeElement && document.activeElement.blur) {
-            document.activeElement.blur();
-        }
-
-        window.focus();
-    }, 300);
-
-    setTimeout(() => {
-        if (focusTrap) {
-            focusTrap.focus();
-            focusTrap.blur();
-        }
-
-        if (document.activeElement && document.activeElement.blur) {
-            document.activeElement.blur();
-        }
-
-        nudgePlayerControlsToHide(true);
-    }, 1200);
-
-    setCursorIdleTimer();
-}
-
-function disableFullscreenCleanMode() {
-    document.body.classList.remove('fullscreen-video');
-    document.body.classList.remove('cursor-idle');
-    clearTimeout(fullscreenCursorTimer);
-}
-
 function setupFullscreenCleanMode() {
     document.addEventListener('fullscreenchange', () => {
         if (!document.fullscreenElement) {
-            document.body.classList.remove('clean-fullscreen');
-            document.body.classList.remove('fs-idle');
-            clearTimeout(cleanFsTimer);
-            disableFullscreenCleanMode();
-            return;
-        }
-
-        if (document.body.classList.contains('clean-fullscreen')) {
-            resetCleanFullscreenTimer();
-        } else {
-            enableFullscreenCleanMode();
+            document.body.classList.remove('cursor-idle');
         }
     });
-
-    document.addEventListener('mousemove', (e) => {
-        if (document.body.classList.contains('clean-fullscreen')) {
-            handleCleanFullscreenMove(e);
-            return;
-        }
-
-        if (!document.fullscreenElement) return;
-
-        const shield = getPlayerMouseShield();
-
-        if (
-            shield &&
-            document.body.classList.contains('cursor-idle') &&
-            e.target === shield
-        ) {
-            return;
-        }
-
-        document.body.classList.remove('cursor-idle');
-        setCursorIdleTimer();
-    });
-
-    document.addEventListener('touchstart', (e) => {
-        if (document.body.classList.contains('clean-fullscreen')) {
-            handleCleanFullscreenTouch(e);
-            return;
-        }
-
-        if (!document.fullscreenElement) return;
-
-        const shield = getPlayerMouseShield();
-
-        if (
-            shield &&
-            document.body.classList.contains('cursor-idle') &&
-            e.target === shield
-        ) {
-            wakePlayerMouseShield();
-            return;
-        }
-
-        document.body.classList.remove('cursor-idle');
-        setCursorIdleTimer();
-    });
-
-    document.addEventListener('click', (e) => {
-        if (document.body.classList.contains('clean-fullscreen')) {
-            handleCleanFullscreenClick(e);
-            return;
-        }
-
-        if (!document.fullscreenElement) return;
-
-        const shield = getPlayerMouseShield();
-
-        if (
-            shield &&
-            document.body.classList.contains('cursor-idle') &&
-            e.target === shield
-        ) {
-            wakePlayerMouseShield();
-        }
-    });
-
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') {
-            exitCleanFullscreen();
-            return;
-        }
-
-        if (e.key === 'f' || e.key === 'F') {
-            if (document.body.classList.contains('clean-fullscreen')) {
-                exitCleanFullscreen();
-            } else {
-                enterCleanFullscreen();
-            }
-            return;
-        }
-
-        if (document.body.classList.contains('clean-fullscreen')) {
-            resetCleanFullscreenTimer();
-            return;
-        }
-
-        if (!document.fullscreenElement) return;
-
-        document.body.classList.remove('cursor-idle');
-        setCursorIdleTimer();
-
-        if (e.key === 'h' || e.key === 'H') {
-            nudgePlayerControlsToHide(true);
-            document.body.classList.add('cursor-idle');
-        }
-    });
-}
-
-// --- CUSTOM FULLSCREEN ALA YOUTUBE ---
-function enterCleanFullscreen() {
-    const modal = document.getElementById('playerModalBox');
-
-    if (!modal) return;
-
-    disableFullscreenCleanMode();
-
-    document.body.classList.add('clean-fullscreen');
-    document.body.classList.remove('fs-idle');
-
-    if (!document.fullscreenElement) {
-        modal.requestFullscreen().catch(() => {});
-    }
-
-    resetCleanFullscreenTimer();
-}
-
-function exitCleanFullscreen(alsoExitBrowserFullscreen = true) {
-    document.body.classList.remove('clean-fullscreen');
-    document.body.classList.remove('fs-idle');
-
-    clearTimeout(cleanFsTimer);
-
-    if (alsoExitBrowserFullscreen && document.fullscreenElement) {
-        document.exitFullscreen().catch(() => {});
-    }
-}
-
-function resetCleanFullscreenTimer() {
-    if (!document.body.classList.contains('clean-fullscreen')) return;
-
-    document.body.classList.remove('fs-idle');
-
-    clearTimeout(cleanFsTimer);
-
-    cleanFsTimer = setTimeout(() => {
-        if (document.body.classList.contains('clean-fullscreen')) {
-            nudgePlayerControlsToHide(true);
-            document.body.classList.add('fs-idle');
-        }
-    }, 3000);
-}
-
-function wakeCleanFullscreen() {
-    document.body.classList.remove('fs-idle');
-    resetCleanFullscreenTimer();
-}
-
-function handleCleanFullscreenMove(e) {
-    const shield = document.getElementById('cleanFsMouseShield');
-
-    if (
-        shield &&
-        document.body.classList.contains('fs-idle') &&
-        e.target === shield
-    ) {
-        return;
-    }
-
-    wakeCleanFullscreen();
-}
-
-function handleCleanFullscreenClick(e) {
-    const shield = document.getElementById('cleanFsMouseShield');
-
-    if (
-        shield &&
-        document.body.classList.contains('fs-idle') &&
-        e.target === shield
-    ) {
-        wakeCleanFullscreen();
-        return;
-    }
-
-    resetCleanFullscreenTimer();
-}
-
-function handleCleanFullscreenTouch(e) {
-    const shield = document.getElementById('cleanFsMouseShield');
-
-    if (
-        shield &&
-        document.body.classList.contains('fs-idle') &&
-        e.target === shield
-    ) {
-        wakeCleanFullscreen();
-        return;
-    }
-
-    resetCleanFullscreenTimer();
 }
 
 // Pause iframe saat tab pindah agar tidak berat di background
@@ -1155,37 +877,6 @@ async function surpriseMe() {
     );
 }
 
-/* ===================================================== */
-/* JITAK HALUS PLAYER BIAR CONTROL FULLSCREEN AUTO HIDE */
-/* Tekan tombol H saat fullscreen kalau control bandel */
-/* ===================================================== */
-
-function nudgePlayerControlsToHide(keepIdle = false) {
-    const focusTrap = document.getElementById('focusTrapBtn');
-
-    if (focusTrap) {
-        focusTrap.focus();
-        focusTrap.blur();
-    }
-
-    if (document.activeElement && document.activeElement.blur) {
-        document.activeElement.blur();
-    }
-
-    window.focus();
-
-    document.body.classList.add('cursor-idle');
-
-    if (!keepIdle) {
-        setTimeout(() => {
-            document.body.classList.remove('cursor-idle');
-
-            if (typeof setCursorIdleTimer === 'function') {
-                setCursorIdleTimer();
-            }
-        }, 150);
-    }
-}
 /* ===================================================== */
 /* DNS / BRAVE RECOMMENDATION NOTICE */
 /* ===================================================== */
