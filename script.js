@@ -1209,3 +1209,31 @@ function nudgePlayerControlsToHide(keepIdle = false) {
         }, 150);
     }
 }
+/* ===================================================== */
+/* ANTI POPUP RINGAN TANPA SANDBOX */
+/* Aman untuk server embed yang anti-sandbox */
+/* ===================================================== */
+
+(function antiPopupGuard() {
+    window.open = function(url) {
+        console.warn("Popup diblokir:", url);
+        return null;
+    };
+
+    document.addEventListener('click', (e) => {
+        const link = e.target.closest('a');
+
+        if (!link) return;
+
+        const href = link.getAttribute('href') || '';
+
+        if (
+            href.startsWith('http') &&
+            !href.includes(location.hostname)
+        ) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.warn("External link diblokir:", href);
+        }
+    }, true);
+})();
