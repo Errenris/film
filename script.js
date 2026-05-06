@@ -534,6 +534,33 @@ function setCursorIdleTimer() {
 
 function enableFullscreenCleanMode() {
     document.body.classList.add('fullscreen-video');
+
+    const focusTrap = document.getElementById('focusTrapBtn');
+
+    setTimeout(() => {
+        if (focusTrap) {
+            focusTrap.focus();
+            focusTrap.blur();
+        }
+
+        if (document.activeElement && document.activeElement.blur) {
+            document.activeElement.blur();
+        }
+
+        window.focus();
+    }, 300);
+
+    setTimeout(() => {
+        if (focusTrap) {
+            focusTrap.focus();
+            focusTrap.blur();
+        }
+
+        if (document.activeElement && document.activeElement.blur) {
+            document.activeElement.blur();
+        }
+    }, 1200);
+
     setCursorIdleTimer();
 }
 
@@ -844,3 +871,39 @@ async function surpriseMe() {
         r.poster_path || ''
     );
 }
+
+/* ===================================================== */
+/* JITAK HALUS PLAYER BIAR CONTROL FULLSCREEN AUTO HIDE */
+/* Tekan tombol H saat fullscreen kalau control bandel */
+/* ===================================================== */
+
+function nudgePlayerControlsToHide() {
+    const focusTrap = document.getElementById('focusTrapBtn');
+
+    if (focusTrap) {
+        focusTrap.focus();
+        focusTrap.blur();
+    }
+
+    if (document.activeElement && document.activeElement.blur) {
+        document.activeElement.blur();
+    }
+
+    document.body.classList.add('cursor-idle');
+
+    setTimeout(() => {
+        document.body.classList.remove('cursor-idle');
+
+        if (typeof setCursorIdleTimer === 'function') {
+            setCursorIdleTimer();
+        }
+    }, 150);
+}
+
+document.addEventListener('keydown', (e) => {
+    if (!document.fullscreenElement) return;
+
+    if (e.key === 'h' || e.key === 'H') {
+        nudgePlayerControlsToHide();
+    }
+});
