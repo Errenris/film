@@ -435,7 +435,50 @@
 
 <body class="pb-20">
     <button id="focusTrapBtn" style="position:fixed;left:-9999px;top:-9999px;width:1px;height:1px;opacity:0;">focus</button>
+<!-- DNS / BROWSER RECOMMENDATION NOTICE -->
+<div id="dnsNotice" class="fixed inset-0 z-[99999999] hidden items-center justify-center bg-black/80 backdrop-blur-md px-5">
+    <div class="w-full max-w-md rounded-[32px] border border-white/10 bg-[#0b0b10] p-7 shadow-2xl text-center">
+        <div class="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-blue-500/20 text-3xl border border-blue-400/30">
+            🛡️
+        </div>
 
+        <h2 class="text-2xl font-black text-white tracking-tight mb-3">
+            Rekomendasi Anti Iklan
+        </h2>
+
+        <p class="text-sm leading-relaxed text-white/60 mb-5">
+            Untuk pengalaman nonton yang lebih nyaman dan mengurangi iklan/popup dari server video,
+            disarankan menggunakan DNS berikut:
+        </p>
+
+        <div class="rounded-2xl bg-white/5 border border-white/10 p-4 mb-4">
+            <p class="text-[10px] uppercase tracking-[0.3em] text-blue-400 font-black mb-2">
+                DNS Rekomendasi
+            </p>
+            <code class="text-white font-bold text-sm break-all">
+                p2.freedns.controld.com
+            </code>
+        </div>
+
+        <p class="text-sm leading-relaxed text-white/60 mb-6">
+            Alternatif lain: gunakan browser <b class="text-white">Brave</b> agar popup/iklan lebih banyak terblokir otomatis.
+        </p>
+
+        <div class="flex flex-col gap-3">
+            <button onclick="copyDnsNotice()" class="w-full rounded-full bg-blue-500 px-6 py-4 text-xs font-black uppercase tracking-widest text-white hover:bg-blue-400 transition">
+                Copy DNS
+            </button>
+
+            <button onclick="closeDnsNotice()" class="w-full rounded-full bg-white px-6 py-4 text-xs font-black uppercase tracking-widest text-black hover:bg-white/80 transition">
+                Saya Mengerti
+            </button>
+        </div>
+
+        <p class="mt-5 text-[10px] text-white/30 leading-relaxed">
+            Catatan: pengaturan DNS dilakukan di perangkat/browser masing-masing, bukan otomatis dari website.
+        </p>
+    </div>
+</div>
     <div id="ambientBg"></div>
     <div class="overlay"></div>
 
