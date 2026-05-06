@@ -335,10 +335,14 @@ function changeServer(s) {
 
         switch (s) {
             case 'Vaplayer':
-                url = currentPlayType === 'tv'
-                    ? `https://vaplayer.ru/embed/tv/${currentPlayId}/1/1?autoplay=1&controls=0&title=0&showinfo=0#hide-controls;hide-title`
-                    : `https://vaplayer.ru/embed/movie/${currentPlayId}?autoplay=1&controls=0&title=0&showinfo=0#hide-controls;hide-title`;
-                break;
+    if (currentPlayType === 'tv') {
+        // Series/TV lebih aman tanpa parameter tambahan
+        url = `https://vaplayer.ru/embed/tv/${currentPlayId}/1/1`;
+    } else {
+        // Movie masih boleh pakai parameter hide control
+        url = `https://vaplayer.ru/embed/movie/${currentPlayId}?autoplay=1&controls=0&title=0&showinfo=0#hide-controls;hide-title`;
+    }
+    break;
 
             case 'VidSrcTo':
                 url = `https://vidsrc.to/embed/${currentPlayType}/${currentPlayId}?autoplay=1&controls=0&title=0&showinfo=0#hide-controls;hide-title`;
@@ -359,10 +363,11 @@ function changeServer(s) {
                 break;
 
             default:
-                url = currentPlayType === 'tv'
-                    ? `https://vaplayer.ru/embed/tv/${currentPlayId}/1/1?autoplay=1&controls=0&title=0&showinfo=0#hide-controls;hide-title`
-                    : `https://vaplayer.ru/embed/movie/${currentPlayId}?autoplay=1&controls=0&title=0&showinfo=0#hide-controls;hide-title`;
-        }
+    if (currentPlayType === 'tv') {
+        url = `https://vaplayer.ru/embed/tv/${currentPlayId}/1/1`;
+    } else {
+        url = `https://vaplayer.ru/embed/movie/${currentPlayId}?autoplay=1&controls=0&title=0&showinfo=0#hide-controls;hide-title`;
+    }
 
         f.src = url;
 
