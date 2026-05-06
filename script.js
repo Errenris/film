@@ -12,6 +12,10 @@ let currentPlayType = '';
 let liveSearchTimeout;
 let fullscreenCursorTimer = null;
 
+let currentSeason = 1;
+let currentEpisode = 1;
+let currentTvDetails = null;
+
 window.onload = () => {
     initApp();
     setupScrollEffects();
@@ -284,7 +288,7 @@ function renderCards(movies, container, append = false, isTV = false) {
     movies.forEach(m => {
         if (!m.poster_path) return;
 
-        const type = isTV ? 'tv' : (m.media_type || (m.title ? 'movie' : 'tv'));
+        const type = isTV ? 'tv' : (m.media_type || m.type || (m.title ? 'movie' : 'tv'));
         const sTitle = safeText(m.title || m.name);
 
         const progHTML = m.progress
@@ -336,21 +340,25 @@ function changeServer(s) {
         switch (s) {
             case 'Vaplayer':
                 if (currentPlayType === 'tv') {
-                    // Series/TV lebih aman tanpa parameter tambahan
-                    url = `https://vaplayer.ru/embed/tv/${currentPlayId}/1/1`;
+                    url = `https://vaplayer.ru/embed/tv/${currentPlayId}/${currentSeason}/${currentEpisode}`;
                 } else {
-                    // Movie masih boleh pakai parameter hide control
                     url = `https://vaplayer.ru/embed/movie/${currentPlayId}?autoplay=1&controls=0&title=0&showinfo=0#hide-controls;hide-title`;
                 }
                 break;
 
             case 'VidSrcTo':
-                url = `https://vidsrc.to/embed/${currentPlayType}/${currentPlayId}?autoplay=1&controls=0&title=0&showinfo=0#hide-controls;hide-title`;
+                if (currentPlayType === 'tv') {
+                    url = `https://vidsrc.to/embed/tv/${currentPlayId}/${currentSeason}/${currentEpisode}`;
+                } else {
+                    url = `https://vidsrc.to/embed/movie/${currentPlayId}?autoplay=1&controls=0&title=0&showinfo=0#hide-controls;hide-title`;
+                }
                 break;
 
             case 'MultiEmbed':
                 url = `https://multiembed.mov/?video_id=${currentPlayId}&tmdb=1&autoplay=1&controls=0&title=0&showinfo=0`;
-                if (currentPlayType === 'tv') url += '&s=1&e=1';
+                if (currentPlayType === 'tv') {
+                    url += `&s=${currentSeason}&e=${currentEpisode}`;
+                }
                 url += '#hide-controls;hide-title';
                 break;
 
@@ -359,12 +367,16 @@ function changeServer(s) {
                 break;
 
             case 'StreamIMDB':
-                url = `https://streamimdb.ru/embed/${currentPlayType}/${currentPlayId}?autoplay=1&controls=0&title=0&showinfo=0#hide-controls;hide-title`;
+                if (currentPlayType === 'tv') {
+                    url = `https://streamimdb.ru/embed/tv/${currentPlayId}/${currentSeason}/${currentEpisode}?autoplay=1&controls=0&title=0&showinfo=0#hide-controls;hide-title`;
+                } else {
+                    url = `https://streamimdb.ru/embed/movie/${currentPlayId}?autoplay=1&controls=0&title=0&showinfo=0#hide-controls;hide-title`;
+                }
                 break;
 
             default:
                 if (currentPlayType === 'tv') {
-                    url = `https://vaplayer.ru/embed/tv/${currentPlayId}/1/1`;
+                    url = `https://vaplayer.ru/embed/tv/${currentPlayId}/${currentSeason}/${currentEpisode}`;
                 } else {
                     url = `https://vaplayer.ru/embed/movie/${currentPlayId}?autoplay=1&controls=0&title=0&showinfo=0#hide-controls;hide-title`;
                 }
@@ -385,9 +397,89 @@ function changeServer(s) {
     }, 250);
 }
 
+function renderEpisodeControls(tvDetails) {
+    const playerControls = document.getElementById('playerControls');
+    if (!playerControls || currentPlayType !== 'tv') return;
+
+    currentTvDetails = tvDetails;
+
+    const oldSeason = document.getElementById('seasonSelect');
+    const oldEpisode = document.getElementById('episodeSelect');
+    const oldLabel = document.getElementById('episodeLabel');
+
+    if (oldSeason) oldSeason.remove();
+    if (oldEpisode) oldEpisode.remove();
+    if (oldLabel) oldLabel.remove();
+
+    const seasons = (tvDetails.seasons || [])
+        .filter(s => s.season_number > 0 && s.episode_count > 0);
+
+    if (seasons.length === 0) return;
+
+    const activeSeason = seasons.find(s => s.season_number === currentSeason) || seasons[0];
+    currentSeason = activeSeason.season_number;
+
+    if (currentEpisode > activeSeason.episode_count) {
+        currentEpisode = 1;
+    }
+
+    const seasonOptions = seasons.map(s => {
+        return `<option value="${s.season_number}" ${s.season_number === currentSeason ? 'selected' : ''}>
+            Season ${s.season_number}
+        </option>`;
+    }).join('');
+
+    const episodeOptions = Array.from({ length: activeSeason.episode_count }, (_, i) => {
+        const ep = i + 1;
+        return `<option value="${ep}" ${ep === currentEpisode ? 'selected' : ''}>
+            Episode ${ep}
+        </option>`;
+    }).join('');
+
+    playerControls.insertAdjacentHTML('afterbegin', `
+        <span id="episodeLabel" class="px-4 py-3 rounded-full text-[10px] font-black uppercase bg-blue-500/20 text-blue-300 border border-blue-500/30">
+            PILIH EP
+        </span>
+
+        <select id="seasonSelect" onchange="changeSeasonEpisode()" class="px-5 py-3 rounded-full text-[10px] font-black uppercase bg-white text-black outline-none">
+            ${seasonOptions}
+        </select>
+
+        <select id="episodeSelect" onchange="changeSeasonEpisode()" class="px-5 py-3 rounded-full text-[10px] font-black uppercase bg-white text-black outline-none">
+            ${episodeOptions}
+        </select>
+    `);
+}
+
+function changeSeasonEpisode() {
+    const seasonSelect = document.getElementById('seasonSelect');
+    const episodeSelect = document.getElementById('episodeSelect');
+
+    if (!seasonSelect || !episodeSelect) return;
+
+    const newSeason = Number(seasonSelect.value);
+    let newEpisode = Number(episodeSelect.value);
+
+    if (newSeason !== currentSeason && currentTvDetails) {
+        currentSeason = newSeason;
+        currentEpisode = 1;
+        renderEpisodeControls(currentTvDetails);
+        changeServer('Vaplayer');
+        return;
+    }
+
+    currentSeason = newSeason;
+    currentEpisode = newEpisode;
+
+    changeServer('Vaplayer');
+}
+
 async function playMovie(id, title, type, backdrop, poster) {
     currentPlayId = id;
     currentPlayType = type;
+    currentSeason = 1;
+    currentEpisode = 1;
+    currentTvDetails = null;
 
     const player = document.getElementById('playerContainer');
     const playingTitle = document.getElementById('playingTitle');
@@ -429,6 +521,10 @@ async function playMovie(id, title, type, backdrop, poster) {
     try {
         const res = await fetch(`/api/movies?path=${type}/${id}`);
         const m = await res.json();
+
+        if (type === 'tv') {
+            renderEpisodeControls(m);
+        }
 
         if (playerOverview) {
             playerOverview.innerText = m.overview || 'Sinopsis tidak tersedia untuk film ini.';
