@@ -338,53 +338,22 @@ function changeServer(s) {
     setTimeout(() => {
         let url = '';
 
-        switch (s) {
-            case 'Vaplayer':
-                if (currentPlayType === 'tv') {
-                    url = `https://vaplayer.ru/embed/tv/${currentPlayId}/${currentSeason}/${currentEpisode}`;
-                } else {
-                    url = `https://vaplayer.ru/embed/movie/${currentPlayId}?autoplay=1&controls=0&title=0&showinfo=0#hide-controls;hide-title`;
-                }
-                break;
-
-            case 'VidSrcTo':
-                if (currentPlayType === 'tv') {
-                    url = `https://vidsrc.to/embed/tv/${currentPlayId}/${currentSeason}/${currentEpisode}`;
-                } else {
-                    url = `https://vidsrc.to/embed/movie/${currentPlayId}?autoplay=1&controls=0&title=0&showinfo=0#hide-controls;hide-title`;
-                }
-                break;
-
-            case 'MultiEmbed':
-                url = `https://multiembed.mov/?video_id=${currentPlayId}&tmdb=1&autoplay=1&controls=0&title=0&showinfo=0`;
-                if (currentPlayType === 'tv') {
-                    url += `&s=${currentSeason}&e=${currentEpisode}`;
-                }
-                url += '#hide-controls;hide-title';
-                break;
-
-            case 'VikingEmbed':
-                url = `https://vembed.click/play/${currentPlayId}?autoplay=1&controls=0&title=0&showinfo=0#hide-controls;hide-title`;
-                break;
-
-            case 'StreamIMDB':
-                if (currentPlayType === 'tv') {
-                    url = `https://streamimdb.ru/embed/tv/${currentPlayId}/${currentSeason}/${currentEpisode}?autoplay=1&controls=0&title=0&showinfo=0#hide-controls;hide-title`;
-                } else {
-                    url = `https://streamimdb.ru/embed/movie/${currentPlayId}?autoplay=1&controls=0&title=0&showinfo=0#hide-controls;hide-title`;
-                }
-                break;
-
-            default:
-                if (currentPlayType === 'tv') {
-                    url = `https://vaplayer.ru/embed/tv/${currentPlayId}/${currentSeason}/${currentEpisode}`;
-                } else {
-                    url = `https://vaplayer.ru/embed/movie/${currentPlayId}?autoplay=1&controls=0&title=0&showinfo=0#hide-controls;hide-title`;
-                }
-                break;
+        if (s === 'VidSrc') {
+            if (currentPlayType === 'tv') {
+                url = `https://vidsrc.me/embed/tv?tmdb=${currentPlayId}&season=${currentSeason}&episode=${currentEpisode}`;
+            } else {
+                url = `https://vidsrc.me/embed/movie?tmdb=${currentPlayId}`;
+            }
+        } else {
+            if (currentPlayType === 'tv') {
+                url = `https://player.autoembed.app/embed/tv/${currentPlayId}/${currentSeason}/${currentEpisode}`;
+            } else {
+                url = `https://player.autoembed.app/embed/movie/${currentPlayId}`;
+            }
         }
 
         f.src = url;
+        f.setAttribute('referrerpolicy', 'no-referrer');
 
         document.querySelectorAll('.server-btn').forEach(b => {
             b.className = "server-btn px-8 py-3 rounded-full text-[10px] font-black uppercase border border-white/10 opacity-40 transition";
@@ -465,14 +434,14 @@ function changeSeasonEpisode() {
         currentSeason = newSeason;
         currentEpisode = 1;
         renderEpisodeControls(currentTvDetails);
-        changeServer('Vaplayer');
+        changeServer('VidSrc');
         return;
     }
 
     currentSeason = newSeason;
     currentEpisode = newEpisode;
 
-    changeServer('Vaplayer');
+    changeServer('VidSrc');
 }
 
 async function playMovie(id, title, type, backdrop, poster) {
@@ -487,6 +456,7 @@ async function playMovie(id, title, type, backdrop, poster) {
     const playerOverview = document.getElementById('playerOverview');
     const playerRating = document.getElementById('playerRating');
     const playerRuntime = document.getElementById('playerRuntime');
+    const playerYear = document.getElementById('playerYear');
     const playerControls = document.getElementById('playerControls');
 
     if (!player) return;
@@ -495,20 +465,25 @@ async function playMovie(id, title, type, backdrop, poster) {
     if (playerOverview) playerOverview.innerText = "Memuat sinopsis...";
     if (playerRating) playerRating.innerText = "⭐ ...";
     if (playerRuntime) playerRuntime.innerText = "...";
+    if (playerYear) playerYear.innerText = "....";
 
     if (playerControls) {
         playerControls.innerHTML = `
-            <button id="btn-Vaplayer" onclick="changeServer('Vaplayer')" class="server-btn px-8 py-3 rounded-full text-[10px] font-black uppercase bg-white text-black shadow-xl">Vaplayer.ru ★</button>
-            <button id="btn-VidSrcTo" onclick="changeServer('VidSrcTo')" class="server-btn px-8 py-3 rounded-full text-[10px] font-black uppercase border border-white/10 opacity-40">VidSrc.to</button>
-            <button id="btn-MultiEmbed" onclick="changeServer('MultiEmbed')" class="server-btn px-8 py-3 rounded-full text-[10px] font-black uppercase border border-white/10 opacity-40">MultiEmbed</button>
-            <button id="btn-VikingEmbed" onclick="changeServer('VikingEmbed')" class="server-btn px-8 py-3 rounded-full text-[10px] font-black uppercase border border-white/10 opacity-40">VikingEmbed</button>
-            <button id="btn-StreamIMDB" onclick="changeServer('StreamIMDB')" class="server-btn px-8 py-3 rounded-full text-[10px] font-black uppercase border border-white/10 opacity-40">StreamIMDB</button>
+            <button id="btn-VidSrc" onclick="changeServer('VidSrc')" class="server-btn px-8 py-3 rounded-full text-[10px] font-black uppercase bg-white text-black shadow-xl">
+                Server 1
+            </button>
+
+            <button id="btn-AutoEmbed" onclick="changeServer('AutoEmbed')" class="server-btn px-8 py-3 rounded-full text-[10px] font-black uppercase border border-white/10 opacity-40">
+                Server 2
+            </button>
 
             <button onclick="enterCleanFullscreen()" class="px-8 py-3 rounded-full text-[10px] font-black uppercase bg-blue-500 text-white border border-blue-400 hover:bg-blue-400 transition">
                 Fullscreen
             </button>
 
-            <button onclick="shareMovie('${title.replace(/'/g, "\\'")}')" class="px-8 py-3 rounded-full text-[10px] font-black uppercase bg-white/5 border border-white/10 hover:bg-white hover:text-black transition">Share</button>
+            <button onclick="shareMovie('${title.replace(/'/g, "\\'")}')" class="px-8 py-3 rounded-full text-[10px] font-black uppercase bg-white/5 border border-white/10 hover:bg-white hover:text-black transition">
+                Share
+            </button>
         `;
     }
 
@@ -518,7 +493,7 @@ async function playMovie(id, title, type, backdrop, poster) {
     document.body.classList.add('player-open');
     document.body.style.overflow = 'hidden';
 
-    changeServer('Vaplayer');
+    changeServer('VidSrc');
 
     if (backdrop && backdrop !== 'null') {
         updateAmbient(backdrop);
@@ -539,8 +514,6 @@ async function playMovie(id, title, type, backdrop, poster) {
         if (playerRating) {
             playerRating.innerText = `⭐ ${m.vote_average ? m.vote_average.toFixed(1) : 'N/A'}`;
         }
-
-        const playerYear = document.getElementById('playerYear');
 
         if (playerYear) {
             playerYear.innerText = (m.release_date || m.first_air_date || '2024').split('-')[0];
