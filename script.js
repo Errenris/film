@@ -197,14 +197,37 @@ function renderCards(movies, container, append = false, isTV = false) {
 
 // --- PLAYER & METADATA ---
 function changeServer(s) {
-    const f = document.getElementById('videoPlayer'); let url = '';
-    if(s==='VidSrc') url = `https://vidsrc.me/embed/${currentPlayType}?tmdb=${currentPlayId}`;
-    else url = `https://player.autoembed.app/embed/${currentPlayType}/${currentPlayId}${currentPlayType==='tv'?'/1/1':''}`;
-    
+    const f = document.getElementById('videoPlayer');
+    let url = '';
+
+    switch(s) {
+        case 'VidSrcTo':
+            url = `https://vidsrc.to/embed/\( {currentPlayType}/ \){currentPlayId}`;
+            break;
+        case 'Godrive':
+            url = `https://godriveplayer.com/embed/\( {currentPlayType}/ \){currentPlayType === 'tv' ? currentPlayId + '/1/1' : currentPlayId}`;
+            break;
+        case 'EmbedSu':
+            url = `https://embed.su/embed/\( {currentPlayType}?tmdb= \){currentPlayId}`;
+            break;
+        case 'AutoEmbed':
+            url = `https://player.autoembed.app/embed/\( {currentPlayType}/ \){currentPlayId}${currentPlayType==='tv'?'/1/1':''}`;
+            break;
+        default: // fallback terbaik
+            url = `https://vidsrc.to/embed/\( {currentPlayType}/ \){currentPlayId}`;
+    }
+
     f.src = url;
-    document.querySelectorAll('.server-btn').forEach(b => b.className = "server-btn px-8 py-3 rounded-full text-[10px] font-black uppercase border border-white/10 opacity-40 transition");
+
+    // Update tampilan tombol
+    document.querySelectorAll('.server-btn').forEach(b => {
+        b.className = "server-btn px-8 py-3 rounded-full text-[10px] font-black uppercase border border-white/10 opacity-40 transition";
+    });
+
     const active = document.getElementById('btn-'+s);
-    if(active) active.className = "server-btn px-8 py-3 rounded-full text-[10px] font-black uppercase bg-white text-black shadow-xl transition active:scale-95";
+    if(active) {
+        active.className = "server-btn px-8 py-3 rounded-full text-[10px] font-black uppercase bg-white text-black shadow-xl transition active:scale-95";
+    }
 }
 
 async function playMovie(id, title, type, backdrop, poster) {
@@ -216,12 +239,14 @@ async function playMovie(id, title, type, backdrop, poster) {
     document.getElementById('playerRating').innerText = "⭐ ...";
     document.getElementById('playerRuntime').innerText = "...";
     
-    document.getElementById('playerControls').innerHTML = `
-        <button id="btn-VidSrc" onclick="changeServer('VidSrc')" class="server-btn px-8 py-3 rounded-full text-[10px] font-black uppercase bg-white text-black shadow-xl">Server 1</button>
-        <button id="btn-AutoEmbed" onclick="changeServer('AutoEmbed')" class="server-btn px-8 py-3 rounded-full text-[10px] font-black uppercase border border-white/10 opacity-40">Server 2</button>
+document.getElementById('playerControls').innerHTML = `
+        <button id="btn-VidSrcTo" onclick="changeServer('VidSrcTo')" class="server-btn px-8 py-3 rounded-full text-[10px] font-black uppercase bg-white text-black shadow-xl">VidSrc.to</button>
+        <button id="btn-Godrive" onclick="changeServer('Godrive')" class="server-btn px-8 py-3 rounded-full text-[10px] font-black uppercase border border-white/10 opacity-40">Godrive</button>
+        <button id="btn-EmbedSu" onclick="changeServer('EmbedSu')" class="server-btn px-8 py-3 rounded-full text-[10px] font-black uppercase border border-white/10 opacity-40">Embed.su</button>
+        <button id="btn-AutoEmbed" onclick="changeServer('AutoEmbed')" class="server-btn px-8 py-3 rounded-full text-[10px] font-black uppercase border border-white/10 opacity-40">AutoEmbed</button>
         <button onclick="shareMovie('${title.replace(/'/g, "\\'")}')" class="px-8 py-3 rounded-full text-[10px] font-black uppercase bg-white/5 border border-white/10 hover:bg-white hover:text-black transition">Share</button>`;
     
-    changeServer('VidSrc');
+    changeServer('VidSrcTo');
     player.classList.remove('hidden');
     document.body.style.overflow = 'hidden';
     if(backdrop && backdrop !== 'null') updateAmbient(backdrop);
