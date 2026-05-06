@@ -292,10 +292,8 @@
         }
 
         body.player-open #videoPlayer {
-            transform: translateZ(0);
-            backface-visibility: hidden;
-            will-change: transform;
-        }
+    background: #000;
+}
 
         #videoPlayer {
             background: #000;
@@ -536,16 +534,15 @@
             
             <div class="aspect-video w-full bg-black flex-shrink-0 relative group">
                 <iframe
-                    id="videoPlayer"
-                    src=""
-                    class="w-full h-full"
-                    frameborder="0"
-                    allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
-                    allowfullscreen="true"
-                    webkitallowfullscreen="true"
-                    mozallowfullscreen="true"
-                    referrerpolicy="no-referrer"
-                ></iframe>
+    id="videoPlayer"
+    src=""
+    class="w-full h-full"
+    frameborder="0"
+    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
+    allowfullscreen
+    webkitallowfullscreen
+    mozallowfullscreen
+></iframe>
             </div>
 
             <div class="p-6 md:p-12 space-y-12">
