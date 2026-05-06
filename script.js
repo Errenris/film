@@ -335,32 +335,33 @@ function changeServer(s) {
 
         switch (s) {
             case 'Vaplayer':
-    url = currentPlayType === 'tv'
-        ? `https://vaplayer.ru/embed/tv/${currentPlayId}/1/1?autoplay=1&controls=0&title=0&showinfo=0#hide-controls;hide-title`
-        : `https://vaplayer.ru/embed/movie/${currentPlayId}?autoplay=1&controls=0&title=0&showinfo=0#hide-controls;hide-title`;
-    break;
+                url = currentPlayType === 'tv'
+                    ? `https://vaplayer.ru/embed/tv/${currentPlayId}/1/1?autoplay=1&controls=0&title=0&showinfo=0#hide-controls;hide-title`
+                    : `https://vaplayer.ru/embed/movie/${currentPlayId}?autoplay=1&controls=0&title=0&showinfo=0#hide-controls;hide-title`;
+                break;
 
             case 'VidSrcTo':
-                url = `https://vidsrc.to/embed/${currentPlayType}/${currentPlayId}`;
+                url = `https://vidsrc.to/embed/${currentPlayType}/${currentPlayId}?autoplay=1&controls=0&title=0&showinfo=0#hide-controls;hide-title`;
                 break;
 
             case 'MultiEmbed':
-                url = `https://multiembed.mov/?video_id=${currentPlayId}&tmdb=1`;
+                url = `https://multiembed.mov/?video_id=${currentPlayId}&tmdb=1&autoplay=1&controls=0&title=0&showinfo=0`;
                 if (currentPlayType === 'tv') url += '&s=1&e=1';
+                url += '#hide-controls;hide-title';
                 break;
 
             case 'VikingEmbed':
-                url = `https://vembed.click/play/${currentPlayId}`;
+                url = `https://vembed.click/play/${currentPlayId}?autoplay=1&controls=0&title=0&showinfo=0#hide-controls;hide-title`;
                 break;
 
             case 'StreamIMDB':
-                url = `https://streamimdb.ru/embed/${currentPlayType}/${currentPlayId}`;
+                url = `https://streamimdb.ru/embed/${currentPlayType}/${currentPlayId}?autoplay=1&controls=0&title=0&showinfo=0#hide-controls;hide-title`;
                 break;
 
             default:
                 url = currentPlayType === 'tv'
-                    ? `https://vaplayer.ru/embed/tv/${currentPlayId}/1/1`
-                    : `https://vaplayer.ru/embed/movie/${currentPlayId}`;
+                    ? `https://vaplayer.ru/embed/tv/${currentPlayId}/1/1?autoplay=1&controls=0&title=0&showinfo=0#hide-controls;hide-title`
+                    : `https://vaplayer.ru/embed/movie/${currentPlayId}?autoplay=1&controls=0&title=0&showinfo=0#hide-controls;hide-title`;
         }
 
         f.src = url;
@@ -520,16 +521,29 @@ function closePlayer() {
 }
 
 // --- FULLSCREEN CLEAN MODE ---
+function getPlayerMouseShield() {
+    return document.getElementById('playerMouseShield');
+}
+
 function setCursorIdleTimer() {
-    document.body.classList.remove('cursor-idle');
+    if (document.body.classList.contains('cursor-idle')) {
+        return;
+    }
 
     clearTimeout(fullscreenCursorTimer);
 
     fullscreenCursorTimer = setTimeout(() => {
         if (document.fullscreenElement) {
+            nudgePlayerControlsToHide(true);
             document.body.classList.add('cursor-idle');
         }
     }, 2200);
+}
+
+function wakePlayerMouseShield() {
+    document.body.classList.remove('cursor-idle');
+    clearTimeout(fullscreenCursorTimer);
+    setCursorIdleTimer();
 }
 
 function enableFullscreenCleanMode() {
@@ -559,6 +573,8 @@ function enableFullscreenCleanMode() {
         if (document.activeElement && document.activeElement.blur) {
             document.activeElement.blur();
         }
+
+        nudgePlayerControlsToHide(true);
     }, 1200);
 
     setCursorIdleTimer();
@@ -579,21 +595,64 @@ function setupFullscreenCleanMode() {
         }
     });
 
-    document.addEventListener('mousemove', () => {
-        if (document.fullscreenElement) {
-            setCursorIdleTimer();
+    document.addEventListener('mousemove', (e) => {
+        if (!document.fullscreenElement) return;
+
+        const shield = getPlayerMouseShield();
+
+        if (
+            shield &&
+            document.body.classList.contains('cursor-idle') &&
+            e.target === shield
+        ) {
+            return;
+        }
+
+        document.body.classList.remove('cursor-idle');
+        setCursorIdleTimer();
+    });
+
+    document.addEventListener('touchstart', (e) => {
+        if (!document.fullscreenElement) return;
+
+        const shield = getPlayerMouseShield();
+
+        if (
+            shield &&
+            document.body.classList.contains('cursor-idle') &&
+            e.target === shield
+        ) {
+            wakePlayerMouseShield();
+            return;
+        }
+
+        document.body.classList.remove('cursor-idle');
+        setCursorIdleTimer();
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!document.fullscreenElement) return;
+
+        const shield = getPlayerMouseShield();
+
+        if (
+            shield &&
+            document.body.classList.contains('cursor-idle') &&
+            e.target === shield
+        ) {
+            wakePlayerMouseShield();
         }
     });
 
-    document.addEventListener('touchstart', () => {
-        if (document.fullscreenElement) {
-            setCursorIdleTimer();
-        }
-    });
+    document.addEventListener('keydown', (e) => {
+        if (!document.fullscreenElement) return;
 
-    document.addEventListener('keydown', () => {
-        if (document.fullscreenElement) {
-            setCursorIdleTimer();
+        document.body.classList.remove('cursor-idle');
+        setCursorIdleTimer();
+
+        if (e.key === 'h' || e.key === 'H') {
+            nudgePlayerControlsToHide(true);
+            document.body.classList.add('cursor-idle');
         }
     });
 }
@@ -877,7 +936,7 @@ async function surpriseMe() {
 /* Tekan tombol H saat fullscreen kalau control bandel */
 /* ===================================================== */
 
-function nudgePlayerControlsToHide() {
+function nudgePlayerControlsToHide(keepIdle = false) {
     const focusTrap = document.getElementById('focusTrapBtn');
 
     if (focusTrap) {
@@ -889,21 +948,17 @@ function nudgePlayerControlsToHide() {
         document.activeElement.blur();
     }
 
+    window.focus();
+
     document.body.classList.add('cursor-idle');
 
-    setTimeout(() => {
-        document.body.classList.remove('cursor-idle');
+    if (!keepIdle) {
+        setTimeout(() => {
+            document.body.classList.remove('cursor-idle');
 
-        if (typeof setCursorIdleTimer === 'function') {
-            setCursorIdleTimer();
-        }
-    }, 150);
-}
-
-document.addEventListener('keydown', (e) => {
-    if (!document.fullscreenElement) return;
-
-    if (e.key === 'h' || e.key === 'H') {
-        nudgePlayerControlsToHide();
+            if (typeof setCursorIdleTimer === 'function') {
+                setCursorIdleTimer();
+            }
+        }, 150);
     }
-});
+}
