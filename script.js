@@ -328,18 +328,24 @@ function renderCards(movies, container, append = false, isTV = false) {
 
 // --- PLAYER & METADATA ---
 function changeServer(s) {
-    let f = document.getElementById('videoPlayer');
+    const f = document.getElementById('videoPlayer');
     if (!f) return;
 
     let url = '';
 
-    if (s === 'VidSrc') {
-        url = `https://vidsrc.me/embed/${currentPlayType}?tmdb=${currentPlayId}`;
+    f.setAttribute(
+        'allow',
+        'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen'
+    );
+    f.setAttribute('allowfullscreen', '');
+    f.setAttribute('webkitallowfullscreen', '');
+    f.setAttribute('mozallowfullscreen', '');
 
-        if (currentPlayType === 'tv') {
-            url += `&season=${currentSeason}&episode=${currentEpisode}`;
-        }
+    if (s === 'VidSrc') {
+        // Server 1 balik ke format lama persis
+        url = `https://vidsrc.me/embed/${currentPlayType}?tmdb=${currentPlayId}`;
     } else {
+        // Server 2 tetap support season/episode
         url = `https://player.autoembed.app/embed/${currentPlayType}/${currentPlayId}`;
 
         if (currentPlayType === 'tv') {
@@ -347,31 +353,7 @@ function changeServer(s) {
         }
     }
 
-    /*
-        FIX FULLSCREEN SERVER 1:
-        Rebuild iframe supaya izin fullscreen native dari player tidak macet.
-    */
-    const freshFrame = f.cloneNode(false);
-
-    freshFrame.id = 'videoPlayer';
-    freshFrame.className = 'w-full h-full';
-    freshFrame.setAttribute('frameborder', '0');
-    freshFrame.setAttribute('allow', 'autoplay; fullscreen; encrypted-media; picture-in-picture');
-    freshFrame.setAttribute('allowfullscreen', '');
-    freshFrame.setAttribute('webkitallowfullscreen', '');
-    freshFrame.setAttribute('mozallowfullscreen', '');
-    freshFrame.setAttribute('referrerpolicy', 'no-referrer');
-
-    freshFrame.allowFullscreen = true;
-    freshFrame.webkitAllowFullscreen = true;
-    freshFrame.mozAllowFullscreen = true;
-
-    f.replaceWith(freshFrame);
-
-    // Set src setelah iframe baru punya permission fullscreen
-    setTimeout(() => {
-        freshFrame.src = url;
-    }, 50);
+    f.src = url;
 
     document.querySelectorAll('.server-btn').forEach(b => {
         b.className = "server-btn px-8 py-3 rounded-full text-[10px] font-black uppercase border border-white/10 opacity-40 transition";
@@ -451,14 +433,14 @@ function changeSeasonEpisode() {
         currentSeason = newSeason;
         currentEpisode = 1;
         renderEpisodeControls(currentTvDetails);
-        changeServer('VidSrc');
+        changeServer('AutoEmbed');
         return;
     }
 
     currentSeason = newSeason;
     currentEpisode = newEpisode;
 
-    changeServer('VidSrc');
+    changeServer('AutoEmbed');
 }
 
 async function playMovie(id, title, type, backdrop, poster) {
