@@ -603,21 +603,16 @@ function setupFullscreenCleanMode() {
     });
 }
 
-// Pause iframe saat tab pindah agar tidak berat di background
+// Jangan kosongkan iframe saat tab berubah.
+// Beberapa player menganggap fullscreen sebagai visibilitychange,
+// jadi kalau iframe diubah ke about:blank, fullscreen bawaan server bisa gagal.
 document.addEventListener('visibilitychange', () => {
-    const iframe = document.getElementById('videoPlayer');
     const player = document.getElementById('playerContainer');
 
-    if (!iframe || !player) return;
+    if (!player) return;
     if (player.classList.contains('hidden')) return;
 
-    if (document.hidden) {
-        iframe.dataset.lastSrc = iframe.src;
-        iframe.src = 'about:blank';
-    } else if (iframe.dataset.lastSrc) {
-        iframe.src = iframe.dataset.lastSrc;
-        delete iframe.dataset.lastSrc;
-    }
+    // Sengaja tidak mengubah src iframe.
 });
 
 // --- NAV & SEARCH ---
