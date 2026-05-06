@@ -10,12 +10,14 @@ let carouselTimer;
 let currentPlayId = '';
 let currentPlayType = '';
 let liveSearchTimeout;
+let fullscreenCursorTimer = null;
 
 window.onload = () => {
     initApp();
     setupScrollEffects();
     setupDragToScroll();
     setupSearch();
+    setupFullscreenCleanMode();
 };
 
 // --- CLEAN STRING (Anti Crash) ---
@@ -27,6 +29,7 @@ function safeText(str) {
 // --- AMBIENT BG ---
 function updateAmbient(img) {
     const bg = document.getElementById('ambientBg');
+
     if (img && bg) {
         bg.style.backgroundImage = `url('${BACK_PATH + img}')`;
     }
@@ -325,7 +328,6 @@ function changeServer(s) {
     const f = document.getElementById('videoPlayer');
     if (!f) return;
 
-    // Stop server lama dulu supaya iframe tidak numpuk kerja
     f.src = 'about:blank';
 
     setTimeout(() => {
@@ -361,14 +363,8 @@ function changeServer(s) {
                     : `https://vaplayer.ru/embed/movie/${currentPlayId}`;
         }
 
-        /*
-            Cache buster sengaja dimatikan.
-            Kalau pakai Date.now(), iframe dipaksa load ulang terus dan bisa bikin video patah-patah.
-        */
-
         f.src = url;
 
-        // Update tombol aktif
         document.querySelectorAll('.server-btn').forEach(b => {
             b.className = "server-btn px-8 py-3 rounded-full text-[10px] font-black uppercase border border-white/10 opacity-40 transition";
         });
@@ -410,10 +406,8 @@ async function playMovie(id, title, type, backdrop, poster) {
         `;
     }
 
-    // Pause carousel supaya GPU tidak kerja ganda saat video jalan
     clearInterval(carouselTimer);
 
-    // Buka player dan aktifkan mode ringan
     player.classList.remove('hidden');
     document.body.classList.add('player-open');
     document.body.style.overflow = 'hidden';
@@ -502,6 +496,12 @@ function closePlayer() {
     const player = document.getElementById('playerContainer');
     const iframe = document.getElementById('videoPlayer');
 
+    if (document.fullscreenElement) {
+        document.exitFullscreen().catch(() => {});
+    }
+
+    disableFullscreenCleanMode();
+
     if (player) {
         player.classList.add('hidden');
     }
@@ -514,10 +514,61 @@ function closePlayer() {
     document.body.classList.remove('player-open');
     document.body.style.overflow = 'auto';
 
-    // Hidupkan lagi carousel setelah player ditutup
     if (featuredMovies && featuredMovies.length > 0) {
         startCarousel();
     }
+}
+
+// --- FULLSCREEN CLEAN MODE ---
+function setCursorIdleTimer() {
+    document.body.classList.remove('cursor-idle');
+
+    clearTimeout(fullscreenCursorTimer);
+
+    fullscreenCursorTimer = setTimeout(() => {
+        if (document.fullscreenElement) {
+            document.body.classList.add('cursor-idle');
+        }
+    }, 2200);
+}
+
+function enableFullscreenCleanMode() {
+    document.body.classList.add('fullscreen-video');
+    setCursorIdleTimer();
+}
+
+function disableFullscreenCleanMode() {
+    document.body.classList.remove('fullscreen-video');
+    document.body.classList.remove('cursor-idle');
+    clearTimeout(fullscreenCursorTimer);
+}
+
+function setupFullscreenCleanMode() {
+    document.addEventListener('fullscreenchange', () => {
+        if (document.fullscreenElement) {
+            enableFullscreenCleanMode();
+        } else {
+            disableFullscreenCleanMode();
+        }
+    });
+
+    document.addEventListener('mousemove', () => {
+        if (document.fullscreenElement) {
+            setCursorIdleTimer();
+        }
+    });
+
+    document.addEventListener('touchstart', () => {
+        if (document.fullscreenElement) {
+            setCursorIdleTimer();
+        }
+    });
+
+    document.addEventListener('keydown', () => {
+        if (document.fullscreenElement) {
+            setCursorIdleTimer();
+        }
+    });
 }
 
 // Pause iframe saat tab pindah agar tidak berat di background
