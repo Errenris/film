@@ -333,19 +333,27 @@ function changeServer(s) {
 
     let url = '';
 
+    /*
+        Fullscreen wildcard.
+        Ini penting untuk embed yang punya iframe di dalam iframe.
+    */
     f.setAttribute(
         'allow',
-        'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen'
+        'autoplay *; fullscreen *; encrypted-media *; picture-in-picture *; clipboard-write *; web-share *; accelerometer *; gyroscope *'
     );
+
     f.setAttribute('allowfullscreen', '');
     f.setAttribute('webkitallowfullscreen', '');
     f.setAttribute('mozallowfullscreen', '');
 
+    // Jangan pakai referrerpolicy dulu.
+    // Beberapa embed lebih rewel kalau referrer dikosongkan.
+    f.removeAttribute('referrerpolicy');
+
     if (s === 'VidSrc') {
-        // Server 1 balik ke format lama persis
+        // Format lama Server 1, paling native untuk VidSrc.
         url = `https://vidsrc.me/embed/${currentPlayType}?tmdb=${currentPlayId}`;
     } else {
-        // Server 2 tetap support season/episode
         url = `https://player.autoembed.app/embed/${currentPlayType}/${currentPlayId}`;
 
         if (currentPlayType === 'tv') {
