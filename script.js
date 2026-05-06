@@ -200,35 +200,29 @@ function changeServer(s) {
     const f = document.getElementById('videoPlayer');
     if (!f) return;
 
-    // === FIX BLACK SCREEN (paling penting) ===
-    f.src = 'about:blank';                    // unload embed lama dulu
+    // FIX BLACK SCREEN
+    f.src = 'about:blank';
 
-    setTimeout(() => {                        // delay biar browser reset bersih
+    setTimeout(() => {
         let url = '';
 
         switch(s) {
             case 'VidSrcTo':
                 url = `https://vidsrc.to/embed/${currentPlayType}/${currentPlayId}`;
                 break;
-            case 'Godrive':
-                url = `https://godriveplayer.com/embed/${currentPlayType}/${currentPlayType === 'tv' ? currentPlayId + '/1/1' : currentPlayId}`;
+            case 'SuperEmbed':
+                url = `https://www.superembed.stream/embed/${currentPlayType}/${currentPlayId}`;
                 break;
-            case 'EmbedSu':
-                url = `https://embed.su/embed/${currentPlayType}?tmdb=${currentPlayId}`;
-                break;
-            case 'AutoEmbed':
-                url = `https://player.autoembed.app/embed/${currentPlayType}/${currentPlayId}${currentPlayType==='tv'?'/1/1':''}`;
-                break;
-            default: // fallback terbaik
+            default:
                 url = `https://vidsrc.to/embed/${currentPlayType}/${currentPlayId}`;
         }
 
-        // Cache buster biar selalu fresh
+        // cache buster
         url += (url.includes('?') ? '&' : '?') + 't=' + Date.now();
 
         f.src = url;
 
-        // Update tombol aktif
+        // update tombol
         document.querySelectorAll('.server-btn').forEach(b => {
             b.className = "server-btn px-8 py-3 rounded-full text-[10px] font-black uppercase border border-white/10 opacity-40 transition";
         });
@@ -237,7 +231,7 @@ function changeServer(s) {
         if(active) {
             active.className = "server-btn px-8 py-3 rounded-full text-[10px] font-black uppercase bg-white text-black shadow-xl transition active:scale-95";
         }
-    }, 300); // delay 300ms paling ampuh
+    }, 300);
 }
 
 async function playMovie(id, title, type, backdrop, poster) {
@@ -249,11 +243,9 @@ async function playMovie(id, title, type, backdrop, poster) {
     document.getElementById('playerRating').innerText = "⭐ ...";
     document.getElementById('playerRuntime').innerText = "...";
     
-document.getElementById('playerControls').innerHTML = `
+    document.getElementById('playerControls').innerHTML = `
         <button id="btn-VidSrcTo" onclick="changeServer('VidSrcTo')" class="server-btn px-8 py-3 rounded-full text-[10px] font-black uppercase bg-white text-black shadow-xl">VidSrc.to</button>
-        <button id="btn-Godrive" onclick="changeServer('Godrive')" class="server-btn px-8 py-3 rounded-full text-[10px] font-black uppercase border border-white/10 opacity-40">Godrive</button>
-        <button id="btn-EmbedSu" onclick="changeServer('EmbedSu')" class="server-btn px-8 py-3 rounded-full text-[10px] font-black uppercase border border-white/10 opacity-40">Embed.su</button>
-        <button id="btn-AutoEmbed" onclick="changeServer('AutoEmbed')" class="server-btn px-8 py-3 rounded-full text-[10px] font-black uppercase border border-white/10 opacity-40">AutoEmbed</button>
+        <button id="btn-SuperEmbed" onclick="changeServer('SuperEmbed')" class="server-btn px-8 py-3 rounded-full text-[10px] font-black uppercase border border-white/10 opacity-40">SuperEmbed</button>
         <button onclick="shareMovie('${title.replace(/'/g, "\\'")}')" class="px-8 py-3 rounded-full text-[10px] font-black uppercase bg-white/5 border border-white/10 hover:bg-white hover:text-black transition">Share</button>`;
     
     changeServer('VidSrcTo');
