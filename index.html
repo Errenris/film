@@ -9,476 +9,58 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
     
     <style>
-        :root {
-            --bg: #030305;
-            --accent: #3b82f6;
-            --glass: rgba(255, 255, 255, 0.03);
-            --border: rgba(255, 255, 255, 0.07);
-        }
-
-        body {
-            background-color: var(--bg);
-            color: white;
-            font-family: 'Outfit', sans-serif;
-            overflow-x: hidden;
-        }
+        :root { --bg: #030305; --accent: #3b82f6; --glass: rgba(255, 255, 255, 0.03); --border: rgba(255, 255, 255, 0.07); }
+        body { background-color: var(--bg); color: white; font-family: 'Outfit', sans-serif; overflow-x: hidden; }
         
-        #ambientBg {
-            position: fixed;
-            inset: 0;
-            z-index: -1;
-            transition: background 2s ease;
-            filter: blur(40px) saturate(1.2);
-            opacity: 0.15;
-            transform: scale(1.1);
-        }
+        #ambientBg { position: fixed; inset: 0; z-index: -1; transition: background 2s ease; filter: blur(100px) saturate(1.8); opacity: 0.25; transform: scale(1.1); }
+        .overlay { position: fixed; inset: 0; background: linear-gradient(to bottom, transparent, var(--bg) 90%); z-index: -1; }
 
-        .overlay {
-            position: fixed;
-            inset: 0;
-            background: linear-gradient(to bottom, transparent, var(--bg) 90%);
-            z-index: -1;
-        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .custom-scrollbar-x::-webkit-scrollbar { height: 4px; }
+        .custom-scrollbar-x::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
 
-        .no-scrollbar::-webkit-scrollbar {
-            display: none;
-        }
-
-        .custom-scrollbar-x::-webkit-scrollbar {
-            height: 4px;
-        }
-
-        .custom-scrollbar-x::-webkit-scrollbar-thumb {
-            background: rgba(255,255,255,0.2);
-            border-radius: 10px;
-        }
-
-        .header-capsule {
-            background: rgba(10, 10, 15, 0.7);
-            backdrop-filter: blur(30px);
-            border: 1px solid var(--border);
-            padding: 10px 24px;
-            border-radius: 100px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
-            transition: 0.4s;
-        }
+        .header-capsule { background: rgba(10, 10, 15, 0.7); backdrop-filter: blur(30px); border: 1px solid var(--border); padding: 10px 24px; border-radius: 100px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); transition: 0.4s; }
         
-        .movie-card {
-            width: 140px;
-            flex-shrink: 0;
-            cursor: pointer;
-            transition: 0.5s cubic-bezier(0.2, 1, 0.3, 1);
-            position: relative;
-            will-change: transform;
-            transform: translateZ(0);
-        }
+        .movie-card { width: 140px; flex-shrink: 0; cursor: pointer; transition: 0.5s cubic-bezier(0.2, 1, 0.3, 1); position: relative; will-change: transform; transform: translateZ(0); }
+        @media (min-width: 768px) { .movie-card { width: 190px; } }
+        .movie-card:hover { transform: translateY(-10px); z-index: 10; }
+        .poster-container { aspect-ratio: 2/3; border-radius: 20px; overflow: hidden; position: relative; border: 1px solid transparent; transition: 0.3s; background: var(--glass); }
+        .movie-card:hover .poster-container { border-color: var(--accent); box-shadow: 0 15px 45px rgba(59, 130, 246, 0.4); }
 
-        @media (min-width: 768px) {
-            .movie-card {
-                width: 190px;
-            }
-        }
+        .netflix-number { position: absolute; left: -25px; bottom: -10px; font-size: 110px; font-weight: 900; color: transparent; -webkit-text-stroke: 2px rgba(255,255,255,0.15); line-height: 1; z-index: 1; pointer-events: none; }
+        @media (min-width: 768px) { .netflix-number { font-size: 160px; left: -35px; } }
 
-        .movie-card:hover {
-            transform: translateY(-10px);
-            z-index: 10;
-        }
+        /* UI ROW HEADER & LIHAT SEMUA */
+        .row-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px; padding: 0 10px; }
+        .row-title { font-size: 11px; font-weight: 900; letter-spacing: 0.4em; text-transform: uppercase; color: rgba(255,255,255,0.6); margin-bottom: 0; }
+        .explore-btn { font-size: 9px; font-weight: 800; color: var(--accent); opacity: 0.7; transition: 0.3s; text-transform: uppercase; letter-spacing: 0.2em; }
+        .explore-btn:hover { opacity: 1; transform: translateX(5px); }
 
-        .poster-container {
-            aspect-ratio: 2/3;
-            border-radius: 20px;
-            overflow: hidden;
-            position: relative;
-            border: 1px solid transparent;
-            transition: 0.3s;
-            background: var(--glass);
-        }
+        .actor-circle { width: 75px; height: 75px; border-radius: 50%; object-fit: cover; border: 2px solid transparent; transition: 0.4s; cursor: pointer; }
+        .actor-circle:hover { border-color: var(--accent); transform: scale(1.1); box-shadow: 0 0 20px rgba(59,130,246,0.3); }
 
-        .movie-card:hover .poster-container {
-            border-color: var(--accent);
-            box-shadow: 0 15px 45px rgba(59, 130, 246, 0.4);
-        }
+        /* PROGRESS BAR RESUME */
+        .resume-bar { position: absolute; bottom: 0; left: 0; height: 4px; background: rgba(0,0,0,0.5); width: 100%; border-radius: 0 0 20px 20px; overflow: hidden; }
+        .resume-progress { height: 100%; background: #ef4444; box-shadow: 0 0 10px #ef4444; }
 
-        .netflix-number {
-            position: absolute;
-            left: -25px;
-            bottom: -10px;
-            font-size: 110px;
-            font-weight: 900;
-            color: transparent;
-            -webkit-text-stroke: 2px rgba(255,255,255,0.15);
-            line-height: 1;
-            z-index: 1;
-            pointer-events: none;
-        }
+        /* HEART BTN (FAVORIT) */
+        .fav-btn { position: absolute; top: 10px; right: 10px; z-index: 30; font-size: 16px; background: rgba(0,0,0,0.4); backdrop-filter: blur(5px); width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.1); transition: 0.3s; }
+        .fav-btn:hover { transform: scale(1.2); background: rgba(0,0,0,0.8); }
 
-        @media (min-width: 768px) {
-            .netflix-number {
-                font-size: 160px;
-                left: -35px;
-            }
-        }
+        .universe-bg-text { position: absolute; right: -5%; top: -15%; font-size: 150px; font-weight: 900; font-style: italic; color: white; opacity: 0.03; pointer-events: none; user-select: none; white-space: nowrap; letter-spacing: -5px; }
+        @media (min-width: 768px) { .universe-bg-text { font-size: 250px; } }
 
-        .row-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
-            margin-bottom: 20px;
-            padding: 0 10px;
-        }
+        .skeleton { background: linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.06), rgba(255,255,255,0.02)); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 20px; width: 100%; aspect-ratio: 2/3; }
+        @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
 
-        .row-title {
-            font-size: 11px;
-            font-weight: 900;
-            letter-spacing: 0.4em;
-            text-transform: uppercase;
-            color: rgba(255,255,255,0.6);
-            margin-bottom: 0;
-        }
+        .fade-in { animation: fadeIn 0.8s ease forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-        .explore-btn {
-            font-size: 9px;
-            font-weight: 800;
-            color: var(--accent);
-            opacity: 0.7;
-            transition: 0.3s;
-            text-transform: uppercase;
-            letter-spacing: 0.2em;
-        }
-
-        .explore-btn:hover {
-            opacity: 1;
-            transform: translateX(5px);
-        }
-
-        .actor-circle {
-            width: 75px;
-            height: 75px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 2px solid transparent;
-            transition: 0.4s;
-            cursor: pointer;
-        }
-
-        .actor-circle:hover {
-            border-color: var(--accent);
-            transform: scale(1.1);
-            box-shadow: 0 0 20px rgba(59,130,246,0.3);
-        }
-
-        .resume-bar {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            height: 4px;
-            background: rgba(0,0,0,0.5);
-            width: 100%;
-            border-radius: 0 0 20px 20px;
-            overflow: hidden;
-        }
-
-        .resume-progress {
-            height: 100%;
-            background: #ef4444;
-            box-shadow: 0 0 10px #ef4444;
-        }
-
-        .fav-btn {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            z-index: 30;
-            font-size: 16px;
-            background: rgba(0,0,0,0.4);
-            backdrop-filter: blur(5px);
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 1px solid rgba(255,255,255,0.1);
-            transition: 0.3s;
-        }
-
-        .fav-btn:hover {
-            transform: scale(1.2);
-            background: rgba(0,0,0,0.8);
-        }
-
-        .universe-bg-text {
-            position: absolute;
-            right: -5%;
-            top: -15%;
-            font-size: 150px;
-            font-weight: 900;
-            font-style: italic;
-            color: white;
-            opacity: 0.03;
-            pointer-events: none;
-            user-select: none;
-            white-space: nowrap;
-            letter-spacing: -5px;
-        }
-
-        @media (min-width: 768px) {
-            .universe-bg-text {
-                font-size: 250px;
-            }
-        }
-
-        .skeleton {
-            background: linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.06), rgba(255,255,255,0.02));
-            background-size: 200% 100%;
-            animation: shimmer 1.5s infinite;
-            border-radius: 20px;
-            width: 100%;
-            aspect-ratio: 2/3;
-        }
-
-        @keyframes shimmer {
-            0% {
-                background-position: -200% 0;
-            }
-
-            100% {
-                background-position: 200% 0;
-            }
-        }
-
-        .fade-in {
-            animation: fadeIn 0.8s ease forwards;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .player-info-card {
-            background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(255,255,255,0.05);
-            border-radius: 24px;
-            padding: 20px;
-        }
-
-        /* ===================================================== */
-        /* FIX VIDEO PATAH-PATAH SAAT PLAYER DIBUKA */
-        /* ===================================================== */
-
-        body.player-open {
-            overflow: hidden;
-        }
-
-        body.player-open #ambientBg,
-        body.player-open .overlay,
-        body.player-open #mainContainer,
-        body.player-open #mobileNav,
-        body.player-open #mainHeader {
-            display: none !important;
-        }
-
-        body.player-open #playerContainer {
-            display: flex !important;
-        }
-
-        body.player-open * {
-            animation: none !important;
-            transition: none !important;
-        }
-
-        body.player-open #videoPlayer {
-            transform: translateZ(0);
-            backface-visibility: hidden;
-            will-change: transform;
-        }
-
-        #videoPlayer {
-            background: #000;
-        }
-
-        /* ===================================================== */
-        /* FIX FULLSCREEN PLAYER LAMA */
-        /* ===================================================== */
-
-        body.fullscreen-video #playerModalBox {
-            max-width: 100vw !important;
-            width: 100vw !important;
-            height: 100vh !important;
-            border-radius: 0 !important;
-            border: none !important;
-            background: #000 !important;
-            overflow: hidden !important;
-        }
-
-        body.fullscreen-video #playerModalBox > .p-6,
-        body.fullscreen-video #playerModalBox > .md\:p-12,
-        body.fullscreen-video .player-info-card,
-        body.fullscreen-video #playerControls,
-        body.fullscreen-video #playingTitle,
-        body.fullscreen-video #playerOverview,
-        body.fullscreen-video #playerRating,
-        body.fullscreen-video #playerYear,
-        body.fullscreen-video #playerRuntime,
-        body.fullscreen-video #castContainer,
-        body.fullscreen-video #similarContainer {
-            display: none !important;
-        }
-
-        body.fullscreen-video #playerModalBox .aspect-video {
-            width: 100vw !important;
-            height: 100vh !important;
-            aspect-ratio: unset !important;
-        }
-
-        body.fullscreen-video #videoPlayer {
-            width: 100vw !important;
-            height: 100vh !important;
-            background: #000 !important;
-        }
-
-        body.fullscreen-video.cursor-idle,
-        body.fullscreen-video.cursor-idle * {
-            cursor: none !important;
-        }
-
-        body.fullscreen-video.cursor-idle button {
-            opacity: 0 !important;
-            pointer-events: none !important;
-        }
-
-        /* ===================================================== */
-        /* MOUSE SHIELD: BANTU CONTROL IFRAME HILANG SAAT IDLE */
-        /* ===================================================== */
-
-        #playerMouseShield {
-            display: none;
-        }
-
-        body.fullscreen-video.cursor-idle #playerMouseShield {
-            display: block;
-            position: fixed;
-            inset: 0;
-            z-index: 999999;
-            background: transparent;
-            cursor: none;
-        }
-
-        /* ===================================================== */
-        /* CUSTOM FULLSCREEN ALA YOUTUBE */
-        /* Mouse hilang setelah 3 detik */
-        /* ===================================================== */
-
-        body.clean-fullscreen #playerModalBox {
-            max-width: 100vw !important;
-            width: 100vw !important;
-            height: 100vh !important;
-            border-radius: 0 !important;
-            border: none !important;
-            background: #000 !important;
-            overflow: hidden !important;
-        }
-
-        body.clean-fullscreen #playerModalBox .aspect-video {
-            width: 100vw !important;
-            height: 100vh !important;
-            aspect-ratio: unset !important;
-        }
-
-        body.clean-fullscreen #videoPlayer {
-            width: 100vw !important;
-            height: 100vh !important;
-            background: #000 !important;
-        }
-
-        body.clean-fullscreen #playerModalBox > .p-6,
-        body.clean-fullscreen #playerModalBox > .md\:p-12,
-        body.clean-fullscreen .player-info-card,
-        body.clean-fullscreen #castContainer,
-        body.clean-fullscreen #similarContainer,
-        body.clean-fullscreen #playingTitle,
-        body.clean-fullscreen #playerOverview,
-        body.clean-fullscreen #playerRating,
-        body.clean-fullscreen #playerYear,
-        body.clean-fullscreen #playerRuntime,
-        body.clean-fullscreen #playerControls {
-            display: none !important;
-        }
-
-        body.clean-fullscreen.fs-idle,
-        body.clean-fullscreen.fs-idle * {
-            cursor: none !important;
-        }
-
-        #cleanFsMouseShield {
-            display: none;
-        }
-
-        body.clean-fullscreen.fs-idle #cleanFsMouseShield {
-            display: block;
-            position: fixed;
-            inset: 0;
-            z-index: 9999999;
-            background: transparent;
-            cursor: none !important;
-        }
+        .player-info-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 24px; padding: 20px; }
     </style>
 </head>
-
 <body class="pb-20">
-    <button id="focusTrapBtn" style="position:fixed;left:-9999px;top:-9999px;width:1px;height:1px;opacity:0;">focus</button>
-<!-- DNS / BROWSER RECOMMENDATION NOTICE -->
-<div id="dnsNotice" class="fixed inset-0 z-[99999999] hidden items-center justify-center bg-black/80 backdrop-blur-md px-5">
-    <div class="w-full max-w-md rounded-[32px] border border-white/10 bg-[#0b0b10] p-7 shadow-2xl text-center">
-        <div class="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-blue-500/20 text-3xl border border-blue-400/30">
-            🛡️
-        </div>
 
-        <h2 class="text-2xl font-black text-white tracking-tight mb-3">
-            Rekomendasi Anti Iklan
-        </h2>
-
-        <p class="text-sm leading-relaxed text-white/60 mb-5">
-            Untuk pengalaman nonton yang lebih nyaman dan mengurangi iklan/popup dari server video,
-            disarankan menggunakan DNS berikut:
-        </p>
-
-        <div class="rounded-2xl bg-white/5 border border-white/10 p-4 mb-4">
-            <p class="text-[10px] uppercase tracking-[0.3em] text-blue-400 font-black mb-2">
-                DNS Rekomendasi
-            </p>
-            <code class="text-white font-bold text-sm break-all">
-                p2.freedns.controld.com
-            </code>
-        </div>
-
-        <p class="text-sm leading-relaxed text-white/60 mb-6">
-            Alternatif lain: gunakan browser <b class="text-white">Brave</b> agar popup/iklan lebih banyak terblokir otomatis.
-        </p>
-
-        <div class="flex flex-col gap-3">
-            <button onclick="copyDnsNotice()" class="w-full rounded-full bg-blue-500 px-6 py-4 text-xs font-black uppercase tracking-widest text-white hover:bg-blue-400 transition">
-                Copy DNS
-            </button>
-
-            <button onclick="closeDnsNotice()" class="w-full rounded-full bg-white px-6 py-4 text-xs font-black uppercase tracking-widest text-black hover:bg-white/80 transition">
-                Saya Mengerti
-            </button>
-        </div>
-
-        <p class="mt-5 text-[10px] text-white/30 leading-relaxed">
-            Catatan: pengaturan DNS dilakukan di perangkat/browser masing-masing, bukan otomatis dari website.
-        </p>
-    </div>
-</div>
     <div id="ambientBg"></div>
     <div class="overlay"></div>
 
@@ -495,12 +77,7 @@
             </nav>
 
             <div class="flex items-center gap-4 border-l border-white/10 pl-6">
-                <input
-                    type="text"
-                    id="searchInput"
-                    placeholder="Search..."
-                    class="bg-transparent text-xs font-bold focus:outline-none w-24 focus:w-48 transition-all text-white placeholder-white/40"
-                >
+                <input type="text" id="searchInput" placeholder="Search..." class="bg-transparent text-xs font-bold focus:outline-none w-24 focus:w-48 transition-all text-white placeholder-white/40">
                 <div id="searchSuggestions" class="hidden absolute top-full mt-5 right-0 w-[320px] bg-[#111115] rounded-[30px] max-h-96 overflow-y-auto no-scrollbar p-3 border border-white/10 shadow-2xl"></div>
             </div>
         </header>
@@ -520,21 +97,14 @@
         <section id="heroSection" class="relative w-full h-[60vh] md:h-[82vh] rounded-[45px] overflow-hidden group cursor-grab active:cursor-grabbing border border-white/5 shadow-2xl">
             <div id="heroContent" class="absolute inset-0 bg-cover bg-center transition-transform duration-[2.5s] group-hover:scale-105"></div>
             <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent"></div>
-
             <div class="absolute bottom-0 left-0 w-full p-8 md:p-20 flex flex-col items-center text-center z-10">
                 <h2 id="heroTitle" class="text-3xl md:text-8xl font-black mb-4 tracking-tighter leading-none uppercase drop-shadow-2xl text-white"></h2>
                 <p id="heroDesc" class="text-white/60 text-xs md:text-lg line-clamp-2 mb-10 max-w-2xl font-light"></p>
-
                 <div class="flex items-center gap-4">
-                    <button id="heroPlayBtn" class="bg-white text-black hover:bg-blue-500 hover:text-white px-12 py-4 rounded-full font-black text-[11px] uppercase tracking-[0.2em] transition-all shadow-2xl hover:scale-110">
-                        Nonton Sekarang
-                    </button>
-                    <button onclick="surpriseMe()" class="w-12 h-12 rounded-full bg-white/5 backdrop-blur-md flex items-center justify-center text-xl hover:bg-white/20 transition border border-white/10 shadow-lg">
-                        🎲
-                    </button>
+                    <button id="heroPlayBtn" class="bg-white text-black hover:bg-blue-500 hover:text-white px-12 py-4 rounded-full font-black text-[11px] uppercase tracking-[0.2em] transition-all shadow-2xl hover:scale-110">Nonton Sekarang</button>
+                    <button onclick="surpriseMe()" class="w-12 h-12 rounded-full bg-white/5 backdrop-blur-md flex items-center justify-center text-xl hover:bg-white/20 transition border border-white/10 shadow-lg">🎲</button>
                 </div>
             </div>
-
             <div id="heroDots" class="absolute bottom-10 right-10 flex flex-col gap-2 z-20"></div>
         </section>
 
@@ -561,13 +131,11 @@
 
             <!-- AKTOR -->
             <section>
-                <div class="row-header">
-                    <h2 class="row-title">Bintang Papan Atas 🌟</h2>
-                </div>
+                <div class="row-header"><h2 class="row-title">Bintang Papan Atas 🌟</h2></div>
                 <div id="rowActors" class="flex gap-8 overflow-x-auto no-scrollbar pb-4 px-2 cursor-grab active:cursor-grabbing"></div>
             </section>
 
-            <!-- MARVEL -->
+            <!-- UNIVERSES & KATEGORI -->
             <section class="relative overflow-hidden">
                 <div class="universe-bg-text">AVENGERS</div>
                 <div class="row-header relative z-10">
@@ -577,7 +145,6 @@
                 <div id="rowMarvel" class="flex gap-6 overflow-x-auto no-scrollbar cursor-grab active:cursor-grabbing relative z-10 px-2"></div>
             </section>
 
-            <!-- DC -->
             <section class="relative overflow-hidden">
                 <div class="universe-bg-text">JUSTICE LEAGUE</div>
                 <div class="row-header relative z-10">
@@ -587,7 +154,6 @@
                 <div id="rowDC" class="flex gap-6 overflow-x-auto no-scrollbar cursor-grab active:cursor-grabbing relative z-10 px-2"></div>
             </section>
 
-            <!-- DISNEY -->
             <section class="relative overflow-hidden">
                 <div class="universe-bg-text">DISNEY+</div>
                 <div class="row-header relative z-10">
@@ -597,7 +163,6 @@
                 <div id="rowDisney" class="flex gap-6 overflow-x-auto no-scrollbar cursor-grab active:cursor-grabbing relative z-10 px-2"></div>
             </section>
 
-            <!-- PIXAR -->
             <section class="relative overflow-hidden">
                 <div class="universe-bg-text">PIXAR STUDIO</div>
                 <div class="row-header relative z-10">
@@ -607,7 +172,6 @@
                 <div id="rowPixar" class="flex gap-6 overflow-x-auto no-scrollbar cursor-grab active:cursor-grabbing relative z-10 px-2"></div>
             </section>
 
-            <!-- HOROR -->
             <section>
                 <div class="row-header">
                     <h2 class="row-title">Malam Mencekam (Horor) 👻</h2>
@@ -616,7 +180,6 @@
                 <div id="rowHoror" class="flex gap-6 overflow-x-auto no-scrollbar px-2 cursor-grab active:cursor-grabbing"></div>
             </section>
             
-            <!-- DRAKOR -->
             <section>
                 <div class="row-header">
                     <h2 class="row-title">Drama Korea (Drakor) 🫰</h2>
@@ -625,7 +188,6 @@
                 <div id="rowDrakor" class="flex gap-6 overflow-x-auto no-scrollbar px-2 cursor-grab active:cursor-grabbing"></div>
             </section>
             
-            <!-- ANIME -->
             <section>
                 <div class="row-header">
                     <h2 class="row-title">Koleksi Anime 🌸</h2>
@@ -634,7 +196,6 @@
                 <div id="rowAnime" class="flex gap-6 overflow-x-auto no-scrollbar px-2 cursor-grab active:cursor-grabbing"></div>
             </section>
             
-            <!-- MOVIES -->
             <section>
                 <div class="row-header">
                     <h2 class="row-title text-white">Film Terpopuler ⭐</h2>
@@ -643,7 +204,6 @@
                 <div id="row1" class="flex gap-6 overflow-x-auto no-scrollbar px-2 cursor-grab active:cursor-grabbing"></div>
             </section>
             
-            <!-- SERIES -->
             <section>
                 <div class="row-header">
                     <h2 class="row-title text-white">Serial TV Pilihan 📺</h2>
@@ -658,12 +218,7 @@
         <section id="gridSection" class="hidden space-y-12">
             <h2 id="gridTitle" class="text-3xl md:text-5xl font-black tracking-tighter text-blue-500 uppercase text-center drop-shadow-lg"></h2>
             <div id="gridResults" class="flex flex-wrap justify-center sm:justify-start gap-6 md:gap-10"></div>
-
-            <div class="flex justify-center pt-20">
-                <button id="loadMoreBtn" onclick="loadMore()" class="hidden bg-white/10 backdrop-blur-md px-12 py-5 rounded-full font-black text-xs uppercase tracking-widest hover:bg-white hover:text-black transition border border-white/20">
-                    Muat Lebih Banyak
-                </button>
-            </div>
+            <div class="flex justify-center pt-20"><button id="loadMoreBtn" onclick="loadMore()" class="hidden bg-white/10 backdrop-blur-md px-12 py-5 rounded-full font-black text-xs uppercase tracking-widest hover:bg-white hover:text-black transition border border-white/20">Muat Lebih Banyak</button></div>
         </section>
 
         <footer class="pt-32 pb-12 text-center opacity-40">
@@ -674,25 +229,12 @@
 
     <!-- PLAYER -->
     <div id="playerContainer" class="hidden fixed inset-0 z-[500] flex items-center justify-center bg-black/95 transition-all">
-        <button onclick="closePlayer()" class="fixed top-6 right-6 md:top-8 md:right-8 z-[600] text-white/40 hover:text-red-500 text-3xl transition font-black">
-            ✕
-        </button>
+        <button onclick="closePlayer()" class="fixed top-6 right-6 md:top-8 md:right-8 z-[600] text-white/40 hover:text-red-500 text-3xl transition font-black">✕</button>
         
         <div id="playerModalBox" class="relative w-full h-full md:h-[95vh] md:max-w-6xl md:rounded-[45px] overflow-y-auto no-scrollbar bg-[#0a0a0f] border border-white/5 flex flex-col shadow-2xl">
             
             <div class="aspect-video w-full bg-black flex-shrink-0 relative group">
-                <iframe
-                    id="videoPlayer"
-                    src=""
-                    class="w-full h-full"
-                    frameborder="0"
-                    allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
-                    allowfullscreen
-                    referrerpolicy="no-referrer"
-                ></iframe>
-
-                <div id="playerMouseShield"></div>
-                <div id="cleanFsMouseShield"></div>
+                <iframe id="videoPlayer" src="" class="w-full h-full" frameborder="0" allowfullscreen></iframe>
             </div>
 
             <div class="p-6 md:p-12 space-y-12">
@@ -703,7 +245,6 @@
                             <span id="playerYear" class="bg-white/10 px-3 py-1 rounded-full text-white">2024</span>
                             <span id="playerRuntime" class="text-white/60">...</span>
                         </div>
-
                         <h3 id="playingTitle" class="text-3xl md:text-6xl font-black tracking-tighter uppercase leading-none text-white drop-shadow-md"></h3>
                         <p id="playerOverview" class="text-white/70 text-sm md:text-lg leading-relaxed max-w-4xl font-light"></p>
                     </div>
@@ -712,16 +253,12 @@
                 </div>
 
                 <div class="player-info-card">
-                    <div class="row-header">
-                        <h4 class="row-title">Pemeran Utama</h4>
-                    </div>
+                    <div class="row-header"><h4 class="row-title">Pemeran Utama</h4></div>
                     <div id="castContainer" class="flex gap-8 overflow-x-auto no-scrollbar"></div>
                 </div>
 
                 <div>
-                    <div class="row-header">
-                        <h4 class="row-title">Rekomendasi Serupa</h4>
-                    </div>
+                    <div class="row-header"><h4 class="row-title">Rekomendasi Serupa</h4></div>
                     <div id="similarContainer" class="flex gap-6 overflow-x-auto no-scrollbar pb-10"></div>
                 </div>
             </div>
