@@ -207,6 +207,11 @@ function changeServer(s) {
         let url = '';
 
         switch(s) {
+            case 'Vaplayer':  // ← SERVER UTAMA BARU
+                url = currentPlayType === 'tv' 
+                    ? `https://vaplayer.ru/embed/tv/${currentPlayId}/1/1` 
+                    : `https://vaplayer.ru/embed/movie/${currentPlayId}`;
+                break;
             case 'VidSrcTo':
                 url = `https://vidsrc.to/embed/${currentPlayType}/${currentPlayId}`;
                 break;
@@ -221,7 +226,7 @@ function changeServer(s) {
                 url = `https://streamimdb.ru/embed/${currentPlayType}/${currentPlayId}`;
                 break;
             default:
-                url = `https://vidsrc.to/embed/${currentPlayType}/${currentPlayId}`;
+                url = `https://vaplayer.ru/embed/${currentPlayType === 'tv' ? 'tv' : 'movie'}/${currentPlayId}${currentPlayType === 'tv' ? '/1/1' : ''}`;
         }
 
         // Cache buster
@@ -229,7 +234,7 @@ function changeServer(s) {
 
         f.src = url;
 
-        // Update tombol
+        // Update tombol aktif
         document.querySelectorAll('.server-btn').forEach(b => {
             b.className = "server-btn px-8 py-3 rounded-full text-[10px] font-black uppercase border border-white/10 opacity-40 transition";
         });
@@ -251,14 +256,15 @@ async function playMovie(id, title, type, backdrop, poster) {
     document.getElementById('playerRating').innerText = "⭐ ...";
     document.getElementById('playerRuntime').innerText = "...";
     
-            document.getElementById('playerControls').innerHTML = `
-        <button id="btn-VidSrcTo" onclick="changeServer('VidSrcTo')" class="server-btn px-8 py-3 rounded-full text-[10px] font-black uppercase bg-white text-black shadow-xl">VidSrc.to</button>
+                document.getElementById('playerControls').innerHTML = `
+        <button id="btn-Vaplayer" onclick="changeServer('Vaplayer')" class="server-btn px-8 py-3 rounded-full text-[10px] font-black uppercase bg-white text-black shadow-xl">Vaplayer.ru ★</button>
+        <button id="btn-VidSrcTo" onclick="changeServer('VidSrcTo')" class="server-btn px-8 py-3 rounded-full text-[10px] font-black uppercase border border-white/10 opacity-40">VidSrc.to</button>
         <button id="btn-MultiEmbed" onclick="changeServer('MultiEmbed')" class="server-btn px-8 py-3 rounded-full text-[10px] font-black uppercase border border-white/10 opacity-40">MultiEmbed</button>
         <button id="btn-VikingEmbed" onclick="changeServer('VikingEmbed')" class="server-btn px-8 py-3 rounded-full text-[10px] font-black uppercase border border-white/10 opacity-40">VikingEmbed</button>
-        <button id="btn-StreamIMDB" onclick="changeServer('StreamIMDB')" class="server-btn px-8 py-3 rounded-full text-[10px] font-black uppercase border border-white/10 opacity-40">StreamIMDB.ru</button>
+        <button id="btn-StreamIMDB" onclick="changeServer('StreamIMDB')" class="server-btn px-8 py-3 rounded-full text-[10px] font-black uppercase border border-white/10 opacity-40">StreamIMDB</button>
         <button onclick="shareMovie('${title.replace(/'/g, "\\'")}')" class="px-8 py-3 rounded-full text-[10px] font-black uppercase bg-white/5 border border-white/10 hover:bg-white hover:text-black transition">Share</button>`;
     
-    changeServer('VidSrcTo');
+    changeServer('Vaplayer');
     player.classList.remove('hidden');
     document.body.style.overflow = 'hidden';
     if(backdrop && backdrop !== 'null') updateAmbient(backdrop);
