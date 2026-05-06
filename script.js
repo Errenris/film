@@ -333,38 +333,42 @@ function changeServer(s) {
     const f = document.getElementById('videoPlayer');
     if (!f) return;
 
-    f.src = 'about:blank';
+    let url = '';
 
-    setTimeout(() => {
-        let url = '';
+    // Pastikan izin fullscreen tetap ada
+    f.setAttribute('allow', 'autoplay; fullscreen; encrypted-media; picture-in-picture');
+    f.setAttribute('allowfullscreen', 'true');
+    f.setAttribute('referrerpolicy', 'no-referrer');
 
-        if (s === 'VidSrc') {
-            if (currentPlayType === 'tv') {
-                url = `https://vidsrc.me/embed/tv?tmdb=${currentPlayId}&season=${currentSeason}&episode=${currentEpisode}`;
-            } else {
-                url = `https://vidsrc.me/embed/movie?tmdb=${currentPlayId}`;
-            }
-        } else {
-            if (currentPlayType === 'tv') {
-                url = `https://player.autoembed.app/embed/tv/${currentPlayId}/${currentSeason}/${currentEpisode}`;
-            } else {
-                url = `https://player.autoembed.app/embed/movie/${currentPlayId}`;
-            }
+    if (s === 'VidSrc') {
+        // Balik ke format lama yang sebelumnya bisa fullscreen
+        url = `https://vidsrc.me/embed/${currentPlayType}?tmdb=${currentPlayId}`;
+
+        // Kalau TV, tambahkan season/episode dengan cara aman
+        if (currentPlayType === 'tv') {
+            url += `&season=${currentSeason}&episode=${currentEpisode}`;
         }
+    } else {
+        // Balik ke format lama AutoEmbed
+        url = `https://player.autoembed.app/embed/${currentPlayType}/${currentPlayId}`;
 
-        f.src = url;
-        f.setAttribute('referrerpolicy', 'no-referrer');
-
-        document.querySelectorAll('.server-btn').forEach(b => {
-            b.className = "server-btn px-8 py-3 rounded-full text-[10px] font-black uppercase border border-white/10 opacity-40 transition";
-        });
-
-        const active = document.getElementById('btn-' + s);
-
-        if (active) {
-            active.className = "server-btn px-8 py-3 rounded-full text-[10px] font-black uppercase bg-white text-black shadow-xl transition active:scale-95";
+        // Kalau TV, pakai season/episode aktif
+        if (currentPlayType === 'tv') {
+            url += `/${currentSeason}/${currentEpisode}`;
         }
-    }, 250);
+    }
+
+    f.src = url;
+
+    document.querySelectorAll('.server-btn').forEach(b => {
+        b.className = "server-btn px-8 py-3 rounded-full text-[10px] font-black uppercase border border-white/10 opacity-40 transition";
+    });
+
+    const active = document.getElementById('btn-' + s);
+
+    if (active) {
+        active.className = "server-btn px-8 py-3 rounded-full text-[10px] font-black uppercase bg-white text-black shadow-xl transition active:scale-95";
+    }
 }
 
 function renderEpisodeControls(tvDetails) {
