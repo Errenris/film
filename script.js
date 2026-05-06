@@ -1210,30 +1210,41 @@ function nudgePlayerControlsToHide(keepIdle = false) {
     }
 }
 /* ===================================================== */
-/* ANTI POPUP RINGAN TANPA SANDBOX */
-/* Aman untuk server embed yang anti-sandbox */
+/* DNS / BRAVE RECOMMENDATION NOTICE */
 /* ===================================================== */
 
-(function antiPopupGuard() {
-    window.open = function(url) {
-        console.warn("Popup diblokir:", url);
-        return null;
-    };
+function showDnsNotice() {
+    const notice = document.getElementById('dnsNotice');
+    if (!notice) return;
 
-    document.addEventListener('click', (e) => {
-        const link = e.target.closest('a');
+    notice.classList.remove('hidden');
+    notice.classList.add('flex');
+}
 
-        if (!link) return;
+function closeDnsNotice() {
+    const notice = document.getElementById('dnsNotice');
+    if (!notice) return;
 
-        const href = link.getAttribute('href') || '';
+    notice.classList.add('hidden');
+    notice.classList.remove('flex');
+}
 
-        if (
-            href.startsWith('http') &&
-            !href.includes(location.hostname)
-        ) {
-            e.preventDefault();
-            e.stopPropagation();
-            console.warn("External link diblokir:", href);
-        }
-    }, true);
-})();
+function copyDnsNotice() {
+    const dnsText = 'p2.freedns.controld.com';
+
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(dnsText).then(() => {
+            alert('DNS berhasil disalin: ' + dnsText);
+        }).catch(() => {
+            alert('DNS: ' + dnsText);
+        });
+    } else {
+        alert('DNS: ' + dnsText);
+    }
+}
+
+window.addEventListener('load', () => {
+    setTimeout(() => {
+        showDnsNotice();
+    }, 1200);
+});
