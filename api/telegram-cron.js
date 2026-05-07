@@ -8,7 +8,16 @@ export default async function handler(req, res) {
     try {
         const secret = process.env.CRON_SECRET;
 
-        if (secret && req.query.secret !== secret && req.headers['x-vercel-cron'] !== '1') {
+        const isVercelCron =
+            req.headers['x-vercel-cron'] === '1' ||
+            req.headers['x-vercel-cron'] === 'true';
+
+        const isManualAllowed =
+            secret &&
+            req.query &&
+            req.query.secret === secret;
+
+        if (secret && !isManualAllowed && !isVercelCron) {
             return res.status(401).json({
                 ok: false,
                 error: 'Unauthorized'
@@ -17,12 +26,12 @@ export default async function handler(req, res) {
 
         const token = process.env.TELEGRAM_BOT_TOKEN;
         const chatId = process.env.TELEGRAM_CHAT_ID;
-        const tmdbKey = process.env.TMDB_API_KEY;
+        const tmdbKey = getTmdbKey();
 
         if (!token || !chatId || !tmdbKey) {
             return res.status(500).json({
                 ok: false,
-                error: 'TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID, dan TMDB_API_KEY wajib diisi.'
+                error: 'TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID, dan TMDB_KEY/TMDB_API_KEY wajib diisi.'
             });
         }
 
@@ -31,6 +40,7 @@ export default async function handler(req, res) {
 
         return res.status(200).json({
             ok: true,
+            message: 'Telegram cron berhasil berjalan.',
             movie: movieResult,
             series: seriesResult
         });
@@ -42,24 +52,37 @@ export default async function handler(req, res) {
     }
 }
 
+function getTmdbKey() {
+    return process.env.TMDB_API_KEY || process.env.TMDB_KEY || '';
+}
+
 async function checkMovies() {
-    const tmdbKey = process.env.TMDB_API_KEY;
+    const tmdbKey = getTmdbKey();
 
     const url = `${TMDB_BASE}/movie/now_playing?api_key=${tmdbKey}&language=id-ID&page=1&region=ID`;
+
     const res = await fetch(url);
     const data = await res.json();
+
+    if (!res.ok) {
+        throw new Error(data.status_message || 'Gagal mengambil data movie dari TMDB.');
+    }
 
     const results = (data.results || [])
         .filter(item => item.poster_path)
         .slice(0, 8);
 
     let sent = 0;
+    let skipped = 0;
 
     for (const movie of results) {
         const uniqueId = `movie:${movie.id}`;
         const alreadySent = await isAlreadySent(MOVIE_SENT_KEY, uniqueId);
 
-        if (alreadySent) continue;
+        if (alreadySent) {
+            skipped++;
+            continue;
+        }
 
         await sendMovieToTelegram(movie);
         await markAsSent(MOVIE_SENT_KEY, uniqueId);
@@ -70,28 +93,38 @@ async function checkMovies() {
 
     return {
         checked: results.length,
-        sent
+        sent,
+        skipped
     };
 }
 
 async function checkSeries() {
-    const tmdbKey = process.env.TMDB_API_KEY;
+    const tmdbKey = getTmdbKey();
 
     const url = `${TMDB_BASE}/tv/on_the_air?api_key=${tmdbKey}&language=id-ID&page=1`;
+
     const res = await fetch(url);
     const data = await res.json();
+
+    if (!res.ok) {
+        throw new Error(data.status_message || 'Gagal mengambil data series dari TMDB.');
+    }
 
     const results = (data.results || [])
         .filter(item => item.poster_path)
         .slice(0, 8);
 
     let sent = 0;
+    let skipped = 0;
 
     for (const series of results) {
         const uniqueId = `tv:${series.id}`;
         const alreadySent = await isAlreadySent(SERIES_SENT_KEY, uniqueId);
 
-        if (alreadySent) continue;
+        if (alreadySent) {
+            skipped++;
+            continue;
+        }
 
         await sendSeriesToTelegram(series);
         await markAsSent(SERIES_SENT_KEY, uniqueId);
@@ -102,7 +135,8 @@ async function checkSeries() {
 
     return {
         checked: results.length,
-        sent
+        sent,
+        skipped
     };
 }
 
@@ -192,17 +226,20 @@ async function sendTelegramPhoto({ photo, caption, topicId }) {
     const data = await tg.json();
 
     if (!data.ok) {
-        throw new Error(data.description || 'Gagal kirim Telegram.');
+        throw new Error(data.description || 'Gagal kirim foto ke Telegram.');
     }
 
     return data;
 }
 
 /*
-    Penyimpanan anti-spam pakai KV Redis REST.
-    Isi env:
+    Anti-spam pakai KV Redis / Upstash REST.
+    Env yang dipakai:
     KV_REST_API_URL
     KV_REST_API_TOKEN
+
+    Kalau env ini kosong, bot tetap jalan,
+    tapi film/series bisa terkirim ulang saat cron berikutnya.
 */
 async function isAlreadySent(key, value) {
     const kvUrl = process.env.KV_REST_API_URL;
@@ -219,6 +256,7 @@ async function isAlreadySent(key, value) {
     });
 
     const data = await res.json();
+
     return data.result === 1;
 }
 
