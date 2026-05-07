@@ -127,6 +127,7 @@
             align-items: flex-end;
             margin-bottom: 20px;
             padding: 0 10px;
+            gap: 12px;
         }
 
         .row-title {
@@ -146,11 +147,41 @@
             transition: 0.3s;
             text-transform: uppercase;
             letter-spacing: 0.2em;
+            margin-left: auto;
         }
 
         .explore-btn:hover {
             opacity: 1;
             transform: translateX(5px);
+        }
+
+        .row-nav-controls {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+
+        .row-nav-btn {
+            width: 34px;
+            height: 34px;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.12);
+            color: white;
+            font-size: 18px;
+            font-weight: 900;
+            line-height: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.25s;
+        }
+
+        .row-nav-btn:hover {
+            background: white;
+            color: black;
+            transform: scale(1.08);
         }
 
         .actor-circle {
@@ -304,6 +335,25 @@
             cursor: pointer;
         }
 
+        #adguardNotice {
+            position: relative;
+            overflow: hidden;
+        }
+
+        #adguardNotice::before {
+            content: "";
+            position: absolute;
+            inset: -40%;
+            background: radial-gradient(circle at top left, rgba(59,130,246,0.25), transparent 45%);
+            pointer-events: none;
+        }
+
+        .adguard-copy-btn,
+        .adguard-close-btn {
+            position: relative;
+            z-index: 2;
+        }
+
         @media (max-width: 768px) {
             #playerControls {
                 width: 100%;
@@ -318,6 +368,26 @@
                 width: 100%;
                 text-align: center;
             }
+
+            .row-header {
+                align-items: center;
+                gap: 8px;
+            }
+
+            .row-title {
+                letter-spacing: 0.22em;
+                font-size: 9px;
+            }
+
+            .explore-btn {
+                display: none;
+            }
+
+            .row-nav-btn {
+                width: 30px;
+                height: 30px;
+                font-size: 16px;
+            }
         }
     </style>
 </head>
@@ -327,7 +397,6 @@
     <div id="ambientBg"></div>
     <div class="overlay"></div>
 
-    <!-- HEADER KAPSUL -->
     <div class="fixed top-6 w-full z-[100] flex justify-center px-4">
         <header id="mainHeader" class="header-capsule flex items-center gap-6 md:gap-10">
             <h1 class="text-xl font-black tracking-tighter cursor-pointer" onclick="goHome()">
@@ -353,7 +422,6 @@
         </header>
     </div>
 
-    <!-- MOBILE NAV -->
     <nav id="mobileNav" class="md:hidden fixed bottom-4 left-4 right-4 z-[100] bg-[#111115]/90 backdrop-blur-xl rounded-full flex justify-around items-center px-4 py-3 shadow-2xl border border-white/10">
         <button onclick="goHome()" class="text-xl">🏠</button>
         <button onclick="loadCategory('movie/popular', 'Movies')" class="text-xl">🎬</button>
@@ -363,8 +431,7 @@
 
     <main id="mainContainer" class="max-w-[1550px] mx-auto pt-24 px-4 md:px-10 space-y-24 fade-in">
 
-        <!-- HERO -->
-        <section id="heroSection" class="relative w-full h-[60vh] md:h-[82vh] rounded-[45px] overflow-hidden group cursor-grab active:cursor-grabbing border border-white/5 shadow-2xl">
+        <section id="heroSection" class="relative w-full h-[60vh] md:h-[82vh] rounded-[45px] overflow-hidden group border border-white/5 shadow-2xl">
             <div id="heroContent" class="absolute inset-0 bg-cover bg-center transition-transform duration-[2.5s] group-hover:scale-105"></div>
             <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent"></div>
 
@@ -386,123 +453,138 @@
             <div id="heroDots" class="absolute bottom-10 right-10 flex flex-col gap-2 z-20"></div>
         </section>
 
-        <!-- VIEW AREA -->
         <div id="homeView" class="space-y-28">
 
-            <!-- HISTORY -->
             <section id="historySection" class="hidden">
                 <div class="row-header">
                     <h2 class="row-title text-white">Lanjutkan Menonton 🍿</h2>
                     <button onclick="clearHistory()" class="explore-btn text-red-500 hover:text-red-400">Hapus Semua ✕</button>
                 </div>
-                <div id="rowHistory" class="flex gap-6 overflow-x-auto custom-scrollbar-x pb-4 px-2 cursor-grab active:cursor-grabbing"></div>
+                <div id="rowHistory" class="flex gap-6 overflow-x-auto custom-scrollbar-x pb-4 px-2"></div>
             </section>
 
-            <!-- TRENDING -->
+            <section id="adguardNotice" class="rounded-[32px] border border-blue-500/20 bg-blue-500/10 p-5 md:p-7 shadow-2xl">
+                <div class="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-5">
+                    <div class="space-y-2">
+                        <p class="text-[10px] font-black uppercase tracking-[0.35em] text-blue-300">
+                            Rekomendasi Anti Iklan
+                        </p>
+
+                        <h2 class="text-xl md:text-3xl font-black tracking-tight text-white">
+                            Kurangi popup iklan saat nonton 🛡️
+                        </h2>
+
+                        <p class="text-sm text-white/60 leading-relaxed max-w-3xl">
+                            Gunakan DNS <b class="text-white">dns.adguard.com</b> atau browser <b class="text-white">Brave</b>
+                            supaya iklan/popup dari server video bisa lebih sedikit. Pengaturan DNS dilakukan di perangkat atau browser masing-masing.
+                        </p>
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row gap-3">
+                        <button onclick="copyAdguardDns()" class="adguard-copy-btn rounded-full bg-white px-6 py-3 text-[10px] font-black uppercase tracking-widest text-black hover:bg-blue-400 hover:text-white transition">
+                            Copy DNS
+                        </button>
+
+                        <button onclick="closeAdguardNotice()" class="adguard-close-btn rounded-full bg-white/10 px-6 py-3 text-[10px] font-black uppercase tracking-widest text-white border border-white/10 hover:bg-white hover:text-black transition">
+                            Tutup
+                        </button>
+                    </div>
+                </div>
+            </section>
+
             <section>
                 <div class="row-header">
                     <h2 class="row-title text-red-500">Populer Hari Ini 🔥</h2>
                     <button onclick="loadCategory('trending/movie/day', 'Paling Populer')" class="explore-btn">Lihat Semua ➔</button>
                 </div>
-                <div id="rowTrending" class="flex gap-10 overflow-x-auto no-scrollbar pb-10 pl-10 cursor-grab active:cursor-grabbing"></div>
+                <div id="rowTrending" class="flex gap-10 overflow-x-auto no-scrollbar pb-10 pl-10"></div>
             </section>
 
-            <!-- AKTOR -->
             <section>
                 <div class="row-header">
                     <h2 class="row-title">Bintang Papan Atas 🌟</h2>
                 </div>
-                <div id="rowActors" class="flex gap-8 overflow-x-auto no-scrollbar pb-4 px-2 cursor-grab active:cursor-grabbing"></div>
+                <div id="rowActors" class="flex gap-8 overflow-x-auto no-scrollbar pb-4 px-2"></div>
             </section>
 
-            <!-- MARVEL -->
             <section class="relative overflow-hidden">
                 <div class="universe-bg-text">AVENGERS</div>
                 <div class="row-header relative z-10">
                     <h2 class="row-title text-white">Marvel Cinematic Universe 🦸‍♂️</h2>
                     <button onclick="loadCategory('discover/movie?with_companies=420&sort_by=revenue.desc', 'Koleksi Marvel')" class="explore-btn">Lihat Semua ➔</button>
                 </div>
-                <div id="rowMarvel" class="flex gap-6 overflow-x-auto no-scrollbar cursor-grab active:cursor-grabbing relative z-10 px-2"></div>
+                <div id="rowMarvel" class="flex gap-6 overflow-x-auto no-scrollbar relative z-10 px-2"></div>
             </section>
 
-            <!-- DC -->
             <section class="relative overflow-hidden">
                 <div class="universe-bg-text">JUSTICE LEAGUE</div>
                 <div class="row-header relative z-10">
                     <h2 class="row-title text-white">DC Extended Universe 🦇</h2>
                     <button onclick="loadCategory('discover/movie?with_companies=429&sort_by=popularity.desc', 'Koleksi DC')" class="explore-btn">Lihat Semua ➔</button>
                 </div>
-                <div id="rowDC" class="flex gap-6 overflow-x-auto no-scrollbar cursor-grab active:cursor-grabbing relative z-10 px-2"></div>
+                <div id="rowDC" class="flex gap-6 overflow-x-auto no-scrollbar relative z-10 px-2"></div>
             </section>
 
-            <!-- DISNEY -->
             <section class="relative overflow-hidden">
                 <div class="universe-bg-text">DISNEY+</div>
                 <div class="row-header relative z-10">
                     <h2 class="row-title text-white">Disney+ Originals 🧚‍♂️</h2>
                     <button onclick="loadCategory('discover/movie?with_companies=2&sort_by=popularity.desc', 'Koleksi Disney')" class="explore-btn">Lihat Semua ➔</button>
                 </div>
-                <div id="rowDisney" class="flex gap-6 overflow-x-auto no-scrollbar cursor-grab active:cursor-grabbing relative z-10 px-2"></div>
+                <div id="rowDisney" class="flex gap-6 overflow-x-auto no-scrollbar relative z-10 px-2"></div>
             </section>
 
-            <!-- PIXAR -->
             <section class="relative overflow-hidden">
                 <div class="universe-bg-text">PIXAR STUDIO</div>
                 <div class="row-header relative z-10">
                     <h2 class="row-title text-white">Dunia Fantasi Pixar 🎨</h2>
                     <button onclick="loadCategory('discover/movie?with_companies=3&sort_by=popularity.desc', 'Koleksi Pixar')" class="explore-btn">Lihat Semua ➔</button>
                 </div>
-                <div id="rowPixar" class="flex gap-6 overflow-x-auto no-scrollbar cursor-grab active:cursor-grabbing relative z-10 px-2"></div>
+                <div id="rowPixar" class="flex gap-6 overflow-x-auto no-scrollbar relative z-10 px-2"></div>
             </section>
 
-            <!-- HOROR -->
             <section>
                 <div class="row-header">
                     <h2 class="row-title">Malam Mencekam (Horor) 👻</h2>
                     <button onclick="loadCategory('discover/movie?with_genres=27', 'Film Horor')" class="explore-btn">Lihat Semua ➔</button>
                 </div>
-                <div id="rowHoror" class="flex gap-6 overflow-x-auto no-scrollbar px-2 cursor-grab active:cursor-grabbing"></div>
+                <div id="rowHoror" class="flex gap-6 overflow-x-auto no-scrollbar px-2"></div>
             </section>
 
-            <!-- DRAKOR -->
             <section>
                 <div class="row-header">
                     <h2 class="row-title">Drama Korea (Drakor) 🫰</h2>
                     <button onclick="loadCategory('discover/tv?with_original_language=ko', 'Drakor Terbaru')" class="explore-btn">Lihat Semua ➔</button>
                 </div>
-                <div id="rowDrakor" class="flex gap-6 overflow-x-auto no-scrollbar px-2 cursor-grab active:cursor-grabbing"></div>
+                <div id="rowDrakor" class="flex gap-6 overflow-x-auto no-scrollbar px-2"></div>
             </section>
 
-            <!-- ANIME -->
             <section>
                 <div class="row-header">
                     <h2 class="row-title">Koleksi Anime 🌸</h2>
                     <button onclick="loadCategory('discover/tv?with_original_language=ja&with_genres=16', 'Anime Populer')" class="explore-btn">Lihat Semua ➔</button>
                 </div>
-                <div id="rowAnime" class="flex gap-6 overflow-x-auto no-scrollbar px-2 cursor-grab active:cursor-grabbing"></div>
+                <div id="rowAnime" class="flex gap-6 overflow-x-auto no-scrollbar px-2"></div>
             </section>
 
-            <!-- MOVIES -->
             <section>
                 <div class="row-header">
                     <h2 class="row-title text-white">Film Terpopuler ⭐</h2>
                     <button onclick="loadCategory('movie/popular', 'Film Terpopuler')" class="explore-btn">Lihat Semua ➔</button>
                 </div>
-                <div id="row1" class="flex gap-6 overflow-x-auto no-scrollbar px-2 cursor-grab active:cursor-grabbing"></div>
+                <div id="row1" class="flex gap-6 overflow-x-auto no-scrollbar px-2"></div>
             </section>
 
-            <!-- SERIES -->
             <section>
                 <div class="row-header">
                     <h2 class="row-title text-white">Serial TV Pilihan 📺</h2>
                     <button onclick="loadCategory('tv/popular', 'Serial TV Populer')" class="explore-btn">Lihat Semua ➔</button>
                 </div>
-                <div id="row2" class="flex gap-6 overflow-x-auto no-scrollbar px-2 cursor-grab active:cursor-grabbing"></div>
+                <div id="row2" class="flex gap-6 overflow-x-auto no-scrollbar px-2"></div>
             </section>
 
         </div>
 
-        <!-- GRID / MYLIST VIEW -->
         <section id="gridSection" class="hidden space-y-12">
             <h2 id="gridTitle" class="text-3xl md:text-5xl font-black tracking-tighter text-blue-500 uppercase text-center drop-shadow-lg"></h2>
             <div id="gridResults" class="flex flex-wrap justify-center sm:justify-start gap-6 md:gap-10"></div>
@@ -520,7 +602,6 @@
         </footer>
     </main>
 
-    <!-- PLAYER -->
     <div id="playerContainer" class="hidden fixed inset-0 z-[500] flex items-center justify-center bg-black/95 transition-all">
         <button onclick="closePlayer()" class="fixed top-6 right-6 md:top-8 md:right-8 z-[600] text-white/40 hover:text-red-500 text-3xl transition font-black">
             ✕
@@ -554,7 +635,6 @@
                         <p id="playerOverview" class="text-white/70 text-sm md:text-lg leading-relaxed max-w-4xl font-light"></p>
                     </div>
 
-                    <!-- Script.js akan mengisi tombol server, season, dan episode di sini -->
                     <div id="playerControls" class="flex flex-wrap gap-3"></div>
                 </div>
 
