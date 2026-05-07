@@ -7,7 +7,7 @@ export default async function handler(req, res) {
         if (!token || !chatId) {
             return res.status(500).json({
                 ok: false,
-                error: 'TELEGRAM_BOT_TOKEN dan TELEGRAM_CHAT_ID wajib diisi di Vercel Environment Variables.'
+                error: 'TELEGRAM_BOT_TOKEN dan TELEGRAM_CHAT_ID belum diisi di Vercel Environment Variables.'
             });
         }
 
