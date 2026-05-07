@@ -23,17 +23,15 @@ let currentPlayPoster = '';
 window.onload = () => {
     initApp();
     setupScrollEffects();
-    setupDragToScroll();
+    setupRowButtons();
     setupSearch();
 };
 
-// --- CLEAN STRING ---
 function safeText(str) {
     if (!str) return 'Unknown';
     return String(str).replace(/['"\\`]/g, '');
 }
 
-// --- AMBIENT BG ---
 function updateAmbient(img) {
     const bg = document.getElementById('ambientBg');
 
@@ -57,7 +55,6 @@ function setupScrollEffects() {
     }, { passive: true });
 }
 
-// --- INIT APP ---
 function initApp() {
     let oldHist = JSON.parse(localStorage.getItem('nbg_history') || '[]');
 
@@ -126,7 +123,6 @@ async function loadHeroBanner() {
     } catch (e) {}
 }
 
-// --- MY LIST FAVORIT ---
 function getMyList() {
     return JSON.parse(localStorage.getItem('nbg_mylist') || '[]');
 }
@@ -192,7 +188,6 @@ function showMyList() {
     }
 }
 
-// --- RENDER ENGINE ---
 async function fetchAndRenderActors(path, id) {
     try {
         const res = await fetch(`/api/movies?path=${path}`);
@@ -360,7 +355,6 @@ function renderCards(movies, container, append = false, isTV = false) {
     });
 }
 
-// --- PLAYER & METADATA ---
 function changeServer(s) {
     const f = document.getElementById('videoPlayer');
     let url = '';
@@ -651,7 +645,6 @@ function closePlayer() {
     }
 }
 
-// --- NAV & SEARCH ---
 async function loadCategory(path, label) {
     window.scrollTo(0, 0);
 
@@ -743,7 +736,6 @@ function setupSearch() {
     });
 }
 
-// --- HISTORY LANJUT MENONTON ---
 function saveToHistory(id, type, backdrop, poster, title) {
     let h = JSON.parse(localStorage.getItem('nbg_history') || '[]');
 
@@ -783,6 +775,7 @@ function renderHistory() {
     if (h.length > 0 && sect) {
         sect.classList.remove('hidden');
         renderCards(h, document.getElementById('rowHistory'));
+        setupRowButtons();
     }
 }
 
@@ -797,39 +790,75 @@ function clearHistory() {
 }
 
 function setupDragToScroll() {
-    document.querySelectorAll('.overflow-x-auto').forEach(s => {
-        let isDown = false;
-        let startX;
-        let scrollLeft;
+    // Drag-scroll dimatikan. Row sekarang pakai tombol kiri/kanan.
+}
 
-        s.addEventListener('mousedown', (e) => {
-            isDown = true;
-            startX = e.pageX - s.offsetLeft;
-            scrollLeft = s.scrollLeft;
-            s.classList.add('cursor-grabbing');
-        });
+function setupRowButtons() {
+    const rows = document.querySelectorAll('#homeView section > .overflow-x-auto');
 
-        s.addEventListener('mouseleave', () => {
-            isDown = false;
-            s.classList.remove('cursor-grabbing');
-        });
+    rows.forEach(row => {
+        if (!row || !row.id) return;
 
-        s.addEventListener('mouseup', () => {
-            isDown = false;
-            s.classList.remove('cursor-grabbing');
-        });
+        const section = row.closest('section');
+        if (!section) return;
 
-        s.addEventListener('mousemove', (e) => {
-            if (!isDown) return;
+        const header = section.querySelector('.row-header');
+        if (!header) return;
 
-            e.preventDefault();
+        if (header.querySelector(`[data-row-controls="${row.id}"]`)) return;
 
-            const x = e.pageX - s.offsetLeft;
-            const walk = (x - startX) * 2;
+        row.classList.remove('cursor-grab');
+        row.classList.remove('active:cursor-grabbing');
 
-            s.scrollLeft = scrollLeft - walk;
-        });
+        const controls = document.createElement('div');
+        controls.className = 'row-nav-controls';
+        controls.dataset.rowControls = row.id;
+
+        controls.innerHTML = `
+            <button type="button" class="row-nav-btn" onclick="scrollMovieRow('${row.id}', -1)" aria-label="Geser kiri">
+                ‹
+            </button>
+
+            <button type="button" class="row-nav-btn" onclick="scrollMovieRow('${row.id}', 1)" aria-label="Geser kanan">
+                ›
+            </button>
+        `;
+
+        header.appendChild(controls);
     });
+}
+
+function scrollMovieRow(rowId, direction) {
+    const row = document.getElementById(rowId);
+    if (!row) return;
+
+    const amount = Math.max(row.clientWidth * 0.85, 320);
+
+    row.scrollBy({
+        left: direction * amount,
+        behavior: 'smooth'
+    });
+}
+
+function copyAdguardDns() {
+    const dnsText = 'dns.adguard.com';
+
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(dnsText).then(() => {
+            alert('DNS berhasil disalin: ' + dnsText);
+        }).catch(() => {
+            alert('DNS: ' + dnsText);
+        });
+    } else {
+        alert('DNS: ' + dnsText);
+    }
+}
+
+function closeAdguardNotice() {
+    const notice = document.getElementById('adguardNotice');
+    if (!notice) return;
+
+    notice.classList.add('hidden');
 }
 
 function updateHero() {
