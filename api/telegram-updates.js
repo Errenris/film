@@ -1,3 +1,5 @@
+// Telegram bot API ready
+
 export default async function handler(req, res) {
     try {
         const token = process.env.TELEGRAM_BOT_TOKEN;
