@@ -2,15 +2,14 @@ const TMDB_BASE = 'https://api.themoviedb.org/3';
 const IMG_BASE = 'https://image.tmdb.org/t/p/w500';
 
 /*
-    Pakai v2 karena format pesan sudah versi detail..
-    Kalau ingin paksa kirim ulang untuk testing format baru, ubah jadi v3.
+    Movie tetap per ID film.
+    Series sekarang per episode terakhir, jadi episode baru bisa terkirim otomatis.
 */
 const MOVIE_SENT_KEY = 'nobargasi:telegram:sent:movies:v2';
 const SERIES_SENT_KEY = 'nobargasi:telegram:sent:series:v2';
 
 /*
     Supaya tidak kena limit Telegram.
-    Default: 3 film + 3 series per sekali cron.
     Bisa diatur lewat Vercel env:
     TELEGRAM_MAX_PER_RUN=1 / 2 / 3
 */
@@ -149,17 +148,31 @@ async function checkSeries() {
     let failed = 0;
 
     for (const series of results) {
-        const uniqueId = `tv:${series.id}`;
-        const alreadySent = await isAlreadySent(SERIES_SENT_KEY, uniqueId);
-
-        if (alreadySent) {
-            skipped++;
-            continue;
-        }
-
         try {
-            await sendSeriesToTelegram(series.id);
+            const seriesDetail = await getSeriesDetails(series.id);
+
+            const lastEp = seriesDetail.last_episode_to_air;
+            const seasonNumber = lastEp?.season_number || 1;
+            const episodeNumber = lastEp?.episode_number || 1;
+            const airDate = lastEp?.air_date || seriesDetail.last_air_date || 'unknown';
+
+            /*
+                FIX EPISODE UPDATE:
+                Dulu key cuma tv:ID.
+                Sekarang key pakai tv:ID:season:episode:airDate.
+                Jadi kalau episode baru tayang, bot akan kirim lagi.
+            */
+            const uniqueId = `tv:${series.id}:s${seasonNumber}:e${episodeNumber}:${airDate}`;
+            const alreadySent = await isAlreadySent(SERIES_SENT_KEY, uniqueId);
+
+            if (alreadySent) {
+                skipped++;
+                continue;
+            }
+
+            await sendSeriesToTelegram(series.id, seriesDetail);
             await markAsSent(SERIES_SENT_KEY, uniqueId);
+
             sent++;
         } catch (err) {
             failed++;
@@ -314,8 +327,8 @@ ${imdbLink ? `• IMDb: ${escapeHtml(imdbLink)}\n` : ''}${trailer ? `• Trailer
     });
 }
 
-async function sendSeriesToTelegram(seriesId) {
-    const series = await getSeriesDetails(seriesId);
+async function sendSeriesToTelegram(seriesId, preloadedSeries = null) {
+    const series = preloadedSeries || await getSeriesDetails(seriesId);
     const seriesTopicId = process.env.TELEGRAM_SERIES_TOPIC_ID;
 
     const title = series.name || series.original_name || 'Tanpa Judul';
@@ -359,7 +372,7 @@ async function sendSeriesToTelegram(seriesId) {
         ? `https://www.imdb.com/title/${series.external_ids.imdb_id}`
         : '';
 
-    const siteUrl = buildSiteLink('tv', series.id);
+    const siteUrl = buildSiteLink('tv', series.id, lastEp);
 
     const photoCaption = `
 📺 <b>SERIES UPDATE</b>
@@ -371,6 +384,7 @@ ${originalTitle ? `\n<i>${escapeHtml(originalTitle)}</i>` : ''}
 📅 Mulai: ${escapeHtml(firstYear)}
 🎭 ${escapeHtml(genres || 'Genre tidak tersedia')}
 🧩 ${series.number_of_seasons || 0} Season • ${series.number_of_episodes || 0} Episode
+${lastEp ? `🆕 Terakhir: S${lastEp.season_number} E${lastEp.episode_number}` : ''}
 `.trim();
 
     const detailText = `
@@ -525,12 +539,22 @@ async function markAsSent(key, value) {
     return true;
 }
 
-function buildSiteLink(type, id) {
+function buildSiteLink(type, id, episodeData = null) {
     const siteUrl = (process.env.SITE_URL || '').replace(/\/$/, '');
 
     if (!siteUrl) return 'N/A';
 
-    return `${siteUrl}/?type=${encodeURIComponent(type)}&id=${encodeURIComponent(id)}`;
+    const params = new URLSearchParams();
+
+    params.set('type', type);
+    params.set('id', id);
+
+    if (type === 'tv' && episodeData) {
+        params.set('s', episodeData.season_number || 1);
+        params.set('e', episodeData.episode_number || 1);
+    }
+
+    return `${siteUrl}/?${params.toString()}`;
 }
 
 function listNames(items, field = 'name') {
