@@ -335,12 +335,14 @@
             cursor: pointer;
         }
 
-        #adguardNotice {
+        #adguardNotice,
+        #filterPanel {
             position: relative;
             overflow: hidden;
         }
 
-        #adguardNotice::before {
+        #adguardNotice::before,
+        #filterPanel::before {
             content: "";
             position: absolute;
             inset: -40%;
@@ -349,9 +351,89 @@
         }
 
         .adguard-copy-btn,
-        .adguard-close-btn {
+        .adguard-close-btn,
+        .filter-action-btn {
             position: relative;
             z-index: 2;
+        }
+
+        .filter-select {
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.12);
+            color: white;
+            border-radius: 999px;
+            padding: 13px 18px;
+            font-size: 10px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            outline: none;
+            width: 100%;
+        }
+
+        .filter-select option {
+            color: black;
+            background: white;
+        }
+
+        .suggestion-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px;
+            border-radius: 22px;
+            cursor: pointer;
+            transition: 0.25s;
+        }
+
+        .suggestion-item:hover {
+            background: rgba(255,255,255,0.08);
+        }
+
+        .suggestion-poster {
+            width: 42px;
+            height: 62px;
+            object-fit: cover;
+            border-radius: 12px;
+            background: rgba(255,255,255,0.06);
+            flex-shrink: 0;
+        }
+
+        #detailModal {
+            backdrop-filter: blur(18px);
+        }
+
+        #detailBackdrop {
+            position: absolute;
+            inset: 0;
+            background-size: cover;
+            background-position: center;
+            opacity: 0.24;
+            filter: blur(10px);
+            transform: scale(1.05);
+        }
+
+        .detail-gradient {
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(circle at top left, rgba(59,130,246,0.25), transparent 35%),
+                linear-gradient(to bottom, rgba(0,0,0,0.45), #050508 75%);
+        }
+
+        .detail-poster {
+            width: 170px;
+            aspect-ratio: 2/3;
+            object-fit: cover;
+            border-radius: 28px;
+            border: 1px solid rgba(255,255,255,0.12);
+            box-shadow: 0 30px 80px rgba(0,0,0,0.6);
+        }
+
+        @media (min-width: 768px) {
+            .detail-poster {
+                width: 230px;
+            }
         }
 
         @media (max-width: 768px) {
@@ -388,6 +470,10 @@
                 height: 30px;
                 font-size: 16px;
             }
+
+            .filter-select {
+                border-radius: 22px;
+            }
         }
     </style>
 </head>
@@ -410,14 +496,15 @@
                 <button onclick="showMyList()" class="hover:text-white transition text-pink-500 hover:text-pink-400">❤️ My List</button>
             </nav>
 
-            <div class="flex items-center gap-4 border-l border-white/10 pl-6">
+            <div class="relative flex items-center gap-4 border-l border-white/10 pl-6">
                 <input
                     type="text"
                     id="searchInput"
                     placeholder="Search..."
+                    autocomplete="off"
                     class="bg-transparent text-xs font-bold focus:outline-none w-24 focus:w-48 transition-all text-white placeholder-white/40"
                 >
-                <div id="searchSuggestions" class="hidden absolute top-full mt-5 right-0 w-[320px] bg-[#111115] rounded-[30px] max-h-96 overflow-y-auto no-scrollbar p-3 border border-white/10 shadow-2xl"></div>
+                <div id="searchSuggestions" class="hidden absolute top-full mt-5 right-0 w-[340px] bg-[#111115] rounded-[30px] max-h-96 overflow-y-auto no-scrollbar p-3 border border-white/10 shadow-2xl"></div>
             </div>
         </header>
     </div>
@@ -441,7 +528,7 @@
 
                 <div class="flex items-center gap-4">
                     <button id="heroPlayBtn" class="bg-white text-black hover:bg-blue-500 hover:text-white px-12 py-4 rounded-full font-black text-[11px] uppercase tracking-[0.2em] transition-all shadow-2xl hover:scale-110">
-                        Nonton Sekarang
+                        Lihat Detail
                     </button>
 
                     <button onclick="surpriseMe()" class="w-12 h-12 rounded-full bg-white/5 backdrop-blur-md flex items-center justify-center text-xl hover:bg-white/20 transition border border-white/10 shadow-lg">
@@ -492,6 +579,59 @@
                 </div>
             </section>
 
+            <section id="filterPanel" class="rounded-[32px] border border-white/10 bg-white/[0.04] p-5 md:p-7 shadow-2xl">
+                <div class="relative z-10 space-y-5">
+                    <div>
+                        <p class="text-[10px] font-black uppercase tracking-[0.35em] text-blue-300 mb-2">
+                            Filter Cepat
+                        </p>
+                        <h2 class="text-xl md:text-3xl font-black tracking-tight text-white">
+                            Cari tontonan sesuai mood 🎛️
+                        </h2>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                        <select id="filterType" class="filter-select">
+                            <option value="movie">Movie</option>
+                            <option value="tv">Series</option>
+                        </select>
+
+                        <select id="filterGenre" class="filter-select">
+                            <option value="">Semua Genre</option>
+                            <option data-movie="28" data-tv="10759">Action</option>
+                            <option data-movie="12" data-tv="10759">Adventure</option>
+                            <option data-movie="16" data-tv="16">Animation</option>
+                            <option data-movie="35" data-tv="35">Comedy</option>
+                            <option data-movie="80" data-tv="80">Crime</option>
+                            <option data-movie="99" data-tv="99">Documentary</option>
+                            <option data-movie="18" data-tv="18">Drama</option>
+                            <option data-movie="10751" data-tv="10751">Family</option>
+                            <option data-movie="14" data-tv="10765">Fantasy</option>
+                            <option data-movie="27" data-tv="">Horror</option>
+                            <option data-movie="9648" data-tv="9648">Mystery</option>
+                            <option data-movie="10749" data-tv="">Romance</option>
+                            <option data-movie="878" data-tv="10765">Sci-Fi</option>
+                            <option data-movie="53" data-tv="">Thriller</option>
+                            <option data-movie="10752" data-tv="10768">War</option>
+                        </select>
+
+                        <select id="filterYear" class="filter-select">
+                            <option value="">Semua Tahun</option>
+                        </select>
+
+                        <div class="flex gap-3">
+                            <button onclick="applyFilter()" class="filter-action-btn flex-1 rounded-full bg-white px-6 py-3 text-[10px] font-black uppercase tracking-widest text-black hover:bg-blue-400 hover:text-white transition">
+                                Terapkan
+                            </button>
+
+                            <button onclick="resetFilter()" class="filter-action-btn rounded-full bg-white/10 px-6 py-3 text-[10px] font-black uppercase tracking-widest text-white border border-white/10 hover:bg-white hover:text-black transition">
+                                Reset
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
             <section>
                 <div class="row-header">
                     <h2 class="row-title text-red-500">Populer Hari Ini 🔥</h2>
@@ -522,7 +662,7 @@
                 </div>
                 <div id="row2" class="flex gap-6 overflow-x-auto no-scrollbar px-2"></div>
             </section>
-            
+
             <section class="relative overflow-hidden">
                 <div class="universe-bg-text">AVENGERS</div>
                 <div class="row-header relative z-10">
@@ -583,8 +723,6 @@
                 <div id="rowAnime" class="flex gap-6 overflow-x-auto no-scrollbar px-2"></div>
             </section>
 
-            
-
         </div>
 
         <section id="gridSection" class="hidden space-y-12">
@@ -604,6 +742,79 @@
         </footer>
     </main>
 
+    <!-- DETAIL MODAL -->
+    <div id="detailModal" class="hidden fixed inset-0 z-[450] bg-black/85 overflow-y-auto no-scrollbar">
+        <div id="detailBackdrop"></div>
+        <div class="detail-gradient"></div>
+
+        <button onclick="closeDetailModal()" class="fixed top-6 right-6 md:top-8 md:right-8 z-[470] text-white/50 hover:text-red-500 text-3xl transition font-black">
+            ✕
+        </button>
+
+        <div class="relative z-[460] min-h-screen flex items-center justify-center px-5 py-20">
+            <div class="w-full max-w-6xl">
+                <div class="flex flex-col md:flex-row gap-8 md:gap-12 items-center md:items-end">
+                    <img id="detailPoster" src="" class="detail-poster" alt="Poster">
+
+                    <div class="flex-1 text-center md:text-left space-y-5">
+                        <div class="flex flex-wrap items-center justify-center md:justify-start gap-3 text-[10px] font-black uppercase tracking-widest text-blue-400">
+                            <span id="detailType" class="bg-blue-500/20 px-3 py-1 rounded-full border border-blue-500/30">MOVIE</span>
+                            <span id="detailRating" class="bg-white/10 px-3 py-1 rounded-full text-white">⭐ 0.0</span>
+                            <span id="detailYear" class="bg-white/10 px-3 py-1 rounded-full text-white">2024</span>
+                            <span id="detailRuntime" class="text-white/60">...</span>
+                        </div>
+
+                        <h2 id="detailTitle" class="text-4xl md:text-7xl font-black tracking-tighter uppercase leading-none text-white"></h2>
+
+                        <p id="detailOverview" class="text-white/70 text-sm md:text-lg leading-relaxed max-w-4xl font-light"></p>
+
+                        <div id="detailGenres" class="flex flex-wrap justify-center md:justify-start gap-2"></div>
+
+                        <div class="flex flex-col sm:flex-row gap-3 justify-center md:justify-start pt-2">
+                            <button id="detailPlayBtn" class="rounded-full bg-white px-8 py-4 text-[10px] font-black uppercase tracking-widest text-black hover:bg-blue-500 hover:text-white transition">
+                                ▶ Nonton Sekarang
+                            </button>
+
+                            <button id="detailTrailerBtn" class="rounded-full bg-red-500 px-8 py-4 text-[10px] font-black uppercase tracking-widest text-white hover:bg-red-400 transition">
+                                Trailer
+                            </button>
+
+                            <button id="detailFavoriteBtn" class="rounded-full bg-white/10 px-8 py-4 text-[10px] font-black uppercase tracking-widest text-white border border-white/10 hover:bg-white hover:text-black transition">
+                                🤍 Favorit
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-14 player-info-card">
+                    <div class="row-header">
+                        <h4 class="row-title">Pemeran Utama</h4>
+                    </div>
+                    <div id="detailCastContainer" class="flex gap-8 overflow-x-auto no-scrollbar"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TRAILER MODAL -->
+    <div id="trailerModal" class="hidden fixed inset-0 z-[800] bg-black/90 items-center justify-center px-4">
+        <button onclick="closeTrailerModal()" class="fixed top-6 right-6 md:top-8 md:right-8 z-[820] text-white/50 hover:text-red-500 text-3xl transition font-black">
+            ✕
+        </button>
+
+        <div class="w-full max-w-5xl aspect-video bg-black rounded-[28px] overflow-hidden border border-white/10 shadow-2xl">
+            <iframe
+                id="trailerFrame"
+                src=""
+                class="w-full h-full"
+                frameborder="0"
+                allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+                allowfullscreen
+            ></iframe>
+        </div>
+    </div>
+
+    <!-- PLAYER -->
     <div id="playerContainer" class="hidden fixed inset-0 z-[500] flex items-center justify-center bg-black/95 transition-all">
         <button onclick="closePlayer()" class="fixed top-6 right-6 md:top-8 md:right-8 z-[600] text-white/40 hover:text-red-500 text-3xl transition font-black">
             ✕
