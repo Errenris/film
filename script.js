@@ -14,6 +14,7 @@ let liveSearchTimeout;
 let currentSeason = 1;
 let currentEpisode = 1;
 let currentTvDetails = null;
+let currentServer = 'VidSrc';
 
 window.onload = () => {
     initApp();
@@ -332,7 +333,12 @@ function changeServer(s) {
     if (!f) return;
 
     let url = '';
+    currentServer = s;
 
+    /*
+        Fullscreen wildcard.
+        Ini penting untuk embed yang punya iframe di dalam iframe.
+    */
     f.setAttribute(
         'allow',
         'autoplay *; fullscreen *; encrypted-media *; picture-in-picture *; clipboard-write *; web-share *; accelerometer *; gyroscope *'
@@ -341,16 +347,39 @@ function changeServer(s) {
     f.setAttribute('allowfullscreen', '');
     f.setAttribute('webkitallowfullscreen', '');
     f.setAttribute('mozallowfullscreen', '');
+
+    // Jangan pakai referrerpolicy dulu.
+    // Beberapa embed rewel kalau referrer dikosongkan.
     f.removeAttribute('referrerpolicy');
 
     if (s === 'VidSrc') {
+        const params = new URLSearchParams();
+
+        params.set('tmdb', currentPlayId);
+
         /*
-            Eksperimen subtitle:
-            Kalau VidSrc mendukung parameter ini, control tidak auto-hide,
-            jadi subtitle tidak ikut hilang.
-            Kalau tidak didukung, player akan mengabaikan parameter ini.
+            FIX SERIES:
+            Untuk TV/series, Server 1 perlu season dan episode.
         */
-        url = `https://vidsrc.me/embed/${currentPlayType}?tmdb=${currentPlayId}&autohide=0&controls=1&cc=1&subtitles=1`;
+        if (currentPlayType === 'tv') {
+            params.set('season', currentSeason);
+            params.set('episode', currentEpisode);
+        }
+
+        /*
+            FIX SUBTITLE:
+            Ini percobaan agar subtitle tidak ikut hilang
+            saat control/info menit auto-hide.
+            Kalau VidSrc support, subtitle akan tetap tampil.
+            Kalau tidak support, parameter ini akan diabaikan.
+        */
+        params.set('autohide', '0');
+        params.set('controls', '1');
+        params.set('cc', '1');
+        params.set('subtitles', '1');
+        params.set('captions', '1');
+
+        url = `https://vidsrc.me/embed/${currentPlayType}?${params.toString()}`;
     } else {
         url = `https://player.autoembed.app/embed/${currentPlayType}/${currentPlayId}`;
 
@@ -371,7 +400,6 @@ function changeServer(s) {
         active.className = "server-btn px-8 py-3 rounded-full text-[10px] font-black uppercase bg-white text-black shadow-xl transition active:scale-95";
     }
 }
-
 function renderEpisodeControls(tvDetails) {
     const playerControls = document.getElementById('playerControls');
     if (!playerControls || currentPlayType !== 'tv') return;
@@ -439,14 +467,14 @@ function changeSeasonEpisode() {
         currentSeason = newSeason;
         currentEpisode = 1;
         renderEpisodeControls(currentTvDetails);
-        changeServer('AutoEmbed');
+        changeServer(currentServer || 'VidSrc');
         return;
     }
 
     currentSeason = newSeason;
     currentEpisode = newEpisode;
 
-    changeServer('AutoEmbed');
+    changeServer(currentServer || 'VidSrc');
 }
 
 async function playMovie(id, title, type, backdrop, poster) {
