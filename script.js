@@ -20,11 +20,15 @@ let currentPlayTitle = '';
 let currentPlayBackdrop = '';
 let currentPlayPoster = '';
 
+let detailMovieData = null;
+let detailMovieState = null;
+
 window.onload = () => {
     initApp();
     setupScrollEffects();
     setupRowButtons();
     setupSearch();
+    setupFilterYears();
 };
 
 function safeText(str) {
@@ -163,6 +167,31 @@ function toggleMyList(e, movieStr) {
     }
 }
 
+function toggleDetailFavorite() {
+    if (!detailMovieState) return;
+
+    let list = getMyList();
+    const index = list.findIndex(m => m.id === detailMovieState.id);
+    const btn = document.getElementById('detailFavoriteBtn');
+
+    if (index > -1) {
+        list.splice(index, 1);
+        if (btn) btn.innerText = '🤍 Favorit';
+    } else {
+        list.push({
+            id: detailMovieState.id,
+            title: detailMovieState.title,
+            poster_path: detailMovieState.poster,
+            backdrop_path: detailMovieState.backdrop,
+            media_type: detailMovieState.type
+        });
+
+        if (btn) btn.innerText = '❤️ Favorit';
+    }
+
+    saveMyList(list);
+}
+
 function showMyList() {
     window.scrollTo(0, 0);
 
@@ -250,7 +279,7 @@ async function fetchAndRenderTrending(path, id) {
                 <div class="netflix-number">${i + 1}</div>
                 <div class="movie-card">
                     <button onclick="toggleMyList(event, '${movieStr}')" class="fav-btn" style="color: ${isFav ? '#ef4444' : 'white'}">${isFav ? '❤️' : '🤍'}</button>
-                    <div class="poster-container" onclick="playMovie(${m.id}, '${sTitle}', '${type}', '${m.backdrop_path || ''}', '${m.poster_path || ''}')">
+                    <div class="poster-container" onclick="openMovieDetail(${m.id}, '${sTitle}', '${type}', '${m.backdrop_path || ''}', '${m.poster_path || ''}')">
                         <img src="${IMG_PATH + m.poster_path}" class="w-full h-full object-cover" loading="lazy">
                     </div>
                     <div class="mt-3 px-1 text-center">
@@ -330,7 +359,7 @@ function renderCards(movies, container, append = false, isTV = false) {
         card.innerHTML = `
             <button onclick="toggleMyList(event, '${movieStr}')" class="fav-btn" style="color: ${isFav ? '#ef4444' : 'white'}">${isFav ? '❤️' : '🤍'}</button>
 
-            <div class="poster-container" onclick="playMovie(${m.id}, '${sTitle}', '${type}', '${m.backdrop_path || ''}', '${m.poster_path || ''}', ${seasonInfo || 1}, ${episodeInfo || 1})">
+            <div class="poster-container" onclick="openMovieDetail(${m.id}, '${sTitle}', '${type}', '${m.backdrop_path || ''}', '${m.poster_path || ''}', ${seasonInfo || 1}, ${episodeInfo || 1})">
                 <img src="${IMG_PATH + m.poster_path}" class="w-full h-full object-cover" loading="lazy">
 
                 <div class="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 flex items-center justify-center transition-all duration-500">
@@ -353,6 +382,171 @@ function renderCards(movies, container, append = false, isTV = false) {
 
         container.appendChild(card);
     });
+}
+
+async function openMovieDetail(id, title, type, backdrop, poster, season = 1, episode = 1) {
+    detailMovieState = {
+        id,
+        title,
+        type,
+        backdrop,
+        poster,
+        season,
+        episode
+    };
+
+    const modal = document.getElementById('detailModal');
+    const backdropBox = document.getElementById('detailBackdrop');
+    const posterImg = document.getElementById('detailPoster');
+
+    if (!modal) return;
+
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+
+    if (backdropBox) {
+        backdropBox.style.backgroundImage = backdrop ? `url('${BACK_PATH + backdrop}')` : '';
+    }
+
+    if (posterImg) {
+        posterImg.src = poster ? IMG_PATH + poster : '';
+    }
+
+    document.getElementById('detailTitle').innerText = title;
+    document.getElementById('detailOverview').innerText = 'Memuat detail...';
+    document.getElementById('detailRating').innerText = '⭐ ...';
+    document.getElementById('detailYear').innerText = '....';
+    document.getElementById('detailRuntime').innerText = '...';
+    document.getElementById('detailType').innerText = type === 'tv' ? 'SERIES' : 'MOVIE';
+    document.getElementById('detailGenres').innerHTML = '';
+    document.getElementById('detailCastContainer').innerHTML = '';
+
+    const playBtn = document.getElementById('detailPlayBtn');
+    const trailerBtn = document.getElementById('detailTrailerBtn');
+    const favBtn = document.getElementById('detailFavoriteBtn');
+
+    if (playBtn) {
+        playBtn.onclick = () => {
+            closeDetailModal(false);
+            playMovie(id, title, type, backdrop, poster, season, episode);
+        };
+    }
+
+    if (trailerBtn) {
+        trailerBtn.onclick = () => openTrailer(type, id);
+    }
+
+    if (favBtn) {
+        const isFav = getMyList().some(x => x.id === id);
+        favBtn.innerText = isFav ? '❤️ Favorit' : '🤍 Favorit';
+        favBtn.onclick = toggleDetailFavorite;
+    }
+
+    try {
+        const res = await fetch(`/api/movies?path=${type}/${id}`);
+        const m = await res.json();
+        detailMovieData = m;
+
+        const year = (m.release_date || m.first_air_date || '2024').split('-')[0];
+        const runtime = m.runtime
+            ? `${m.runtime}m`
+            : (m.episode_run_time?.length ? `${m.episode_run_time[0]}m` : 'TV Series');
+
+        document.getElementById('detailOverview').innerText = m.overview || 'Sinopsis tidak tersedia.';
+        document.getElementById('detailRating').innerText = `⭐ ${m.vote_average ? m.vote_average.toFixed(1) : 'N/A'}`;
+        document.getElementById('detailYear').innerText = year;
+        document.getElementById('detailRuntime').innerText = runtime;
+
+        const genres = document.getElementById('detailGenres');
+
+        if (genres) {
+            genres.innerHTML = (m.genres || []).slice(0, 5).map(g => {
+                return `<span class="bg-white/10 border border-white/10 px-3 py-2 rounded-full text-[9px] font-black uppercase tracking-widest text-white/70">${g.name}</span>`;
+            }).join('');
+        }
+    } catch (e) {
+        document.getElementById('detailOverview').innerText = 'Gagal memuat detail.';
+    }
+
+    try {
+        const res = await fetch(`/api/movies?path=${type}/${id}/credits`);
+        const data = await res.json();
+
+        const castBox = document.getElementById('detailCastContainer');
+        if (!castBox) return;
+
+        castBox.innerHTML = '';
+
+        data.cast?.slice(0, 10).forEach(a => {
+            if (!a.profile_path) return;
+
+            const sName = safeText(a.name);
+            const d = document.createElement('div');
+
+            d.className = "flex-shrink-0 text-center w-20 opacity-70 hover:opacity-100 cursor-pointer transition hover:scale-110";
+            d.onclick = () => {
+                closeDetailModal();
+                loadActorFilms(a.id, sName);
+            };
+
+            d.innerHTML = `
+                <img src="${IMG_PATH + a.profile_path}" class="actor-circle mx-auto mb-3 shadow-lg border border-white/10">
+                <p class="text-[8px] font-black uppercase tracking-tighter truncate w-full text-white">${sName}</p>
+            `;
+
+            castBox.appendChild(d);
+        });
+    } catch (e) {}
+}
+
+function closeDetailModal(restoreScroll = true) {
+    const modal = document.getElementById('detailModal');
+    if (!modal) return;
+
+    modal.classList.add('hidden');
+
+    if (restoreScroll && !document.body.classList.contains('player-open')) {
+        document.body.style.overflow = 'auto';
+    }
+}
+
+async function openTrailer(type, id) {
+    try {
+        const res = await fetch(`/api/movies?path=${type}/${id}/videos`);
+        const data = await res.json();
+
+        const trailer = (data.results || []).find(v => {
+            return v.site === 'YouTube' && v.type === 'Trailer';
+        }) || (data.results || []).find(v => v.site === 'YouTube');
+
+        if (!trailer) {
+            alert('Trailer belum tersedia.');
+            return;
+        }
+
+        const modal = document.getElementById('trailerModal');
+        const frame = document.getElementById('trailerFrame');
+
+        if (!modal || !frame) return;
+
+        frame.src = `https://www.youtube.com/embed/${trailer.key}?autoplay=1`;
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    } catch (e) {
+        alert('Gagal memuat trailer.');
+    }
+}
+
+function closeTrailerModal() {
+    const modal = document.getElementById('trailerModal');
+    const frame = document.getElementById('trailerFrame');
+
+    if (frame) frame.src = '';
+
+    if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }
 }
 
 function changeServer(s) {
@@ -724,16 +918,162 @@ function goHome() {
 
 function setupSearch() {
     const input = document.getElementById('searchInput');
-    if (!input) return;
+    const suggestions = document.getElementById('searchSuggestions');
+
+    if (!input || !suggestions) return;
 
     input.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter' && input.value) {
+        if (e.key === 'Enter' && input.value.trim()) {
+            hideSearchSuggestions();
             loadCategory(
-                `search/multi?query=${encodeURIComponent(input.value)}`,
-                `Hasil Pencarian: ${input.value}`
+                `search/multi?query=${encodeURIComponent(input.value.trim())}`,
+                `Hasil Pencarian: ${input.value.trim()}`
             );
         }
     });
+
+    input.addEventListener('input', () => {
+        clearTimeout(liveSearchTimeout);
+
+        const query = input.value.trim();
+
+        if (query.length < 2) {
+            hideSearchSuggestions();
+            return;
+        }
+
+        liveSearchTimeout = setTimeout(() => {
+            loadSearchSuggestions(query);
+        }, 350);
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!suggestions.contains(e.target) && e.target !== input) {
+            hideSearchSuggestions();
+        }
+    });
+}
+
+async function loadSearchSuggestions(query) {
+    const suggestions = document.getElementById('searchSuggestions');
+    if (!suggestions) return;
+
+    try {
+        const res = await fetch(`/api/movies?path=search/multi&query=${encodeURIComponent(query)}`);
+        const data = await res.json();
+
+        const results = (data.results || [])
+            .filter(m => (m.media_type === 'movie' || m.media_type === 'tv') && m.poster_path)
+            .slice(0, 6);
+
+        if (results.length === 0) {
+            suggestions.innerHTML = `<p class="text-white/40 text-xs font-bold p-4">Tidak ada hasil.</p>`;
+            suggestions.classList.remove('hidden');
+            return;
+        }
+
+        suggestions.innerHTML = '';
+
+        results.forEach(m => {
+            const title = safeText(m.title || m.name);
+            const type = m.media_type || (m.title ? 'movie' : 'tv');
+
+            const item = document.createElement('div');
+            item.className = 'suggestion-item';
+
+            item.innerHTML = `
+                <img src="${IMG_PATH + m.poster_path}" class="suggestion-poster">
+                <div class="min-w-0">
+                    <h4 class="text-xs font-black text-white truncate uppercase">${title}</h4>
+                    <p class="text-[9px] font-black tracking-widest uppercase text-blue-400">${type === 'tv' ? 'Series' : 'Movie'}</p>
+                    <p class="text-[10px] text-white/40 truncate">${(m.release_date || m.first_air_date || '').split('-')[0] || 'N/A'}</p>
+                </div>
+            `;
+
+            item.onclick = () => {
+                hideSearchSuggestions();
+                input.value = '';
+                openMovieDetail(m.id, title, type, m.backdrop_path || '', m.poster_path || '');
+            };
+
+            suggestions.appendChild(item);
+        });
+
+        suggestions.classList.remove('hidden');
+    } catch (e) {
+        hideSearchSuggestions();
+    }
+}
+
+function hideSearchSuggestions() {
+    const suggestions = document.getElementById('searchSuggestions');
+    if (!suggestions) return;
+
+    suggestions.classList.add('hidden');
+    suggestions.innerHTML = '';
+}
+
+function setupFilterYears() {
+    const yearSelect = document.getElementById('filterYear');
+    if (!yearSelect) return;
+
+    const now = new Date().getFullYear();
+
+    for (let y = now; y >= 1980; y--) {
+        const opt = document.createElement('option');
+        opt.value = y;
+        opt.innerText = y;
+        yearSelect.appendChild(opt);
+    }
+}
+
+function applyFilter() {
+    const type = document.getElementById('filterType')?.value || 'movie';
+    const genreSelect = document.getElementById('filterGenre');
+    const year = document.getElementById('filterYear')?.value || '';
+
+    let genreId = '';
+
+    if (genreSelect && genreSelect.selectedIndex > -1) {
+        const selected = genreSelect.options[genreSelect.selectedIndex];
+        genreId = type === 'tv' ? selected.dataset.tv || '' : selected.dataset.movie || '';
+    }
+
+    const params = new URLSearchParams();
+
+    params.set('sort_by', 'popularity.desc');
+
+    if (genreId) {
+        params.set('with_genres', genreId);
+    }
+
+    if (year) {
+        if (type === 'tv') {
+            params.set('first_air_date_year', year);
+        } else {
+            params.set('primary_release_year', year);
+        }
+    }
+
+    const labelParts = [
+        type === 'tv' ? 'Series' : 'Movie',
+        genreSelect?.options[genreSelect.selectedIndex]?.text || '',
+        year || ''
+    ].filter(Boolean);
+
+    loadCategory(`discover/${type}?${params.toString()}`, `Filter: ${labelParts.join(' / ')}`);
+}
+
+function resetFilter() {
+    const type = document.getElementById('filterType');
+    const genre = document.getElementById('filterGenre');
+    const year = document.getElementById('filterYear');
+
+    if (type) type.value = 'movie';
+    if (genre) genre.value = '';
+    if (year) year.value = '';
+
+    goHome();
 }
 
 function saveToHistory(id, type, backdrop, poster, title) {
@@ -886,7 +1226,7 @@ function updateHero() {
 
     if (heroPlayBtn) {
         heroPlayBtn.onclick = () => {
-            playMovie(
+            openMovieDetail(
                 m.id,
                 sTitle,
                 m.media_type || 'movie',
@@ -939,7 +1279,7 @@ async function surpriseMe() {
 
     const r = featuredMovies[Math.floor(Math.random() * featuredMovies.length)];
 
-    playMovie(
+    openMovieDetail(
         r.id,
         safeText(r.title || r.name),
         r.media_type || 'movie',
