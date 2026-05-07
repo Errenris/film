@@ -339,8 +339,14 @@ function changeServer(s) {
     f.removeAttribute('referrerpolicy');
 
     if (s === 'VidSrc') {
-        url = `https://vidsrcme.ru/embed/${currentPlayType}?tmdb=${currentPlayId}`;
+        // SERVER 1 BARU: Vaplayer / VidAPI
+        if (currentPlayType === 'tv') {
+            url = `https://vaplayer.ru/embed/tv/${currentPlayId}/1/1?lang=id&ds_lang=id`;
+        } else {
+            url = `https://vaplayer.ru/embed/movie/${currentPlayId}?lang=id&ds_lang=id`;
+        }
     } else {
+        // SERVER 2 TETAP: AutoEmbed
         url = `https://player.autoembed.app/embed/${currentPlayType}/${currentPlayId}${currentPlayType === 'tv' ? '/1/1' : ''}`;
     }
 
