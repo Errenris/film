@@ -1,10 +1,22 @@
-// Telegram 
-
 const TMDB_BASE = 'https://api.themoviedb.org/3';
 const IMG_BASE = 'https://image.tmdb.org/t/p/w500';
 
-const MOVIE_SENT_KEY = 'nobargasi:telegram:sent:movies';
-const SERIES_SENT_KEY = 'nobargasi:telegram:sent:series';
+/*
+    Pakai v2 karena format pesan sudah versi detail.
+    Kalau ingin paksa kirim ulang untuk testing format baru, ubah jadi v3.
+*/
+const MOVIE_SENT_KEY = 'nobargasi:telegram:sent:movies:v2';
+const SERIES_SENT_KEY = 'nobargasi:telegram:sent:series:v2';
+
+/*
+    Supaya tidak kena limit Telegram.
+    Default: 3 film + 3 series per sekali cron.
+    Bisa diatur lewat Vercel env:
+    TELEGRAM_MAX_PER_RUN=1 / 2 / 3
+*/
+const MAX_PER_RUN = getMaxPerRun();
+const DELAY_BETWEEN_ITEMS = 3500;
+const DELAY_BETWEEN_PHOTO_AND_DETAIL = 1500;
 
 export default async function handler(req, res) {
     try {
@@ -43,6 +55,7 @@ export default async function handler(req, res) {
         return res.status(200).json({
             ok: true,
             message: 'Telegram cron berhasil berjalan.',
+            maxPerRun: MAX_PER_RUN,
             movie: movieResult,
             series: seriesResult
         });
@@ -56,6 +69,14 @@ export default async function handler(req, res) {
 
 function getTmdbKey() {
     return process.env.TMDB_API_KEY || process.env.TMDB_KEY || '';
+}
+
+function getMaxPerRun() {
+    const n = Number(process.env.TELEGRAM_MAX_PER_RUN || 3);
+
+    if (!Number.isFinite(n)) return 3;
+
+    return Math.max(1, Math.min(n, 8));
 }
 
 async function checkMovies() {
@@ -72,10 +93,11 @@ async function checkMovies() {
 
     const results = (data.results || [])
         .filter(item => item.poster_path)
-        .slice(0, 8);
+        .slice(0, MAX_PER_RUN);
 
     let sent = 0;
     let skipped = 0;
+    let failed = 0;
 
     for (const movie of results) {
         const uniqueId = `movie:${movie.id}`;
@@ -86,17 +108,23 @@ async function checkMovies() {
             continue;
         }
 
-        await sendMovieToTelegram(movie.id);
-        await markAsSent(MOVIE_SENT_KEY, uniqueId);
+        try {
+            await sendMovieToTelegram(movie.id);
+            await markAsSent(MOVIE_SENT_KEY, uniqueId);
+            sent++;
+        } catch (err) {
+            failed++;
+            console.error('Gagal kirim movie:', movie.id, err.message);
+        }
 
-        sent++;
-        await sleep(900);
+        await sleep(DELAY_BETWEEN_ITEMS);
     }
 
     return {
         checked: results.length,
         sent,
-        skipped
+        skipped,
+        failed
     };
 }
 
@@ -114,10 +142,11 @@ async function checkSeries() {
 
     const results = (data.results || [])
         .filter(item => item.poster_path)
-        .slice(0, 8);
+        .slice(0, MAX_PER_RUN);
 
     let sent = 0;
     let skipped = 0;
+    let failed = 0;
 
     for (const series of results) {
         const uniqueId = `tv:${series.id}`;
@@ -128,17 +157,23 @@ async function checkSeries() {
             continue;
         }
 
-        await sendSeriesToTelegram(series.id);
-        await markAsSent(SERIES_SENT_KEY, uniqueId);
+        try {
+            await sendSeriesToTelegram(series.id);
+            await markAsSent(SERIES_SENT_KEY, uniqueId);
+            sent++;
+        } catch (err) {
+            failed++;
+            console.error('Gagal kirim series:', series.id, err.message);
+        }
 
-        sent++;
-        await sleep(900);
+        await sleep(DELAY_BETWEEN_ITEMS);
     }
 
     return {
         checked: results.length,
         sent,
-        skipped
+        skipped,
+        failed
     };
 }
 
@@ -271,7 +306,7 @@ ${imdbLink ? `• IMDb: ${escapeHtml(imdbLink)}\n` : ''}${trailer ? `• Trailer
         topicId: movieTopicId
     });
 
-    await sleep(350);
+    await sleep(DELAY_BETWEEN_PHOTO_AND_DETAIL);
 
     await sendTelegramMessage({
         text: trimTelegramMessage(detailText),
@@ -389,7 +424,7 @@ ${imdbLink ? `• IMDb: ${escapeHtml(imdbLink)}\n` : ''}${trailer ? `• Trailer
         topicId: seriesTopicId
     });
 
-    await sleep(350);
+    await sleep(DELAY_BETWEEN_PHOTO_AND_DETAIL);
 
     await sendTelegramMessage({
         text: trimTelegramMessage(detailText),
@@ -398,11 +433,8 @@ ${imdbLink ? `• IMDb: ${escapeHtml(imdbLink)}\n` : ''}${trailer ? `• Trailer
 }
 
 async function sendTelegramPhoto({ photo, caption, topicId }) {
-    const token = process.env.TELEGRAM_BOT_TOKEN;
-    const chatId = process.env.TELEGRAM_CHAT_ID;
-
     const payload = {
-        chat_id: chatId,
+        chat_id: process.env.TELEGRAM_CHAT_ID,
         photo,
         caption,
         parse_mode: 'HTML'
@@ -412,29 +444,12 @@ async function sendTelegramPhoto({ photo, caption, topicId }) {
         payload.message_thread_id = Number(topicId);
     }
 
-    const tg = await fetch(`https://api.telegram.org/bot${token}/sendPhoto`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(payload)
-    });
-
-    const data = await tg.json();
-
-    if (!data.ok) {
-        throw new Error(data.description || 'Gagal kirim foto ke Telegram.');
-    }
-
-    return data;
+    return sendTelegramApi('sendPhoto', payload);
 }
 
 async function sendTelegramMessage({ text, topicId }) {
-    const token = process.env.TELEGRAM_BOT_TOKEN;
-    const chatId = process.env.TELEGRAM_CHAT_ID;
-
     const payload = {
-        chat_id: chatId,
+        chat_id: process.env.TELEGRAM_CHAT_ID,
         text,
         parse_mode: 'HTML',
         disable_web_page_preview: false
@@ -444,7 +459,13 @@ async function sendTelegramMessage({ text, topicId }) {
         payload.message_thread_id = Number(topicId);
     }
 
-    const tg = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+    return sendTelegramApi('sendMessage', payload);
+}
+
+async function sendTelegramApi(method, payload, attempt = 1) {
+    const token = process.env.TELEGRAM_BOT_TOKEN;
+
+    const tg = await fetch(`https://api.telegram.org/bot${token}/${method}`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -454,11 +475,18 @@ async function sendTelegramMessage({ text, topicId }) {
 
     const data = await tg.json();
 
-    if (!data.ok) {
-        throw new Error(data.description || 'Gagal kirim pesan detail ke Telegram.');
+    if (data.ok) {
+        return data;
     }
 
-    return data;
+    const retryAfter = data.parameters?.retry_after;
+
+    if (data.error_code === 429 && retryAfter && attempt <= 3) {
+        await sleep((retryAfter + 2) * 1000);
+        return sendTelegramApi(method, payload, attempt + 1);
+    }
+
+    throw new Error(data.description || `Gagal request Telegram: ${method}`);
 }
 
 async function isAlreadySent(key, value) {
