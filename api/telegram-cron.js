@@ -2,7 +2,7 @@ const TMDB_BASE = 'https://api.themoviedb.org/3';
 const IMG_BASE = 'https://image.tmdb.org/t/p/w500';
 
 /*
-    Pakai v2 karena format pesan sudah versi detail.
+    Pakai v2 karena format pesan sudah versi detail..
     Kalau ingin paksa kirim ulang untuk testing format baru, ubah jadi v3.
 */
 const MOVIE_SENT_KEY = 'nobargasi:telegram:sent:movies:v2';
