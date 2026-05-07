@@ -11,6 +11,15 @@ let currentPlayId = '';
 let currentPlayType = '';
 let liveSearchTimeout;
 
+let currentSeason = 1;
+let currentEpisode = 1;
+let currentTvDetails = null;
+let currentServer = 'VidSrc';
+
+let currentPlayTitle = '';
+let currentPlayBackdrop = '';
+let currentPlayPoster = '';
+
 window.onload = () => {
     initApp();
     setupScrollEffects();
@@ -18,7 +27,7 @@ window.onload = () => {
     setupSearch();
 };
 
-// --- CLEAN STRING (Anti Crash) ---
+// --- CLEAN STRING ---
 function safeText(str) {
     if (!str) return 'Unknown';
     return String(str).replace(/['"\\`]/g, '');
@@ -48,7 +57,7 @@ function setupScrollEffects() {
     }, { passive: true });
 }
 
-// --- INIT APP FULL CONTENT ---
+// --- INIT APP ---
 function initApp() {
     let oldHist = JSON.parse(localStorage.getItem('nbg_history') || '[]');
 
@@ -285,8 +294,28 @@ function renderCards(movies, container, append = false, isTV = false) {
         const type = isTV ? 'tv' : (m.media_type || m.type || (m.title ? 'movie' : 'tv'));
         const sTitle = safeText(m.title || m.name);
 
-        const progHTML = m.progress
-            ? `<div class="resume-bar"><div class="resume-progress" style="width: ${m.progress}%"></div></div>`
+        const seasonInfo = type === 'tv'
+            ? Number(m.season_number || m.season || m.lastSeason || 1)
+            : null;
+
+        const episodeInfo = type === 'tv'
+            ? Number(m.episode_number || m.episode || m.lastEpisode || 1)
+            : null;
+
+        const progress = m.progress || 0;
+
+        const progHTML = progress
+            ? `<div class="resume-bar"><div class="resume-progress" style="width: ${progress}%"></div></div>`
+            : '';
+
+        const resumeBadge = type === 'tv' && (m.season_number || m.episode_number || m.lastSeason || m.lastEpisode)
+            ? `
+                <div class="absolute bottom-2 left-2 right-2 z-20 rounded-xl bg-black/75 backdrop-blur-md border border-white/10 px-2 py-1 text-center">
+                    <p class="text-[8px] font-black text-blue-300 uppercase tracking-widest">
+                        Terakhir S${seasonInfo} E${episodeInfo}
+                    </p>
+                </div>
+            `
             : '';
 
         const savedObj = {
@@ -305,15 +334,25 @@ function renderCards(movies, container, append = false, isTV = false) {
 
         card.innerHTML = `
             <button onclick="toggleMyList(event, '${movieStr}')" class="fav-btn" style="color: ${isFav ? '#ef4444' : 'white'}">${isFav ? '❤️' : '🤍'}</button>
-            <div class="poster-container" onclick="playMovie(${m.id}, '${sTitle}', '${type}', '${m.backdrop_path || ''}', '${m.poster_path || ''}')">
+
+            <div class="poster-container" onclick="playMovie(${m.id}, '${sTitle}', '${type}', '${m.backdrop_path || ''}', '${m.poster_path || ''}', ${seasonInfo || 1}, ${episodeInfo || 1})">
                 <img src="${IMG_PATH + m.poster_path}" class="w-full h-full object-cover" loading="lazy">
+
                 <div class="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 flex items-center justify-center transition-all duration-500">
                     <div class="w-12 h-12 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white text-lg">▶</div>
                 </div>
+
+                ${resumeBadge}
                 ${progHTML}
             </div>
+
             <div class="mt-3 px-1 text-center">
                 <h3 class="text-[11px] font-black truncate text-white uppercase tracking-wider drop-shadow-md">${sTitle}</h3>
+                ${
+                    type === 'tv' && (m.season_number || m.episode_number || m.lastSeason || m.lastEpisode)
+                        ? `<p class="text-[9px] text-blue-400 font-black mt-1 uppercase tracking-widest">S${seasonInfo} E${episodeInfo}</p>`
+                        : ''
+                }
             </div>
         `;
 
@@ -328,6 +367,8 @@ function changeServer(s) {
 
     if (!f) return;
 
+    currentServer = s;
+
     f.setAttribute(
         'allow',
         'autoplay *; fullscreen *; encrypted-media *; picture-in-picture *; clipboard-write *; web-share *; accelerometer *; gyroscope *'
@@ -339,15 +380,17 @@ function changeServer(s) {
     f.removeAttribute('referrerpolicy');
 
     if (s === 'VidSrc') {
-        // SERVER 1 BARU: Vaplayer / VidAPI
         if (currentPlayType === 'tv') {
-            url = `https://vaplayer.ru/embed/tv/${currentPlayId}/1/1?lang=id&ds_lang=id`;
+            url = `https://vaplayer.ru/embed/tv/${currentPlayId}/${currentSeason}/${currentEpisode}?lang=id&ds_lang=id`;
         } else {
             url = `https://vaplayer.ru/embed/movie/${currentPlayId}?lang=id&ds_lang=id`;
         }
     } else {
-        // SERVER 2 TETAP: AutoEmbed
-        url = `https://player.autoembed.app/embed/${currentPlayType}/${currentPlayId}${currentPlayType === 'tv' ? '/1/1' : ''}`;
+        url = `https://player.autoembed.app/embed/${currentPlayType}/${currentPlayId}`;
+
+        if (currentPlayType === 'tv') {
+            url += `/${currentSeason}/${currentEpisode}`;
+        }
     }
 
     f.src = url;
@@ -363,9 +406,104 @@ function changeServer(s) {
     }
 }
 
-async function playMovie(id, title, type, backdrop, poster) {
+function renderEpisodeControls(tvDetails) {
+    const playerControls = document.getElementById('playerControls');
+    if (!playerControls || currentPlayType !== 'tv') return;
+
+    currentTvDetails = tvDetails;
+
+    const oldLabel = document.getElementById('episodeLabel');
+    const oldSeason = document.getElementById('seasonSelect');
+    const oldEpisode = document.getElementById('episodeSelect');
+
+    if (oldLabel) oldLabel.remove();
+    if (oldSeason) oldSeason.remove();
+    if (oldEpisode) oldEpisode.remove();
+
+    const seasons = (tvDetails.seasons || [])
+        .filter(s => s.season_number > 0 && s.episode_count > 0);
+
+    if (seasons.length === 0) return;
+
+    const activeSeason = seasons.find(s => s.season_number === currentSeason) || seasons[0];
+    currentSeason = activeSeason.season_number;
+
+    if (currentEpisode > activeSeason.episode_count) {
+        currentEpisode = 1;
+    }
+
+    const seasonOptions = seasons.map(s => {
+        return `
+            <option value="${s.season_number}" ${s.season_number === currentSeason ? 'selected' : ''}>
+                Season ${s.season_number}
+            </option>
+        `;
+    }).join('');
+
+    const episodeOptions = Array.from({ length: activeSeason.episode_count }, (_, i) => {
+        const ep = i + 1;
+
+        return `
+            <option value="${ep}" ${ep === currentEpisode ? 'selected' : ''}>
+                Episode ${ep}
+            </option>
+        `;
+    }).join('');
+
+    playerControls.insertAdjacentHTML('afterbegin', `
+        <span id="episodeLabel" class="px-4 py-3 rounded-full text-[10px] font-black uppercase bg-blue-500/20 text-blue-300 border border-blue-500/30">
+            PILIH EP
+        </span>
+
+        <select id="seasonSelect" onchange="changeSeasonEpisode()" class="px-5 py-3 rounded-full text-[10px] font-black uppercase bg-white text-black outline-none">
+            ${seasonOptions}
+        </select>
+
+        <select id="episodeSelect" onchange="changeSeasonEpisode()" class="px-5 py-3 rounded-full text-[10px] font-black uppercase bg-white text-black outline-none">
+            ${episodeOptions}
+        </select>
+    `);
+}
+
+function changeSeasonEpisode() {
+    const seasonSelect = document.getElementById('seasonSelect');
+    const episodeSelect = document.getElementById('episodeSelect');
+
+    if (!seasonSelect || !episodeSelect) return;
+
+    const newSeason = Number(seasonSelect.value);
+    const newEpisode = Number(episodeSelect.value);
+
+    if (newSeason !== currentSeason && currentTvDetails) {
+        currentSeason = newSeason;
+        currentEpisode = 1;
+        renderEpisodeControls(currentTvDetails);
+    } else {
+        currentSeason = newSeason;
+        currentEpisode = newEpisode;
+    }
+
+    saveToHistory(
+        currentPlayId,
+        currentPlayType,
+        currentPlayBackdrop,
+        currentPlayPoster,
+        currentPlayTitle
+    );
+
+    changeServer(currentServer || 'VidSrc');
+}
+
+async function playMovie(id, title, type, backdrop, poster, season = 1, episode = 1) {
     currentPlayId = id;
     currentPlayType = type;
+    currentSeason = Number(season) || 1;
+    currentEpisode = Number(episode) || 1;
+    currentTvDetails = null;
+
+    currentPlayTitle = title;
+    currentPlayBackdrop = backdrop || '';
+    currentPlayPoster = poster || '';
 
     const player = document.getElementById('playerContainer');
     const playingTitle = document.getElementById('playingTitle');
@@ -415,6 +553,10 @@ async function playMovie(id, title, type, backdrop, poster) {
         const res = await fetch(`/api/movies?path=${type}/${id}`);
         const m = await res.json();
 
+        if (type === 'tv') {
+            renderEpisodeControls(m);
+        }
+
         if (playerOverview) {
             playerOverview.innerText = m.overview || 'Sinopsis tidak tersedia untuk film ini.';
         }
@@ -456,6 +598,7 @@ async function fetchDetails(id, type) {
             const d = document.createElement('div');
 
             d.className = "flex-shrink-0 text-center w-20 opacity-60 hover:opacity-100 cursor-pointer transition hover:scale-110";
+
             d.onclick = () => {
                 closePlayer();
                 loadActorFilms(a.id, sName);
@@ -600,7 +743,7 @@ function setupSearch() {
     });
 }
 
-// --- UTILS HISTORY FIX ---
+// --- HISTORY LANJUT MENONTON ---
 function saveToHistory(id, type, backdrop, poster, title) {
     let h = JSON.parse(localStorage.getItem('nbg_history') || '[]');
 
@@ -608,14 +751,25 @@ function saveToHistory(id, type, backdrop, poster, title) {
 
     const prog = Math.floor(Math.random() * 50) + 25;
 
-    h.unshift({
+    const item = {
         id,
         type,
+        media_type: type,
         backdrop_path: backdrop,
         poster_path: poster,
         title,
         progress: prog
-    });
+    };
+
+    if (type === 'tv') {
+        item.season_number = currentSeason;
+        item.episode_number = currentEpisode;
+        item.lastSeason = currentSeason;
+        item.lastEpisode = currentEpisode;
+        item.last_watch_label = `S${currentSeason} E${currentEpisode}`;
+    }
+
+    h.unshift(item);
 
     localStorage.setItem('nbg_history', JSON.stringify(h.slice(0, 10)));
 
