@@ -333,10 +333,6 @@ function changeServer(s) {
 
     let url = '';
 
-    /*
-        Fullscreen wildcard.
-        Ini penting untuk embed yang punya iframe di dalam iframe.
-    */
     f.setAttribute(
         'allow',
         'autoplay *; fullscreen *; encrypted-media *; picture-in-picture *; clipboard-write *; web-share *; accelerometer *; gyroscope *'
@@ -345,14 +341,16 @@ function changeServer(s) {
     f.setAttribute('allowfullscreen', '');
     f.setAttribute('webkitallowfullscreen', '');
     f.setAttribute('mozallowfullscreen', '');
-
-    // Jangan pakai referrerpolicy dulu.
-    // Beberapa embed lebih rewel kalau referrer dikosongkan.
     f.removeAttribute('referrerpolicy');
 
     if (s === 'VidSrc') {
-        // Format lama Server 1, paling native untuk VidSrc.
-        url = `https://vidsrc.me/embed/${currentPlayType}?tmdb=${currentPlayId}`;
+        /*
+            Eksperimen subtitle:
+            Kalau VidSrc mendukung parameter ini, control tidak auto-hide,
+            jadi subtitle tidak ikut hilang.
+            Kalau tidak didukung, player akan mengabaikan parameter ini.
+        */
+        url = `https://vidsrc.me/embed/${currentPlayType}?tmdb=${currentPlayId}&autohide=0&controls=1&cc=1&subtitles=1`;
     } else {
         url = `https://player.autoembed.app/embed/${currentPlayType}/${currentPlayId}`;
 
