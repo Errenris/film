@@ -197,47 +197,38 @@ function renderCards(movies, container, append = false, isTV = false) {
 
 // --- PLAYER & METADATA ---
 function changeServer(s) {
-    const f = document.getElementById('videoPlayer'); let url = '';
-    if(s==='VidSrc') url = `https://vidsrc.me/embed/${currentPlayType}?tmdb=${currentPlayId}`;
-    else url = `https://player.autoembed.app/embed/${currentPlayType}/${currentPlayId}${currentPlayType==='tv'?'/1/1':''}`;
-    
+    const f = document.getElementById('videoPlayer');
+    let url = '';
+
+    if (!f) return;
+
+    f.setAttribute(
+        'allow',
+        'autoplay *; fullscreen *; encrypted-media *; picture-in-picture *; clipboard-write *; web-share *; accelerometer *; gyroscope *'
+    );
+
+    f.setAttribute('allowfullscreen', '');
+    f.setAttribute('webkitallowfullscreen', '');
+    f.setAttribute('mozallowfullscreen', '');
+    f.removeAttribute('referrerpolicy');
+
+    if (s === 'VidSrc') {
+        url = `https://vidsrcme.ru/embed/${currentPlayType}?tmdb=${currentPlayId}`;
+    } else {
+        url = `https://player.autoembed.app/embed/${currentPlayType}/${currentPlayId}${currentPlayType === 'tv' ? '/1/1' : ''}`;
+    }
+
     f.src = url;
-    document.querySelectorAll('.server-btn').forEach(b => b.className = "server-btn px-8 py-3 rounded-full text-[10px] font-black uppercase border border-white/10 opacity-40 transition");
-    const active = document.getElementById('btn-'+s);
-    if(active) active.className = "server-btn px-8 py-3 rounded-full text-[10px] font-black uppercase bg-white text-black shadow-xl transition active:scale-95";
-}
 
-async function playMovie(id, title, type, backdrop, poster) {
-    currentPlayId = id; currentPlayType = type;
-    const player = document.getElementById('playerContainer');
-    
-    document.getElementById('playingTitle').innerText = title;
-    document.getElementById('playerOverview').innerText = "Memuat sinopsis...";
-    document.getElementById('playerRating').innerText = "⭐ ...";
-    document.getElementById('playerRuntime').innerText = "...";
-    
-    document.getElementById('playerControls').innerHTML = `
-        <button id="btn-VidSrc" onclick="changeServer('VidSrc')" class="server-btn px-8 py-3 rounded-full text-[10px] font-black uppercase bg-white text-black shadow-xl">Server 1</button>
-        <button id="btn-AutoEmbed" onclick="changeServer('AutoEmbed')" class="server-btn px-8 py-3 rounded-full text-[10px] font-black uppercase border border-white/10 opacity-40">Server 2</button>
-        <button onclick="shareMovie('${title.replace(/'/g, "\\'")}')" class="px-8 py-3 rounded-full text-[10px] font-black uppercase bg-white/5 border border-white/10 hover:bg-white hover:text-black transition">Share</button>`;
-    
-    changeServer('VidSrc');
-    player.classList.remove('hidden');
-    document.body.style.overflow = 'hidden';
-    if(backdrop && backdrop !== 'null') updateAmbient(backdrop);
+    document.querySelectorAll('.server-btn').forEach(b => {
+        b.className = "server-btn px-8 py-3 rounded-full text-[10px] font-black uppercase border border-white/10 opacity-40 transition";
+    });
 
-    try {
-        const res = await fetch(`/api/movies?path=${type}/${id}`);
-        const m = await res.json();
-        document.getElementById('playerOverview').innerText = m.overview || 'Sinopsis tidak tersedia untuk film ini.';
-        document.getElementById('playerRating').innerText = `⭐ ${m.vote_average ? m.vote_average.toFixed(1) : 'N/A'}`;
-        document.getElementById('playerYear').innerText = (m.release_date || m.first_air_date || '2024').split('-')[0];
-        document.getElementById('playerRuntime').innerText = m.runtime ? `${m.runtime}m` : (m.episode_run_time?.length ? `${m.episode_run_time[0]}m` : 'TV Series');
-        
-        saveToHistory(id, type, backdrop || m.backdrop_path, poster || m.poster_path, title);
-    } catch(e){}
+    const active = document.getElementById('btn-' + s);
 
-    fetchDetails(id, type);
+    if (active) {
+        active.className = "server-btn px-8 py-3 rounded-full text-[10px] font-black uppercase bg-white text-black shadow-xl transition active:scale-95";
+    }
 }
 
 async function fetchDetails(id, type) {
