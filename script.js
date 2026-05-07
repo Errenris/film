@@ -29,6 +29,7 @@ window.onload = () => {
     setupRowButtons();
     setupSearch();
     setupFilterYears();
+    openFromTelegramLink();
 };
 
 function safeText(str) {
@@ -1024,6 +1025,61 @@ function setupFilterYears() {
         opt.value = y;
         opt.innerText = y;
         yearSelect.appendChild(opt);
+    }
+}
+
+async function openFromTelegramLink() {
+    const params = new URLSearchParams(window.location.search);
+
+    const type = params.get('type');
+    const id = params.get('id');
+
+    if (!type || !id) return;
+    if (type !== 'movie' && type !== 'tv') return;
+
+    const season = Number(params.get('season') || params.get('s') || 1);
+    const episode = Number(params.get('episode') || params.get('e') || 1);
+    const shouldPlay = params.get('play') === '1';
+
+    try {
+        const res = await fetch(`/api/movies?path=${type}/${id}`);
+        const m = await res.json();
+
+        if (!m || m.success === false) return;
+
+        const title = safeText(m.title || m.name || 'Unknown');
+        const backdrop = m.backdrop_path || '';
+        const poster = m.poster_path || '';
+
+        if (backdrop) {
+            updateAmbient(backdrop);
+        }
+
+        setTimeout(() => {
+            if (shouldPlay) {
+                playMovie(
+                    Number(id),
+                    title,
+                    type,
+                    backdrop,
+                    poster,
+                    season,
+                    episode
+                );
+            } else {
+                openMovieDetail(
+                    Number(id),
+                    title,
+                    type,
+                    backdrop,
+                    poster,
+                    season,
+                    episode
+                );
+            }
+        }, 700);
+    } catch (e) {
+        console.error('Gagal membuka link Telegram:', e);
     }
 }
 
