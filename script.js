@@ -335,10 +335,6 @@ function changeServer(s) {
     let url = '';
     currentServer = s;
 
-    /*
-        Fullscreen wildcard.
-        Ini penting untuk embed yang punya iframe di dalam iframe.
-    */
     f.setAttribute(
         'allow',
         'autoplay *; fullscreen *; encrypted-media *; picture-in-picture *; clipboard-write *; web-share *; accelerometer *; gyroscope *'
@@ -347,39 +343,32 @@ function changeServer(s) {
     f.setAttribute('allowfullscreen', '');
     f.setAttribute('webkitallowfullscreen', '');
     f.setAttribute('mozallowfullscreen', '');
-
-    // Jangan pakai referrerpolicy dulu.
-    // Beberapa embed rewel kalau referrer dikosongkan.
     f.removeAttribute('referrerpolicy');
 
     if (s === 'VidSrc') {
-        const params = new URLSearchParams();
-
-        params.set('tmdb', currentPlayId);
-
-        /*
-            FIX SERIES:
-            Untuk TV/series, Server 1 perlu season dan episode.
-        */
         if (currentPlayType === 'tv') {
-            params.set('season', currentSeason);
-            params.set('episode', currentEpisode);
+            /*
+                FIX KHUSUS SERIES:
+                Pakai endpoint path-style VidSrc.to.
+                Ini biasanya lebih stabil untuk episode TV daripada query-style vidsrc.me.
+            */
+            url = `https://vidsrc.to/embed/tv/${currentPlayId}/${currentSeason}/${currentEpisode}`;
+        } else {
+            /*
+                MOVIE:
+                Tetap pakai Server 1 lama karena sebelumnya sudah aman.
+            */
+            const params = new URLSearchParams();
+
+            params.set('tmdb', currentPlayId);
+            params.set('autohide', '0');
+            params.set('controls', '1');
+            params.set('cc', '1');
+            params.set('subtitles', '1');
+            params.set('captions', '1');
+
+            url = `https://vidsrc.me/embed/movie?${params.toString()}`;
         }
-
-        /*
-            FIX SUBTITLE:
-            Ini percobaan agar subtitle tidak ikut hilang
-            saat control/info menit auto-hide.
-            Kalau VidSrc support, subtitle akan tetap tampil.
-            Kalau tidak support, parameter ini akan diabaikan.
-        */
-        params.set('autohide', '0');
-        params.set('controls', '1');
-        params.set('cc', '1');
-        params.set('subtitles', '1');
-        params.set('captions', '1');
-
-        url = `https://vidsrc.me/embed/${currentPlayType}?${params.toString()}`;
     } else {
         url = `https://player.autoembed.app/embed/${currentPlayType}/${currentPlayId}`;
 
@@ -400,6 +389,7 @@ function changeServer(s) {
         active.className = "server-btn px-8 py-3 rounded-full text-[10px] font-black uppercase bg-white text-black shadow-xl transition active:scale-95";
     }
 }
+
 function renderEpisodeControls(tvDetails) {
     const playerControls = document.getElementById('playerControls');
     if (!playerControls || currentPlayType !== 'tv') return;
