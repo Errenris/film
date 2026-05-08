@@ -542,7 +542,28 @@
             .filter-select {
                 border-radius: 22px;
             }
-        }
+
+            @media (max-width: 768px) {
+    #historySection .explore-btn {
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+        margin-left: 0 !important;
+        padding: 8px 12px;
+        border-radius: 999px;
+        background: rgba(239, 68, 68, 0.14);
+        border: 1px solid rgba(239, 68, 68, 0.28);
+        color: #f87171 !important;
+        opacity: 1 !important;
+        font-size: 8px;
+        letter-spacing: 0.14em;
+        white-space: nowrap;
+    }
+
+    #historySection .row-header {
+        align-items: center !important;
+    }
+}
     </style>
 </head>
 
