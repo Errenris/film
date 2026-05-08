@@ -436,6 +436,74 @@
             }
         }
 
+
+
+        /* ===================================================== */
+        /* MOBILE PLAYER CLOSE BUTTON FIX */
+        /* ===================================================== */
+
+        #playerCloseBtn {
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        @media (max-width: 768px) {
+            #playerCloseBtn {
+                top: auto !important;
+                right: auto !important;
+                left: 50% !important;
+                bottom: calc(env(safe-area-inset-bottom, 0px) + 18px) !important;
+                transform: translateX(-50%) !important;
+
+                min-width: 128px;
+                height: 46px;
+                padding: 0 18px;
+
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 8px;
+
+                border-radius: 999px;
+                background: rgba(15, 15, 20, 0.82);
+                border: 1px solid rgba(255, 255, 255, 0.14);
+                backdrop-filter: blur(18px);
+                box-shadow: 0 18px 45px rgba(0, 0, 0, 0.55);
+
+                color: white !important;
+                font-size: 0 !important;
+                opacity: 0.78;
+            }
+
+            #playerCloseBtn::before {
+                content: "Tutup";
+                font-size: 11px;
+                font-weight: 900;
+                letter-spacing: 0.22em;
+                text-transform: uppercase;
+            }
+
+            #playerCloseBtn::after {
+                content: "✕";
+                font-size: 15px;
+                font-weight: 900;
+                line-height: 1;
+            }
+
+            #playerCloseBtn.need-confirm {
+                background: rgba(239, 68, 68, 0.92);
+                border-color: rgba(255, 255, 255, 0.2);
+                opacity: 1;
+            }
+
+            #playerCloseBtn.need-confirm::before {
+                content: "Tap lagi";
+            }
+
+            #playerModalBox {
+                padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 74px);
+            }
+        }
+
         @media (max-width: 768px) {
             #playerControls {
                 width: 100%;
@@ -816,7 +884,11 @@
 
     <!-- PLAYER -->
     <div id="playerContainer" class="hidden fixed inset-0 z-[500] flex items-center justify-center bg-black/95 transition-all">
-        <button onclick="closePlayer()" class="fixed top-6 right-6 md:top-8 md:right-8 z-[600] text-white/40 hover:text-red-500 text-3xl transition font-black">
+        <button
+            id="playerCloseBtn"
+            onclick="safeClosePlayer()"
+            class="fixed top-6 right-6 md:top-8 md:right-8 z-[600] text-white/40 hover:text-red-500 text-3xl transition font-black"
+        >
             ✕
         </button>
 
