@@ -358,16 +358,18 @@ function renderCards(movies, container, append = false, isTV = false, isHistory 
         const isFav = myList.some(x => x.id === m.id);
 
         const deleteHistoryBtn = isHistory
-            ? `
-                <button
-                    onclick="deleteHistoryItem(event, ${m.id}, '${type}')"
-                    class="absolute top-10 left-10 z-30 text-sm bg-red-500/80 hover:bg-red-500 backdrop-blur-md w-8 h-8 rounded-full flex items-center justify-center border border-white/20 transition hover:scale-110"
-                    title="Hapus dari riwayat"
-                >
-                    🗑️
-                </button>
-            `
-            : '';
+    ? `
+        <button
+            type="button"
+            onclick="deleteHistoryItem(event, ${m.id}, '${type}')"
+            onpointerdown="event.preventDefault(); event.stopPropagation();"
+            class="absolute top-2 left-2 z-40 text-sm bg-red-500/90 hover:bg-red-500 backdrop-blur-md w-9 h-9 rounded-full flex items-center justify-center border border-white/20 transition active:scale-90 shadow-xl"
+            title="Hapus dari riwayat"
+        >
+            🗑️
+        </button>
+    `
+    : '';
 
         const card = document.createElement('div');
         card.className = "movie-card";
@@ -1283,10 +1285,38 @@ function renderHistory() {
         sect.classList.add('hidden');
     }
 }
+
+function deleteHistoryItem(e, id, type) {
+    if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+
+    let h = JSON.parse(localStorage.getItem('nbg_history') || '[]');
+
+    h = h.filter(item => {
+        const itemType = item.media_type || item.type || (item.title ? 'movie' : 'tv');
+
+        return !(
+            Number(item.id) === Number(id) &&
+            itemType === type
+        );
+    });
+
+    localStorage.setItem('nbg_history', JSON.stringify(h));
+
+    renderHistory();
+}
+
 function clearHistory() {
     localStorage.removeItem('nbg_history');
 
+    const row = document.getElementById('rowHistory');
     const sect = document.getElementById('historySection');
+
+    if (row) {
+        row.innerHTML = '';
+    }
 
     if (sect) {
         sect.classList.add('hidden');
