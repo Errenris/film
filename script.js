@@ -23,6 +23,9 @@ let currentPlayPoster = '';
 let detailMovieData = null;
 let detailMovieState = null;
 
+let mobileCloseConfirmTimer = null;
+let mobileCloseWaitingConfirm = false;
+
 window.onload = () => {
     initApp();
     setupScrollEffects();
@@ -815,7 +818,57 @@ async function fetchDetails(id, type) {
     } catch (e) {}
 }
 
+function isMobileView() {
+    return window.matchMedia('(max-width: 768px)').matches;
+}
+
+function safeClosePlayer() {
+    const btn = document.getElementById('playerCloseBtn');
+
+    if (!isMobileView()) {
+        closePlayer();
+        return;
+    }
+
+    if (mobileCloseWaitingConfirm) {
+        mobileCloseWaitingConfirm = false;
+
+        if (btn) {
+            btn.classList.remove('need-confirm');
+        }
+
+        clearTimeout(mobileCloseConfirmTimer);
+        closePlayer();
+        return;
+    }
+
+    mobileCloseWaitingConfirm = true;
+
+    if (btn) {
+        btn.classList.add('need-confirm');
+    }
+
+    clearTimeout(mobileCloseConfirmTimer);
+
+    mobileCloseConfirmTimer = setTimeout(() => {
+        mobileCloseWaitingConfirm = false;
+
+        if (btn) {
+            btn.classList.remove('need-confirm');
+        }
+    }, 2200);
+}
+
 function closePlayer() {
+    mobileCloseWaitingConfirm = false;
+    clearTimeout(mobileCloseConfirmTimer);
+
+    const closeBtn = document.getElementById('playerCloseBtn');
+
+    if (closeBtn) {
+        closeBtn.classList.remove('need-confirm');
+    }
+
     const player = document.getElementById('playerContainer');
     const iframe = document.getElementById('videoPlayer');
 
