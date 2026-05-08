@@ -1154,6 +1154,8 @@ function applyFilter() {
     const type = document.getElementById('filterType')?.value || 'movie';
     const genreSelect = document.getElementById('filterGenre');
     const year = document.getElementById('filterYear')?.value || '';
+    const language = document.getElementById('filterLanguage')?.value || '';
+    const country = document.getElementById('filterCountry')?.value || '';
 
     let genreId = '';
 
@@ -1178,10 +1180,26 @@ function applyFilter() {
         }
     }
 
+    if (language) {
+        params.set('with_original_language', language);
+    }
+
+    if (country) {
+        params.set('with_origin_country', country);
+    }
+
+    const languageSelect = document.getElementById('filterLanguage');
+    const countrySelect = document.getElementById('filterCountry');
+
+    const languageText = languageSelect?.options[languageSelect.selectedIndex]?.text || '';
+    const countryText = countrySelect?.options[countrySelect.selectedIndex]?.text || '';
+
     const labelParts = [
         type === 'tv' ? 'Series' : 'Movie',
         genreSelect?.options[genreSelect.selectedIndex]?.text || '',
-        year || ''
+        year || '',
+        language ? languageText : '',
+        country ? countryText : ''
     ].filter(Boolean);
 
     loadCategory(`discover/${type}?${params.toString()}`, `Filter: ${labelParts.join(' / ')}`);
@@ -1191,10 +1209,14 @@ function resetFilter() {
     const type = document.getElementById('filterType');
     const genre = document.getElementById('filterGenre');
     const year = document.getElementById('filterYear');
+    const language = document.getElementById('filterLanguage');
+    const country = document.getElementById('filterCountry');
 
     if (type) type.value = 'movie';
     if (genre) genre.value = '';
     if (year) year.value = '';
+    if (language) language.value = '';
+    if (country) country.value = '';
 
     goHome();
 }
