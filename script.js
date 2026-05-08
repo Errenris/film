@@ -1010,7 +1010,9 @@ function setupSearch() {
 
 async function loadSearchSuggestions(query) {
     const suggestions = document.getElementById('searchSuggestions');
-    if (!suggestions) return;
+    const input = document.getElementById('searchInput');
+
+    if (!suggestions || !input) return;
 
     try {
         const res = await fetch(`/api/movies?path=search/multi&query=${encodeURIComponent(query)}`);
@@ -1032,11 +1034,12 @@ async function loadSearchSuggestions(query) {
             const title = safeText(m.title || m.name);
             const type = m.media_type || (m.title ? 'movie' : 'tv');
 
-            const item = document.createElement('div');
-            item.className = 'suggestion-item';
+            const item = document.createElement('button');
+            item.type = 'button';
+            item.className = 'suggestion-item w-full text-left';
 
             item.innerHTML = `
-                <img src="${IMG_PATH + m.poster_path}" class="suggestion-poster">
+                <img src="${IMG_PATH + m.poster_path}" class="suggestion-poster" loading="lazy">
                 <div class="min-w-0">
                     <h4 class="text-xs font-black text-white truncate uppercase">${title}</h4>
                     <p class="text-[9px] font-black tracking-widest uppercase text-blue-400">${type === 'tv' ? 'Series' : 'Movie'}</p>
@@ -1044,17 +1047,28 @@ async function loadSearchSuggestions(query) {
                 </div>
             `;
 
-            item.onclick = () => {
+            item.addEventListener('pointerdown', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+
                 hideSearchSuggestions();
                 input.value = '';
-                openMovieDetail(m.id, title, type, m.backdrop_path || '', m.poster_path || '');
-            };
+
+                openMovieDetail(
+                    m.id,
+                    title,
+                    type,
+                    m.backdrop_path || '',
+                    m.poster_path || ''
+                );
+            });
 
             suggestions.appendChild(item);
         });
 
         suggestions.classList.remove('hidden');
     } catch (e) {
+        console.error('Gagal memuat search suggestions:', e);
         hideSearchSuggestions();
     }
 }
