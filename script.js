@@ -310,7 +310,7 @@ async function fetchAndRender(path, id, isTV = false) {
     } catch (e) {}
 }
 
-function renderCards(movies, container, append = false, isTV = false) {
+function renderCards(movies, container, append = false, isTV = false, isHistory = false) {
     if (!container) return;
     if (!append) container.innerHTML = '';
 
@@ -357,11 +357,25 @@ function renderCards(movies, container, append = false, isTV = false) {
         const movieStr = encodeURIComponent(JSON.stringify(savedObj));
         const isFav = myList.some(x => x.id === m.id);
 
+        const deleteHistoryBtn = isHistory
+            ? `
+                <button
+                    onclick="deleteHistoryItem(event, ${m.id}, '${type}')"
+                    class="absolute top-10 left-10 z-30 text-sm bg-red-500/80 hover:bg-red-500 backdrop-blur-md w-8 h-8 rounded-full flex items-center justify-center border border-white/20 transition hover:scale-110"
+                    title="Hapus dari riwayat"
+                >
+                    🗑️
+                </button>
+            `
+            : '';
+
         const card = document.createElement('div');
         card.className = "movie-card";
 
         card.innerHTML = `
             <button onclick="toggleMyList(event, '${movieStr}')" class="fav-btn" style="color: ${isFav ? '#ef4444' : 'white'}">${isFav ? '❤️' : '🤍'}</button>
+
+            ${deleteHistoryBtn}
 
             <div class="poster-container" onclick="openMovieDetail(${m.id}, '${sTitle}', '${type}', '${m.backdrop_path || ''}', '${m.poster_path || ''}', ${seasonInfo || 1}, ${episodeInfo || 1})">
                 <img src="${IMG_PATH + m.poster_path}" class="w-full h-full object-cover" loading="lazy">
@@ -1256,14 +1270,19 @@ function saveToHistory(id, type, backdrop, poster, title) {
 function renderHistory() {
     const h = JSON.parse(localStorage.getItem('nbg_history') || '[]');
     const sect = document.getElementById('historySection');
+    const row = document.getElementById('rowHistory');
 
-    if (h.length > 0 && sect) {
+    if (!sect || !row) return;
+
+    if (h.length > 0) {
         sect.classList.remove('hidden');
-        renderCards(h, document.getElementById('rowHistory'));
+        renderCards(h, row, false, false, true);
         setupRowButtons();
+    } else {
+        row.innerHTML = '';
+        sect.classList.add('hidden');
     }
 }
-
 function clearHistory() {
     localStorage.removeItem('nbg_history');
 
