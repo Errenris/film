@@ -1388,6 +1388,20 @@ function copyAdguardDns() {
     }
 }
 
+function openTelegramOfficial() {
+    const telegramWeb = 'https://t.me/nobargasii';
+
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(telegramWeb).catch(() => {});
+    }
+
+    window.location.href = telegramWeb;
+
+    setTimeout(() => {
+        alert('Kalau belum masuk Telegram otomatis, link grup sudah disalin. Buka Telegram lalu paste link: ' + telegramWeb);
+    }, 900);
+}
+
 function closeAdguardNotice() {
     const notice = document.getElementById('adguardNotice');
     if (!notice) return;
