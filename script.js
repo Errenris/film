@@ -33,6 +33,7 @@ window.onload = () => {
     setupSearch();
     setupFilterYears();
     openFromTelegramLink();
+    setupLiveVisitors();
 };
 
 function safeText(str) {
@@ -1407,6 +1408,55 @@ function closeAdguardNotice() {
     if (!notice) return;
 
     notice.classList.add('hidden');
+}
+
+function getVisitorId() {
+    let id = localStorage.getItem('nbg_visitor_id');
+
+    if (!id) {
+        id = 'v_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 10);
+        localStorage.setItem('nbg_visitor_id', id);
+    }
+
+    return id;
+}
+
+async function updateLiveVisitorCount() {
+    const el = document.getElementById('liveVisitorCount');
+
+    if (!el) return;
+
+    try {
+        const id = getVisitorId();
+
+        const res = await fetch(`/api/visitor-live?id=${encodeURIComponent(id)}&t=${Date.now()}`, {
+            cache: 'no-store'
+        });
+
+        const data = await res.json();
+
+        if (data.ok) {
+            el.innerText = data.online;
+        }
+    } catch (err) {
+        console.warn('Gagal update visitor live:', err.message);
+    }
+}
+
+function setupLiveVisitors() {
+    updateLiveVisitorCount();
+
+    setInterval(() => {
+        if (document.visibilityState === 'visible') {
+            updateLiveVisitorCount();
+        }
+    }, 30000);
+
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+            updateLiveVisitorCount();
+        }
+    });
 }
 
 function updateHero() {
