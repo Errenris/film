@@ -3,17 +3,26 @@ const IMG_BASE = 'https://image.tmdb.org/t/p/w500';
 
 /*
     Movie tetap per ID film.
-    Series sekarang per episode terakhir, jadi episode baru bisa terkirim otomatis.
+    Series per episode terakhir, jadi episode baru bisa terkirim otomatis.
 */
 const MOVIE_SENT_KEY = 'nobargasi:telegram:sent:movies:v2';
 const SERIES_SENT_KEY = 'nobargasi:telegram:sent:series:v2';
 
 /*
-    Supaya tidak kena limit Telegram.
-    Bisa diatur lewat Vercel env:
-    TELEGRAM_MAX_PER_RUN=1 / 2 / 3
+    TELEGRAM_MAX_PER_RUN:
+    Jumlah maksimal yang dikirim per kategori dalam sekali cron.
+    Contoh:
+    3 = maksimal 3 film + 3 series.
+
+    TELEGRAM_SCAN_LIMIT:
+    Jumlah item yang dipindai dari TMDB.
+    Default 20.
+    Jadi walaupun 3 teratas sudah pernah dikirim, bot tetap lanjut cari item baru.
 */
 const MAX_PER_RUN = getMaxPerRun();
+const SCAN_LIMIT = getScanLimit();
+const SCAN_PAGES = getScanPages();
+
 const DELAY_BETWEEN_ITEMS = 3500;
 const DELAY_BETWEEN_PHOTO_AND_DETAIL = 1500;
 
@@ -55,6 +64,8 @@ export default async function handler(req, res) {
             ok: true,
             message: 'Telegram cron berhasil berjalan.',
             maxPerRun: MAX_PER_RUN,
+            scanLimit: SCAN_LIMIT,
+            scanPages: SCAN_PAGES,
             movie: movieResult,
             series: seriesResult
         });
@@ -78,27 +89,44 @@ function getMaxPerRun() {
     return Math.max(1, Math.min(n, 8));
 }
 
+function getScanLimit() {
+    const n = Number(process.env.TELEGRAM_SCAN_LIMIT || 20);
+
+    if (!Number.isFinite(n)) return 20;
+
+    return Math.max(MAX_PER_RUN, Math.min(n, 50));
+}
+
+function getScanPages() {
+    const n = Number(process.env.TELEGRAM_SCAN_PAGES || 2);
+
+    if (!Number.isFinite(n)) return 2;
+
+    return Math.max(1, Math.min(n, 5));
+}
+
 async function checkMovies() {
-    const tmdbKey = getTmdbKey();
+    const today = formatISODate(new Date());
+    const lastMonth = formatISODate(addDays(new Date(), -35));
 
-    const url = `${TMDB_BASE}/movie/now_playing?api_key=${tmdbKey}&language=id-ID&page=1&region=ID`;
+    const paths = [
+        `movie/now_playing?language=id-ID&region=ID`,
+        `movie/upcoming?language=id-ID&region=ID`,
+        `discover/movie?language=id-ID&region=ID&sort_by=primary_release_date.desc&primary_release_date.lte=${today}&primary_release_date.gte=${lastMonth}`
+    ];
 
-    const res = await fetch(url);
-    const data = await res.json();
+    const collected = await collectTmdbCandidates(paths, SCAN_LIMIT);
 
-    if (!res.ok) {
-        throw new Error(data.status_message || 'Gagal mengambil data movie dari TMDB.');
-    }
-
-    const results = (data.results || [])
-        .filter(item => item.poster_path)
-        .slice(0, MAX_PER_RUN);
-
+    let checked = 0;
     let sent = 0;
     let skipped = 0;
     let failed = 0;
 
-    for (const movie of results) {
+    for (const movie of collected.items) {
+        if (sent >= MAX_PER_RUN) break;
+
+        checked++;
+
         const uniqueId = `movie:${movie.id}`;
         const alreadySent = await isAlreadySent(MOVIE_SENT_KEY, uniqueId);
 
@@ -110,44 +138,53 @@ async function checkMovies() {
         try {
             await sendMovieToTelegram(movie.id);
             await markAsSent(MOVIE_SENT_KEY, uniqueId);
+
             sent++;
+
+            if (sent >= MAX_PER_RUN) {
+                break;
+            }
+
+            await sleep(DELAY_BETWEEN_ITEMS);
         } catch (err) {
             failed++;
             console.error('Gagal kirim movie:', movie.id, err.message);
+            await sleep(1200);
         }
-
-        await sleep(DELAY_BETWEEN_ITEMS);
     }
 
     return {
-        checked: results.length,
+        scanned: collected.items.length,
+        checked,
         sent,
         skipped,
-        failed
+        failed,
+        sourceErrors: collected.errors
     };
 }
 
 async function checkSeries() {
-    const tmdbKey = getTmdbKey();
+    const today = formatISODate(new Date());
+    const lastMonth = formatISODate(addDays(new Date(), -35));
 
-    const url = `${TMDB_BASE}/tv/on_the_air?api_key=${tmdbKey}&language=id-ID&page=1`;
+    const paths = [
+        `tv/airing_today?language=id-ID&timezone=Asia/Jakarta`,
+        `tv/on_the_air?language=id-ID&timezone=Asia/Jakarta`,
+        `discover/tv?language=id-ID&sort_by=first_air_date.desc&first_air_date.lte=${today}&first_air_date.gte=${lastMonth}`
+    ];
 
-    const res = await fetch(url);
-    const data = await res.json();
+    const collected = await collectTmdbCandidates(paths, SCAN_LIMIT);
 
-    if (!res.ok) {
-        throw new Error(data.status_message || 'Gagal mengambil data series dari TMDB.');
-    }
-
-    const results = (data.results || [])
-        .filter(item => item.poster_path)
-        .slice(0, MAX_PER_RUN);
-
+    let checked = 0;
     let sent = 0;
     let skipped = 0;
     let failed = 0;
 
-    for (const series of results) {
+    for (const series of collected.items) {
+        if (sent >= MAX_PER_RUN) break;
+
+        checked++;
+
         try {
             const seriesDetail = await getSeriesDetails(series.id);
 
@@ -156,12 +193,6 @@ async function checkSeries() {
             const episodeNumber = lastEp?.episode_number || 1;
             const airDate = lastEp?.air_date || seriesDetail.last_air_date || 'unknown';
 
-            /*
-                FIX EPISODE UPDATE:
-                Dulu key cuma tv:ID.
-                Sekarang key pakai tv:ID:season:episode:airDate.
-                Jadi kalau episode baru tayang, bot akan kirim lagi.
-            */
             const uniqueId = `tv:${series.id}:s${seasonNumber}:e${episodeNumber}:${airDate}`;
             const alreadySent = await isAlreadySent(SERIES_SENT_KEY, uniqueId);
 
@@ -174,20 +205,77 @@ async function checkSeries() {
             await markAsSent(SERIES_SENT_KEY, uniqueId);
 
             sent++;
+
+            if (sent >= MAX_PER_RUN) {
+                break;
+            }
+
+            await sleep(DELAY_BETWEEN_ITEMS);
         } catch (err) {
             failed++;
             console.error('Gagal kirim series:', series.id, err.message);
+            await sleep(1200);
         }
-
-        await sleep(DELAY_BETWEEN_ITEMS);
     }
 
     return {
-        checked: results.length,
+        scanned: collected.items.length,
+        checked,
         sent,
         skipped,
-        failed
+        failed,
+        sourceErrors: collected.errors
     };
+}
+
+async function collectTmdbCandidates(paths, limit) {
+    const map = new Map();
+    const errors = [];
+
+    for (const path of paths) {
+        for (let page = 1; page <= SCAN_PAGES; page++) {
+            if (map.size >= limit) break;
+
+            try {
+                const data = await getTmdbList(path, page);
+                const results = data.results || [];
+
+                for (const item of results) {
+                    if (map.size >= limit) break;
+                    if (!item || !item.id || !item.poster_path) continue;
+
+                    map.set(String(item.id), item);
+                }
+            } catch (err) {
+                errors.push({
+                    path,
+                    page,
+                    error: err.message
+                });
+            }
+        }
+    }
+
+    return {
+        items: Array.from(map.values()).slice(0, limit),
+        errors
+    };
+}
+
+async function getTmdbList(path, page = 1) {
+    const tmdbKey = getTmdbKey();
+
+    const separator = path.includes('?') ? '&' : '?';
+    const url = `${TMDB_BASE}/${path}${separator}api_key=${tmdbKey}&page=${page}`;
+
+    const res = await fetch(url);
+    const data = await res.json();
+
+    if (!res.ok) {
+        throw new Error(data.status_message || `Gagal mengambil list TMDB: ${path}`);
+    }
+
+    return data;
 }
 
 async function getMovieDetails(id) {
@@ -511,15 +599,20 @@ async function isAlreadySent(key, value) {
         return false;
     }
 
-    const res = await fetch(`${kvUrl}/sismember/${encodeURIComponent(key)}/${encodeURIComponent(value)}`, {
-        headers: {
-            Authorization: `Bearer ${kvToken}`
-        }
-    });
+    try {
+        const res = await fetch(`${kvUrl}/sismember/${encodeURIComponent(key)}/${encodeURIComponent(value)}`, {
+            headers: {
+                Authorization: `Bearer ${kvToken}`
+            }
+        });
 
-    const data = await res.json();
+        const data = await res.json();
 
-    return data.result === 1;
+        return data.result === 1;
+    } catch (err) {
+        console.error('Gagal cek KV:', err.message);
+        return false;
+    }
 }
 
 async function markAsSent(key, value) {
@@ -530,13 +623,18 @@ async function markAsSent(key, value) {
         return false;
     }
 
-    await fetch(`${kvUrl}/sadd/${encodeURIComponent(key)}/${encodeURIComponent(value)}`, {
-        headers: {
-            Authorization: `Bearer ${kvToken}`
-        }
-    });
+    try {
+        await fetch(`${kvUrl}/sadd/${encodeURIComponent(key)}/${encodeURIComponent(value)}`, {
+            headers: {
+                Authorization: `Bearer ${kvToken}`
+            }
+        });
 
-    return true;
+        return true;
+    } catch (err) {
+        console.error('Gagal simpan KV:', err.message);
+        return false;
+    }
 }
 
 function buildSiteLink(type, id, episodeData = null) {
@@ -677,6 +775,16 @@ function trimTelegramMessage(text) {
     if (clean.length <= 3900) return clean;
 
     return clean.slice(0, 3897).trim() + '...';
+}
+
+function addDays(date, days) {
+    const copy = new Date(date);
+    copy.setDate(copy.getDate() + days);
+    return copy;
+}
+
+function formatISODate(date) {
+    return date.toISOString().split('T')[0];
 }
 
 function sleep(ms) {
