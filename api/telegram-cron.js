@@ -30,21 +30,27 @@ export default async function handler(req, res) {
     try {
         const secret = process.env.CRON_SECRET;
 
-        const isVercelCron =
-            req.headers['x-vercel-cron'] === '1' ||
-            req.headers['x-vercel-cron'] === 'true';
+        const authHeader = req.headers.authorization || '';
 
-        const isManualAllowed =
-            secret &&
-            req.query &&
-            req.query.secret === secret;
+const isVercelCron =
+    req.headers['x-vercel-cron'] === '1' ||
+    req.headers['x-vercel-cron'] === 'true';
 
-        if (secret && !isManualAllowed && !isVercelCron) {
-            return res.status(401).json({
-                ok: false,
-                error: 'Unauthorized'
-            });
-        }
+const isBearerAllowed =
+    secret &&
+    authHeader === `Bearer ${secret}`;
+
+const isManualAllowed =
+    secret &&
+    req.query &&
+    req.query.secret === secret;
+
+if (secret && !isManualAllowed && !isBearerAllowed && !isVercelCron) {
+    return res.status(401).json({
+        ok: false,
+        error: 'Unauthorized'
+    });
+}
 
         const token = process.env.TELEGRAM_BOT_TOKEN;
         const chatId = process.env.TELEGRAM_CHAT_ID;
