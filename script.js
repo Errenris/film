@@ -588,7 +588,7 @@ function changeServer(s) {
     f.setAttribute('mozallowfullscreen', '');
     f.removeAttribute('referrerpolicy');
 
-    // SERVER 1: VAPlayer (Bawaan asli - sudah menggunakan parameter lang=id)
+    // SERVER 1: VAPlayer (Bawaan asli)
     if (s === 'VidSrc') {
         if (currentPlayType === 'tv') {
             url = `https://vaplayer.ru/embed/tv/${currentPlayId}/${currentSeason}/${currentEpisode}?lang=id&ds_lang=id`;
@@ -596,12 +596,13 @@ function changeServer(s) {
             url = `https://vaplayer.ru/embed/movie/${currentPlayId}?lang=id&ds_lang=id`;
         }
     } 
-    // SERVER 2: VKNG (Server Pilihan Baru)
+    // SERVER 2: VidKing.net (Fitur Lengkap: AutoPlay, Next Ep, & Selector)
     else {
+        const params = "?autoPlay=true&nextEpisode=true&episodeSelector=true";
         if (currentPlayType === 'tv') {
-            url = `https://vkng.io/embed/tv/${currentPlayId}/${currentSeason}/${currentEpisode}`;
+            url = `https://www.vidking.net/embed/tv/${currentPlayId}/${currentSeason}/${currentEpisode}${params}`;
         } else {
-            url = `https://vkng.io/embed/movie/${currentPlayId}`;
+            url = `https://www.vidking.net/embed/movie/${currentPlayId}${params}`;
         }
     }
 
@@ -646,14 +647,14 @@ async function playMovie(id, title, type, backdrop, poster, season = 1, episode 
     if (playerYear) playerYear.innerText = "....";
 
     if (playerControls) {
-        // Label tombol Server 2 disesuaikan menjadi "Server 2 (VKNG)"
+        // Label tombol Server 2 diubah menjadi "Server 2 (VidKing)"
         playerControls.innerHTML = `
             <button id="btn-VidSrc" onclick="changeServer('VidSrc')" class="server-btn px-8 py-3 rounded-full text-[10px] font-black uppercase bg-white text-black shadow-xl">
                 Server 1
             </button>
 
             <button id="btn-AutoEmbed" onclick="changeServer('AutoEmbed')" class="server-btn px-8 py-3 rounded-full text-[10px] font-black uppercase border border-white/10 opacity-40">
-                Server 2 (VKNG)
+                Server 2 (VidKing)
             </button>
 
             <button onclick="shareMovie('${title.replace(/'/g, "\\'")}')" class="px-8 py-3 rounded-full text-[10px] font-black uppercase bg-white/5 border border-white/10 hover:bg-white hover:text-black transition">
