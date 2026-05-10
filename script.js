@@ -580,7 +580,7 @@ function changeServer(s) {
 
     f.setAttribute(
         'allow',
-        'autoplay *; fullscreen *; encrypted-media *; picture-in-picture *; clipboard-write *; web-share *; accelerometer *; gyroscope *'
+        'autoplay *; fullscreen *; encrypted-media *; picture-in-picture *; clipboard-write *; web-share *; accelerometer *; gyroscope *; user-interaction *'
     );
 
     f.setAttribute('allowfullscreen', '');
