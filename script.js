@@ -588,7 +588,7 @@ function changeServer(s) {
     f.setAttribute('mozallowfullscreen', '');
     f.removeAttribute('referrerpolicy');
 
-    // SERVER 1: VAPlayer (Tetap bawaan aslimu)
+    // SERVER 1: VAPlayer (Bawaan asli - sudah pakai lang=id)
     if (s === 'VidSrc') {
         if (currentPlayType === 'tv') {
             url = `https://vaplayer.ru/embed/tv/${currentPlayId}/${currentSeason}/${currentEpisode}?lang=id&ds_lang=id`;
@@ -596,12 +596,12 @@ function changeServer(s) {
             url = `https://vaplayer.ru/embed/movie/${currentPlayId}?lang=id&ds_lang=id`;
         }
     } 
-    // SERVER 2: VidLink.pro (Bersih, Ringan, & Tanpa Iklan Berlebih)
+    // SERVER 2: VidLink.pro (Dipaksa memuat Subtitle Indonesia)
     else {
         if (currentPlayType === 'tv') {
-            url = `https://vidlink.pro/tv/${currentPlayId}/${currentSeason}/${currentEpisode}`;
+            url = `https://vidlink.pro/tv/${currentPlayId}/${currentSeason}/${currentEpisode}?sub_label=Indonesian`;
         } else {
-            url = `https://vidlink.pro/movie/${currentPlayId}`;
+            url = `https://vidlink.pro/movie/${currentPlayId}?sub_label=Indonesian`;
         }
     }
 
