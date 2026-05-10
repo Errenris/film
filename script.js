@@ -588,7 +588,7 @@ function changeServer(s) {
     f.setAttribute('mozallowfullscreen', '');
     f.removeAttribute('referrerpolicy');
 
-    // SERVER 1: VAPlayer (Bawaan asli - sudah pakai lang=id)
+    // SERVER 1: VAPlayer (Bawaan asli - sudah menggunakan parameter lang=id)
     if (s === 'VidSrc') {
         if (currentPlayType === 'tv') {
             url = `https://vaplayer.ru/embed/tv/${currentPlayId}/${currentSeason}/${currentEpisode}?lang=id&ds_lang=id`;
@@ -596,12 +596,12 @@ function changeServer(s) {
             url = `https://vaplayer.ru/embed/movie/${currentPlayId}?lang=id&ds_lang=id`;
         }
     } 
-    // SERVER 2: VidLink.pro (Dipaksa memuat Subtitle Indonesia)
+    // SERVER 2: 2Embed.cc (Pustaka Subtitle Indonesia Paling Lengkap)
     else {
         if (currentPlayType === 'tv') {
-            url = `https://vidlink.pro/tv/${currentPlayId}/${currentSeason}/${currentEpisode}?sub_label=Indonesian`;
+            url = `https://www.2embed.cc/embedtv/${currentPlayId}&s=${currentSeason}&e=${currentEpisode}`;
         } else {
-            url = `https://vidlink.pro/movie/${currentPlayId}?sub_label=Indonesian`;
+            url = `https://www.2embed.cc/embed/${currentPlayId}`;
         }
     }
 
@@ -646,14 +646,14 @@ async function playMovie(id, title, type, backdrop, poster, season = 1, episode 
     if (playerYear) playerYear.innerText = "....";
 
     if (playerControls) {
-        // Label tombol Server 2 disesuaikan menjadi "Server 2 (Clean)"
+        // Label tombol Server 2 disesuaikan menjadi "Server 2 (Sub Indo)"
         playerControls.innerHTML = `
             <button id="btn-VidSrc" onclick="changeServer('VidSrc')" class="server-btn px-8 py-3 rounded-full text-[10px] font-black uppercase bg-white text-black shadow-xl">
                 Server 1
             </button>
 
             <button id="btn-AutoEmbed" onclick="changeServer('AutoEmbed')" class="server-btn px-8 py-3 rounded-full text-[10px] font-black uppercase border border-white/10 opacity-40">
-                Server 2 (Clean)
+                Server 2 (Sub Indo)
             </button>
 
             <button onclick="shareMovie('${title.replace(/'/g, "\\'")}')" class="px-8 py-3 rounded-full text-[10px] font-black uppercase bg-white/5 border border-white/10 hover:bg-white hover:text-black transition">
