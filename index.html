@@ -758,10 +758,11 @@
     </div>
 
     <nav id="mobileNav" class="md:hidden fixed bottom-4 left-4 right-4 z-[100] bg-[#111115]/90 backdrop-blur-xl rounded-full flex justify-around items-center px-4 py-3 shadow-2xl border border-white/10">
-        <button onclick="goHome()" class="text-xl">🏠</button>
-        <button onclick="loadCategory('movie/popular', 'Movies')" class="text-xl">🎬</button>
-        <button onclick="loadCategory('tv/popular', 'Series')" class="text-xl">📺</button>
-        <button onclick="showMyList()" class="text-xl">❤️</button>
+        <button onclick="location.reload()" class="p-2 text-xl">🔄Reload</button>
+        <button onclick="goHome()" class="text-xl">🏠Home</button>
+        <button onclick="loadCategory('movie/popular', 'Movies')" class="text-xl">🎬Film</button>
+        <button onclick="loadCategory('tv/popular', 'Series')" class="text-xl">📺Series</button>
+        <button onclick="showMyList()" class="text-xl">❤️List Film</button>
     </nav>
 
     <main id="mainContainer" class="max-w-[1550px] mx-auto pt-24 px-4 md:px-10 space-y-24 fade-in">
