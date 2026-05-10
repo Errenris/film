@@ -406,6 +406,12 @@ function renderCards(movies, container, append = false, isTV = false, isHistory 
 }
 
 async function openMovieDetail(id, title, type, backdrop, poster, season = 1, episode = 1) {
+    // --- SOLUSI BUG: Tutup player otomatis jika sedang nonton ---
+    if (document.body.classList.contains('player-open')) {
+        closePlayer();
+    }
+    // ------------------------------------------------------------
+
     detailMovieState = {
         id,
         title,
