@@ -721,6 +721,71 @@
         background-color: #000;
     }
 }
+
+
+/* ===================================================== */
+        /* LOGO PREMIUM NOBARGASI (ICON & TEKS) */
+        /* ===================================================== */
+        .logo-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: 0.3s cubic-bezier(0.2, 1, 0.3, 1);
+        }
+        
+        .logo-wrapper:hover {
+            transform: scale(1.05);
+            filter: brightness(1.2);
+        }
+        
+        .logo-icon-premium {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #3b82f6 0%, #1e3a8a 50%, #ef4444 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
+            position: relative;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Titik-titik roll film */
+        .logo-icon-premium::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='12' r='5' fill='white' opacity='0.5'/%3E%3Ccircle cx='50' cy='88' r='5' fill='white' opacity='0.5'/%3E%3Ccircle cx='12' cy='50' r='5' fill='white' opacity='0.5'/%3E%3Ccircle cx='88' cy='50' r='5' fill='white' opacity='0.5'/%3E%3C/svg%3E") no-repeat;
+            background-size: cover;
+        }
+
+        .play-triangle {
+            width: 0;
+            height: 0;
+            border-top: 6px solid transparent;
+            border-left: 10px solid white;
+            border-bottom: 6px solid transparent;
+            margin-left: 3px;
+            position: relative;
+            z-index: 2;
+        }
+
+        @media (max-width: 768px) {
+            .logo-icon-premium {
+                width: 26px;
+                height: 26px;
+            }
+            .play-triangle {
+                border-top-width: 5px;
+                border-left-width: 8px;
+                border-bottom-width: 5px;
+            }
+            .logo-text {
+                font-size: 16px !important;
+            }
+        }
             
     </style>
 </head>
@@ -732,9 +797,14 @@
 
     <div class="fixed top-6 w-full z-[100] flex justify-center px-4">
         <header id="mainHeader" class="header-capsule flex items-center gap-6 md:gap-10">
-            <h1 class="text-xl font-black tracking-tighter cursor-pointer" onclick="goHome()">
-                N<span class="text-blue-500">G</span>
-            </h1>
+            <div class="logo-wrapper" onclick="goHome()">
+    <div class="logo-icon-premium">
+        <div class="play-triangle"></div>
+    </div>
+    <h1 class="logo-text text-xl font-black tracking-tighter uppercase">
+        NOBAR<span class="text-blue-500">GASI</span>
+    </h1>
+</div>
 
             <nav class="hidden lg:flex items-center gap-8 text-[11px] font-bold uppercase tracking-[0.2em] text-white/40">
                 <button onclick="location.reload()" class="p-2 text-xl">🔄RELOAD</button>
