@@ -567,19 +567,29 @@
 }
 
 /* ===================================================== */
-        /* FIX WEBVIEW POTRET (MENGHINDARI PONI/STATUS BAR) */
-        /* ===================================================== */
-        @media (orientation: portrait) {
-            /* Mendorong pembungkus header agar lebih turun menjauhi jam/baterai HP */
-            #mainHeader {
-                margin-top: calc(env(safe-area-inset-top, 24px) + 12px) !important;
-            }
-            
-            /* Menyesuaikan jarak padding atas kontainer utama agar konten tidak tertutup header */
-            #mainContainer {
-                padding-top: calc(env(safe-area-inset-top, 24px) + 110px) !important;
-            }
-        }
+/* FIX WEBVIEW POTRET (PLAYER & HEADER GAK NABRAK PONI) */
+/* ===================================================== */
+@media (orientation: portrait) {
+    /* 1. Header Halaman Utama */
+    #mainHeader {
+        margin-top: calc(env(safe-area-inset-top, 0px) + 20px) !important;
+    }
+    #mainContainer {
+        padding-top: calc(env(safe-area-inset-top, 0px) + 110px) !important;
+    }
+
+    /* 2. PLAYER: Ini yang paling penting buat screenshot kamu */
+    /* Menambahkan padding di bagian atas modal player agar video tidak menabrak jam */
+    body.player-open #playerModalBox {
+        padding-top: env(safe-area-inset-top, 35px) !important;
+        background-color: #000; /* Memastikan background di belakang status bar tetap hitam */
+    }
+
+    /* Memastikan tombol tutup player juga tidak tertutup status bar */
+    body.player-open #playerCloseBtn {
+        top: calc(env(safe-area-inset-top, 0px) + 15px) !important;
+    }
+}
             
     </style>
 </head>
