@@ -83,7 +83,7 @@
 
         .movie-card:hover {
             transform: translateY(-10px);
-            z-index: 10;
+            z-index: 600; /* Dinaikkan drastis agar tidak tenggelam di bawah player */
         }
 
         .poster-container {
@@ -1055,7 +1055,7 @@
 
         <div id="playerModalBox" class="relative w-full h-full md:h-[95vh] md:max-w-6xl md:rounded-[45px] overflow-y-auto no-scrollbar bg-[#0a0a0f] border border-white/5 flex flex-col shadow-2xl">
 
-            <div class="aspect-video w-full bg-black flex-shrink-0 relative group">
+            <div class="aspect-video w-full bg-black flex-shrink-0 relative group touch-auto">
                 <iframe
                     id="videoPlayer"
                     src=""
