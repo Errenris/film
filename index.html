@@ -709,8 +709,16 @@
     }
 
     /* Memberi jarak di bawah player agar tidak mepet navigation bar HP */
+    /* Cari bagian ini di dalam media query mobile-mu */
     #playerModalBox {
-        padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 80px);
+        /* 1. DORONG VIDEO TURUN (Biar gak kena jam/baterai) */
+        padding-top: calc(env(safe-area-inset-top, 0px) + 45px) !important;
+
+        /* 2. JARAK BAWAH (Biar tombol Tutup gak mepet bgt ke bawah) */
+        padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 80px) !important;
+        
+        /* 3. WARNA BACKGROUND (Biar area atas tetap hitam pekat) */
+        background-color: #000;
     }
 }
             
