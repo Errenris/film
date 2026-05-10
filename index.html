@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 
     <title>NOBARGASI | Premium</title>
 
@@ -565,6 +565,22 @@
         align-items: center !important;
     }
 }
+
+/* ===================================================== */
+        /* FIX WEBVIEW POTRET (MENGHINDARI PONI/STATUS BAR) */
+        /* ===================================================== */
+        @media (orientation: portrait) {
+            /* Mendorong pembungkus header agar lebih turun menjauhi jam/baterai HP */
+            #mainHeader {
+                margin-top: calc(env(safe-area-inset-top, 24px) + 12px) !important;
+            }
+            
+            /* Menyesuaikan jarak padding atas kontainer utama agar konten tidak tertutup header */
+            #mainContainer {
+                padding-top: calc(env(safe-area-inset-top, 24px) + 110px) !important;
+            }
+        }
+            
     </style>
 </head>
 
