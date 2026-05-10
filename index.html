@@ -567,27 +567,150 @@
 }
 
 /* ===================================================== */
-/* FIX WEBVIEW POTRET (PLAYER & HEADER GAK NABRAK PONI) */
+/* FINAL MOBILE MEDIA QUERY (PLAYER & BUTTONS) */
 /* ===================================================== */
-@media (orientation: portrait) {
-    /* 1. Header Halaman Utama */
-    #mainHeader {
-        margin-top: calc(env(safe-area-inset-top, 0px) + 20px) !important;
-    }
-    #mainContainer {
-        padding-top: calc(env(safe-area-inset-top, 0px) + 110px) !important;
-    }
-
-    /* 2. PLAYER: Ini yang paling penting buat screenshot kamu */
-    /* Menambahkan padding di bagian atas modal player agar video tidak menabrak jam */
-    body.player-open #playerModalBox {
-        padding-top: env(safe-area-inset-top, 35px) !important;
-        background-color: #000; /* Memastikan background di belakang status bar tetap hitam */
+@media (max-width: 768px) {
+    /* 1. Kontrol Player Utama */
+    #playerControls {
+        width: 100%;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        justify-content: center;
     }
 
-    /* Memastikan tombol tutup player juga tidak tertutup status bar */
+    #seasonSelect,
+    #episodeSelect {
+        width: 100%;
+        margin: 0 !important;
+    }
+
+    #episodeLabel {
+        width: 100%;
+        text-align: center;
+    }
+
+    /* 2. Header Row Umum */
+    .row-header {
+        align-items: center;
+        gap: 8px;
+    }
+
+    .row-title {
+        letter-spacing: 0.22em;
+        font-size: 9px;
+    }
+
+    .explore-btn {
+        display: inline-block;
+        font-size: 8px;
+    }
+
+    .row-nav-btn {
+        width: 30px;
+        height: 30px;
+        font-size: 16px;
+    }
+
+    /* 3. Panel Filter */
+    .filter-select {
+        border-radius: 22px;
+    }
+
+    /* 4. Riwayat Nonton */
+    #historySection .explore-btn {
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+        margin-left: 0 !important;
+        padding: 8px 12px;
+        border-radius: 999px;
+        background: rgba(239, 68, 68, 0.14);
+        border: 1px solid rgba(239, 68, 68, 0.28);
+        color: #f87171 !important;
+        opacity: 1 !important;
+        font-size: 8px;
+        letter-spacing: 0.14em;
+        white-space: nowrap;
+    }
+
+    #historySection .row-header {
+        align-items: center !important;
+    }
+
+    /* 5. FIX TOMBOL TUTUP PLAYER (PREMIUM CAPSULE LOOK) */
+    /* Menghapus semua rule yang menyembunyikan tombol ini di general player-open state */
     body.player-open #playerCloseBtn {
-        top: calc(env(safe-area-inset-top, 0px) + 15px) !important;
+        display: flex !important; /* Memaksa muncul, menimpa general display:none */
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+
+    /* Menimpa rule global top-0 untuk desktop */
+    #playerCloseBtn {
+        top: auto !important;
+        right: auto !important;
+        left: 50% !important;
+        /* Memosisikan di bawah, menggunakan area aman HP */
+        bottom: calc(env(safe-area-inset-bottom, 0px) + 20px) !important;
+        transform: translateX(-50%) !important;
+
+        min-width: 130px;
+        height: 48px;
+        padding: 0 20px;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+
+        border-radius: 999px;
+        background: rgba(15, 15, 20, 0.85); /* Dark Body */
+        border: 1px solid rgba(255, 255, 255, 0.16); /* Premium Border */
+        backdrop-filter: blur(20px);
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+
+        color: white !important;
+        font-size: 0 !important; /* Sembunyikan icon '✕' default */
+        text-shadow: none !important;
+        will-change: transform, opacity;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    /* Teks "Tutup" premium di HP */
+    #playerCloseBtn::before {
+        content: "Tutup";
+        font-size: 11px;
+        font-weight: 900;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: rgba(255, 255, 255, 0.7);
+    }
+
+    /* Icon X premium di HP */
+    #playerCloseBtn::after {
+        content: "✕";
+        font-size: 16px;
+        font-weight: 900;
+        line-height: 1;
+        color: white;
+    }
+
+    /* Warna merah saat perlu konfirmasi di HP */
+    #playerCloseBtn.need-confirm {
+        background: rgba(239, 68, 68, 0.95);
+        border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    /* Teks konfirmasi premium di HP */
+    #playerCloseBtn.need-confirm::before {
+        content: "Tap lagi";
+        color: white;
+    }
+
+    /* Memberi jarak di bawah player agar tidak mepet navigation bar HP */
+    #playerModalBox {
+        padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 80px);
     }
 }
             
