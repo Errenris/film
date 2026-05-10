@@ -602,9 +602,11 @@ function changeServer(s) {
             url = `https://vaplayer.ru/embed/movie/${currentPlayId}?lang=id&ds_lang=id`;
         }
     } 
-    // SERVER 2: VidKing.net (Fitur Lengkap: AutoPlay, Next Ep, & Selector)
+    // SERVER 2: VidKing.net (Otomatis panggil Sub Indo untuk SEMUA film)
     else {
-        const params = "?autoPlay=true&nextEpisode=true&episodeSelector=true";
+        // Kita pakai sub_label=Indonesian agar server otomatis nyari file di database mereka
+        const params = "?autoPlay=true&nextEpisode=true&episodeSelector=true&sub_label=Indonesian";
+        
         if (currentPlayType === 'tv') {
             url = `https://www.vidking.net/embed/tv/${currentPlayId}/${currentSeason}/${currentEpisode}${params}`;
         } else {
