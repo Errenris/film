@@ -5,9 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 
     <title>NOBARGASI | Premium</title>
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='black'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='central' text-anchor='middle' font-family='Arial' font-weight='900' font-size='60' fill='%233b82f6'%3EN%3C/text%3E%3Cpath d='M45 35 L70 50 L45 65 Z' fill='%23ef4444'/%3E%3C/svg%3E">
-    <script src="https://cdn.tailwindcss.com"></script>
 
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='black'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='central' text-anchor='middle' font-family='Arial' font-weight='900' font-size='60' fill='%233b82f6'%3EN%3C/text%3E%3Cpath d='M45 35 L70 50 L45 65 Z' fill='%23ef4444'/%3E%3C/svg%3E">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
 
     <style>
@@ -83,7 +84,7 @@
 
         .movie-card:hover {
             transform: translateY(-10px);
-            z-index: 600; /* Dinaikkan drastis agar tidak tenggelam di bawah player */
+            z-index: 600;
         }
 
         .poster-container {
@@ -272,13 +273,8 @@
         }
 
         @keyframes shimmer {
-            0% {
-                background-position: -200% 0;
-            }
-
-            100% {
-                background-position: 200% 0;
-            }
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
         }
 
         .fade-in {
@@ -286,15 +282,8 @@
         }
 
         @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .player-info-card {
@@ -436,294 +425,7 @@
             }
         }
 
-
-
         /* ===================================================== */
-        /* MOBILE PLAYER CLOSE BUTTON FIX */
-        /* ===================================================== */
-
-        #playerCloseBtn {
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        @media (max-width: 768px) {
-            #playerCloseBtn {
-                top: auto !important;
-                right: auto !important;
-                left: 50% !important;
-                bottom: calc(env(safe-area-inset-bottom, 0px) + 18px) !important;
-                transform: translateX(-50%) !important;
-
-                min-width: 128px;
-                height: 46px;
-                padding: 0 18px;
-
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                gap: 8px;
-
-                border-radius: 999px;
-                background: rgba(15, 15, 20, 0.82);
-                border: 1px solid rgba(255, 255, 255, 0.14);
-                backdrop-filter: blur(18px);
-                box-shadow: 0 18px 45px rgba(0, 0, 0, 0.55);
-
-                color: white !important;
-                font-size: 0 !important;
-                opacity: 0.78;
-            }
-
-            #playerCloseBtn::before {
-                content: "Tutup";
-                font-size: 11px;
-                font-weight: 900;
-                letter-spacing: 0.22em;
-                text-transform: uppercase;
-            }
-
-            #playerCloseBtn::after {
-                content: "✕";
-                font-size: 15px;
-                font-weight: 900;
-                line-height: 1;
-            }
-
-            #playerCloseBtn.need-confirm {
-                background: rgba(239, 68, 68, 0.92);
-                border-color: rgba(255, 255, 255, 0.2);
-                opacity: 1;
-            }
-
-            #playerCloseBtn.need-confirm::before {
-                content: "Tap lagi";
-            }
-
-            #playerModalBox {
-                padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 74px);
-            }
-        }
-
-        @media (max-width: 768px) {
-            #playerControls {
-                width: 100%;
-            }
-
-            #seasonSelect,
-            #episodeSelect {
-                width: 100%;
-            }
-
-            #episodeLabel {
-                width: 100%;
-                text-align: center;
-            }
-
-            .row-header {
-                align-items: center;
-                gap: 8px;
-            }
-
-            .row-title {
-                letter-spacing: 0.22em;
-                font-size: 9px;
-            }
-
-            .explore-btn {
-                display: inline-block; /* Memunculkan kembali tombolnya */
-                font-size: 8px;        /* Dikecilkan sedikit agar pas di layar HP */
-            }
-
-            .row-nav-btn {
-                width: 30px;
-                height: 30px;
-                font-size: 16px;
-            }
-
-            .filter-select {
-                border-radius: 22px;
-            }
-
-            @media (max-width: 768px) {
-    #historySection .explore-btn {
-        display: inline-flex !important;
-        align-items: center;
-        justify-content: center;
-        margin-left: 0 !important;
-        padding: 8px 12px;
-        border-radius: 999px;
-        background: rgba(239, 68, 68, 0.14);
-        border: 1px solid rgba(239, 68, 68, 0.28);
-        color: #f87171 !important;
-        opacity: 1 !important;
-        font-size: 8px;
-        letter-spacing: 0.14em;
-        white-space: nowrap;
-    }
-
-    #historySection .row-header {
-        align-items: center !important;
-    }
-}
-
-/* ===================================================== */
-/* FINAL MOBILE MEDIA QUERY (PLAYER & BUTTONS) */
-/* ===================================================== */
-@media (max-width: 768px) {
-    /* 1. Kontrol Player Utama */
-    #playerControls {
-        width: 100%;
-        display: flex;
-        flex-wrap: wrap;
-        gap: 12px;
-        justify-content: center;
-    }
-
-    #seasonSelect,
-    #episodeSelect {
-        width: 100%;
-        margin: 0 !important;
-    }
-
-    #episodeLabel {
-        width: 100%;
-        text-align: center;
-    }
-
-    /* 2. Header Row Umum */
-    .row-header {
-        align-items: center;
-        gap: 8px;
-    }
-
-    .row-title {
-        letter-spacing: 0.22em;
-        font-size: 9px;
-    }
-
-    .explore-btn {
-        display: inline-block;
-        font-size: 8px;
-    }
-
-    .row-nav-btn {
-        width: 30px;
-        height: 30px;
-        font-size: 16px;
-    }
-
-    /* 3. Panel Filter */
-    .filter-select {
-        border-radius: 22px;
-    }
-
-    /* 4. Riwayat Nonton */
-    #historySection .explore-btn {
-        display: inline-flex !important;
-        align-items: center;
-        justify-content: center;
-        margin-left: 0 !important;
-        padding: 8px 12px;
-        border-radius: 999px;
-        background: rgba(239, 68, 68, 0.14);
-        border: 1px solid rgba(239, 68, 68, 0.28);
-        color: #f87171 !important;
-        opacity: 1 !important;
-        font-size: 8px;
-        letter-spacing: 0.14em;
-        white-space: nowrap;
-    }
-
-    #historySection .row-header {
-        align-items: center !important;
-    }
-
-    /* 5. FIX TOMBOL TUTUP PLAYER (PREMIUM CAPSULE LOOK) */
-    /* Menghapus semua rule yang menyembunyikan tombol ini di general player-open state */
-    body.player-open #playerCloseBtn {
-        display: flex !important; /* Memaksa muncul, menimpa general display:none */
-        visibility: visible !important;
-        opacity: 1 !important;
-    }
-
-    /* Menimpa rule global top-0 untuk desktop */
-    #playerCloseBtn {
-        top: auto !important;
-        right: auto !important;
-        left: 50% !important;
-        /* Memosisikan di bawah, menggunakan area aman HP */
-        bottom: calc(env(safe-area-inset-bottom, 0px) + 20px) !important;
-        transform: translateX(-50%) !important;
-
-        min-width: 130px;
-        height: 48px;
-        padding: 0 20px;
-
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
-
-        border-radius: 999px;
-        background: rgba(15, 15, 20, 0.85); /* Dark Body */
-        border: 1px solid rgba(255, 255, 255, 0.16); /* Premium Border */
-        backdrop-filter: blur(20px);
-        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
-
-        color: white !important;
-        font-size: 0 !important; /* Sembunyikan icon '✕' default */
-        text-shadow: none !important;
-        will-change: transform, opacity;
-        -webkit-tap-highlight-color: transparent;
-    }
-
-    /* Teks "Tutup" premium di HP */
-    #playerCloseBtn::before {
-        content: "Tutup";
-        font-size: 11px;
-        font-weight: 900;
-        letter-spacing: 0.22em;
-        text-transform: uppercase;
-        color: rgba(255, 255, 255, 0.7);
-    }
-
-    /* Icon X premium di HP */
-    #playerCloseBtn::after {
-        content: "✕";
-        font-size: 16px;
-        font-weight: 900;
-        line-height: 1;
-        color: white;
-    }
-
-    /* Warna merah saat perlu konfirmasi di HP */
-    #playerCloseBtn.need-confirm {
-        background: rgba(239, 68, 68, 0.95);
-        border-color: rgba(255, 255, 255, 0.2);
-    }
-
-    /* Teks konfirmasi premium di HP */
-    #playerCloseBtn.need-confirm::before {
-        content: "Tap lagi";
-        color: white;
-    }
-
-    /* Memberi jarak di bawah player agar tidak mepet navigation bar HP */
-    /* Cari bagian ini di dalam media query mobile-mu */
-    #playerModalBox {
-        /* 1. DORONG VIDEO TURUN (Biar gak kena jam/baterai) */
-        padding-top: calc(env(safe-area-inset-top, 0px) + 45px) !important;
-
-        /* 2. JARAK BAWAH (Biar tombol Tutup gak mepet bgt ke bawah) */
-        padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 80px) !important;
-        
-        /* 3. WARNA BACKGROUND (Biar area atas tetap hitam pekat) */
-        background-color: #000;
-    }
-}
-
-
-/* ===================================================== */
         /* LOGO PREMIUM NOBARGASI (ICON & TEKS) */
         /* ===================================================== */
         .logo-wrapper {
@@ -739,7 +441,6 @@
             filter: brightness(1.2);
         }
         
-        /* LOGO BARU: N BIRU + PLAY MERAH */
         .logo-box-premium {
             width: 38px;
             height: 38px;
@@ -756,7 +457,7 @@
         .logo-n-text {
             font-size: 24px;
             font-weight: 900;
-            color: #3b82f6; /* Warna Biru sesuai gambar */
+            color: #3b82f6;
             line-height: 1;
             font-family: 'Arial Black', sans-serif;
         }
@@ -766,20 +467,150 @@
             width: 0;
             height: 0;
             border-top: 6px solid transparent;
-            border-left: 10px solid #ef4444; /* Warna Merah sesuai gambar */
+            border-left: 10px solid #ef4444;
             border-bottom: 6px solid transparent;
             top: 50%;
             left: 50%;
-            transform: translate(-15%, -50%); /* Menaruh segitiga tepat di tengah N */
+            transform: translate(-15%, -50%);
             filter: drop-shadow(0 0 5px rgba(239, 68, 68, 0.4));
         }
 
+        /* ===================================================== */
+        /* MOBILE PLAYER CLOSE BUTTON & OPTIMASI FINAL */
+        /* ===================================================== */
+        #playerCloseBtn {
+            -webkit-tap-highlight-color: transparent;
+        }
+
         @media (max-width: 768px) {
+            /* Pengecilan Elemen Logo untuk HP */
             .logo-box-premium { width: 32px; height: 32px; }
             .logo-n-text { font-size: 20px; }
             .logo-play-overlay { border-left-width: 8px; border-top-width: 5px; border-bottom-width: 5px; }
+
+            /* Pengecilan & Perapian Filter Select untuk HP */
+            .filter-select {
+                padding: 10px 14px !important;
+                font-size: 9px !important;
+                border-radius: 18px !important;
+            }
+
+            /* Pengecilan Tombol Action Panel Notice & Filter */
+            .adguard-copy-btn, .adguard-close-btn, .filter-action-btn {
+                padding: 10px 16px !important;
+                font-size: 9px !important;
+            }
+
+            /* Tombol Tutup Kapsul Bawah Premium */
+            #playerCloseBtn {
+                top: auto !important;
+                right: auto !important;
+                left: 50% !important;
+                bottom: calc(env(safe-area-inset-bottom, 0px) + 20px) !important;
+                transform: translateX(-50%) !important;
+
+                min-width: 130px;
+                height: 48px;
+                padding: 0 20px;
+
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 10px;
+
+                border-radius: 999px;
+                background: rgba(15, 15, 20, 0.85);
+                border: 1px solid rgba(255, 255, 255, 0.16);
+                backdrop-filter: blur(20px);
+                box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+
+                color: white !important;
+                font-size: 0 !important;
+                text-shadow: none !important;
+                will-change: transform, opacity;
+            }
+
+            #playerCloseBtn::before {
+                content: "Tutup";
+                font-size: 11px;
+                font-weight: 900;
+                letter-spacing: 0.22em;
+                text-transform: uppercase;
+                color: rgba(255, 255, 255, 0.7);
+            }
+
+            #playerCloseBtn::after {
+                content: "✕";
+                font-size: 16px;
+                font-weight: 900;
+                line-height: 1;
+                color: white;
+            }
+
+            #playerCloseBtn.need-confirm {
+                background: rgba(239, 68, 68, 0.95);
+                border-color: rgba(255, 255, 255, 0.2);
+            }
+
+            #playerCloseBtn.need-confirm::before {
+                content: "Tap lagi";
+                color: white;
+            }
+
+            /* Mendorong konten menjauhi status bar (poni/jam HP) */
+            #mainHeader {
+                margin-top: calc(env(safe-area-inset-top, 0px) + 10px) !important;
+            }
+            #mainContainer {
+                padding-top: calc(env(safe-area-inset-top, 0px) + 100px) !important;
+            }
+            #playerModalBox {
+                padding-top: calc(env(safe-area-inset-top, 0px) + 45px) !important;
+                padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 80px) !important;
+                background-color: #000;
+            }
+
+            /* Perapian Kontrol Player */
+            #playerControls { width: 100%; display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+            #seasonSelect, #episodeSelect { width: 100%; margin: 0 !important; }
+            #episodeLabel { width: 100%; text-align: center; }
+
+            /* Perapian Row Navigasi */
+            .row-header { align-items: center; gap: 8px; }
+            .row-title { letter-spacing: 0.22em; font-size: 9px; }
+            .explore-btn { display: inline-block; font-size: 8px; }
+            .row-nav-btn { width: 30px; height: 30px; font-size: 16px; }
+
+            /* Perapian Tombol Riwayat */
+            #historySection .explore-btn {
+                display: inline-flex !important;
+                align-items: center;
+                justify-content: center;
+                margin-left: 0 !important;
+                padding: 8px 12px;
+                border-radius: 999px;
+                background: rgba(239, 68, 68, 0.14);
+                border: 1px solid rgba(239, 68, 68, 0.28);
+                color: #f87171 !important;
+                opacity: 1 !important;
+                font-size: 8px;
+                letter-spacing: 0.14em;
+                white-space: nowrap;
+            }
+            #historySection .row-header { align-items: center !important; }
+
+            /* Pengecilan Menu Navigasi Bawah (Mobile Nav) */
+            #mobileNav {
+                padding: 8px 12px !important;
+            }
+            #mobileNav button {
+                font-size: 12px !important;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 2px;
+            }
         }
-            
     </style>
 </head>
 
@@ -789,47 +620,46 @@
     <div class="overlay"></div>
 
     <div class="fixed top-6 w-full z-[100] flex justify-center px-4">
-    <header id="mainHeader" class="header-capsule flex items-center gap-6 md:gap-10">
-        
-        <div class="flex items-center gap-3 cursor-pointer group" onclick="goHome()">
-            <div class="logo-box-premium group-hover:scale-110 transition-transform">
-                <span class="logo-n-text">N</span>
-                <div class="logo-play-overlay"></div>
+        <header id="mainHeader" class="header-capsule flex items-center gap-4 md:gap-10 w-full max-w-5xl justify-between md:justify-center">
+            
+            <div class="flex items-center gap-3 cursor-pointer group" onclick="goHome()">
+                <div class="logo-box-premium group-hover:scale-110 transition-transform">
+                    <span class="logo-n-text">N</span>
+                    <div class="logo-play-overlay"></div>
+                </div>
+                <h1 class="text-xl font-black tracking-tighter uppercase hidden sm:block">
+                    NOBAR<span class="text-blue-500">GASI</span>
+                </h1>
             </div>
-            <h1 class="text-xl font-black tracking-tighter uppercase hidden sm:block">
-                NOBAR<span class="text-blue-500">GASI</span>
-            </h1>
-        </div>
-
-     
 
             <nav class="hidden lg:flex items-center gap-8 text-[11px] font-bold uppercase tracking-[0.2em] text-white/40">
-                <button onclick="location.reload()" class="p-2 text-xl">🔄RELOAD</button>
+                <button onclick="location.reload()" class="hover:text-white transition">🔄 Reload</button>
                 <button onclick="goHome()" class="hover:text-white transition">Home</button>
                 <button onclick="loadCategory('movie/popular', 'Movies')" class="hover:text-white transition">Movies</button>
                 <button onclick="loadCategory('tv/popular', 'Series')" class="hover:text-white transition">Series</button>
-                <button onclick="showMyList()" class="hover:text-white transition text-pink-500 hover:text-pink-400 transition font-black animate-pulse">❤️ My List</button>
+                <button onclick="showMyList()" class="hover:text-white transition text-pink-500 font-black animate-pulse">❤️ My List</button>
             </nav>
 
-            <div class="relative flex items-center gap-4 border-l border-white/10 pl-6">
+            <div class="relative flex items-center gap-4 sm:border-l sm:border-white/10 sm:pl-6">
                 <input
                     type="text"
                     id="searchInput"
                     placeholder="Search..."
                     autocomplete="off"
-                    class="bg-transparent text-xs font-bold focus:outline-none w-24 focus:w-48 transition-all text-white placeholder-white/40"
+                    class="bg-transparent text-xs font-bold focus:outline-none w-20 sm:w-24 focus:w-36 md:focus:w-48 transition-all text-white placeholder-white/40"
                 >
-               <div id="searchSuggestions" class="hidden absolute top-full mt-5 right-0 z-[999] w-[340px] bg-[#111115] rounded-[30px] max-h-96 overflow-y-auto no-scrollbar p-3 border border-white/10 shadow-2xl"></div>
+               <div id="searchSuggestions" class="hidden absolute top-full mt-5 right-0 z-[999] w-[300px] md:w-[340px] bg-[#111115] rounded-[30px] max-h-96 overflow-y-auto no-scrollbar p-3 border border-white/10 shadow-2xl"></div>
             </div>
+
         </header>
     </div>
 
-    <nav id="mobileNav" class="md:hidden fixed bottom-4 left-4 right-4 z-[100] bg-[#111115]/90 backdrop-blur-xl rounded-full flex justify-around items-center px-4 py-3 shadow-2xl border border-white/10">
-        <button onclick="location.reload()" class="p-2 text-xl">🔄Reload</button>
-        <button onclick="goHome()" class="text-xl">🏠Home</button>
-        <button onclick="loadCategory('movie/popular', 'Movies')" class="text-xl">🎬Film</button>
-        <button onclick="loadCategory('tv/popular', 'Series')" class="text-xl">📺Series</button>
-        <button onclick="showMyList()" class="text-xl">❤️List</button>
+    <nav id="mobileNav" class="md:hidden fixed bottom-4 left-4 right-4 z-[100] bg-[#111115]/90 backdrop-blur-xl rounded-full flex justify-around items-center px-4 py-2 shadow-2xl border border-white/10 text-xs">
+        <button onclick="location.reload()" class="py-1 opacity-70 hover:opacity-100"><span>🔄</span><span>Reload</span></button>
+        <button onclick="goHome()" class="py-1 opacity-70 hover:opacity-100"><span>🏠</span><span>Home</span></button>
+        <button onclick="loadCategory('movie/popular', 'Movies')" class="py-1 opacity-70 hover:opacity-100"><span>🎬</span><span>Film</span></button>
+        <button onclick="loadCategory('tv/popular', 'Series')" class="py-1 opacity-70 hover:opacity-100"><span>📺</span><span>Series</span></button>
+        <button onclick="showMyList()" class="py-1 text-pink-500 font-bold"><span>❤️</span><span>List</span></button>
     </nav>
 
     <main id="mainContainer" class="max-w-[1550px] mx-auto pt-24 px-4 md:px-10 space-y-24 fade-in">
@@ -879,40 +709,29 @@
 
                         <p class="text-sm text-white/60 leading-relaxed max-w-3xl">
                             Gunakan DNS <b class="text-white">dns.adguard.com</b> atau browser <b class="text-white">Brave</b>
-                            supaya iklan/popup dari server video bisa lebih sedikit. Pengaturan DNS dilakukan di perangkat atau browser masing-masing, atau masuk ke telegram buat donwload apk nya udah di uji, tidak ada iklan : https://t.me/nobargasii .
+                            supaya iklan/popup dari server video bisa lebih sedikit. Pengaturan DNS dilakukan di perangkat atau browser masing-masing, atau masuk ke telegram buat download apk nya udah di uji, tidak ada iklan : https://t.me/nobargasii .
                         </p>
-                    <div class="inline-flex items-center gap-2 rounded-full bg-green-500/10 border border-green-500/20 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-green-300">
-                <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
-                <span id="liveVisitorCount">...</span>
-                <span>Online</span>
-            </div>
-        </div>
 
-                   <div class="flex flex-col sm:flex-row gap-3">
-    <button
-        type="button"
-        onclick="openTelegramOfficial()"
-        class="adguard-copy-btn rounded-full bg-blue-500 px-6 py-3 text-[10px] font-black uppercase tracking-widest text-white hover:bg-white hover:text-black transition text-center"
-    >
-        Grup Official Telegram
-    </button>
+                        <div class="inline-flex items-center gap-2 rounded-full bg-green-500/10 border border-green-500/20 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-green-300">
+                            <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
+                            <span id="liveVisitorCount">...</span>
+                            <span>Online</span>
+                        </div>
+                    </div>
 
-    <button
-        type="button"
-        onclick="copyAdguardDns()"
-        class="adguard-copy-btn rounded-full bg-white px-6 py-3 text-[10px] font-black uppercase tracking-widest text-black hover:bg-blue-400 hover:text-white transition"
-    >
-        Copy DNS
-    </button>
+                    <div class="flex flex-col sm:flex-row gap-3">
+                        <button type="button" onclick="openTelegramOfficial()" class="adguard-copy-btn rounded-full bg-blue-500 px-6 py-3 text-[10px] font-black uppercase tracking-widest text-white hover:bg-white hover:text-black transition text-center">
+                            Grup Official Telegram
+                        </button>
 
-    <button
-        type="button"
-        onclick="closeAdguardNotice()"
-        class="adguard-close-btn rounded-full bg-white/10 px-6 py-3 text-[10px] font-black uppercase tracking-widest text-white border border-white/10 hover:bg-white hover:text-black transition"
-    >
-        Tutup
-    </button>
-</div>
+                        <button type="button" onclick="copyAdguardDns()" class="adguard-copy-btn rounded-full bg-white px-6 py-3 text-[10px] font-black uppercase tracking-widest text-black hover:bg-blue-400 hover:text-white transition">
+                            Copy DNS
+                        </button>
+
+                        <button type="button" onclick="closeAdguardNotice()" class="adguard-close-btn rounded-full bg-white/10 px-6 py-3 text-[10px] font-black uppercase tracking-widest text-white border border-white/10 hover:bg-white hover:text-black transition">
+                            Tutup
+                        </button>
+                    </div>
                 </div>
             </section>
 
@@ -927,164 +746,85 @@
                         </h2>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-6 gap-3">
-    <select id="filterType" class="filter-select">
-        <option value="movie">Movie</option>
-        <option value="tv">Series</option>
-    </select>
+                    <div class="grid grid-cols-2 md:grid-cols-6 gap-2 md:gap-3">
+                        <select id="filterType" class="filter-select">
+                            <option value="movie">Movie</option>
+                            <option value="tv">Series</option>
+                        </select>
 
-    <select id="filterGenre" class="filter-select">
-        <option value="">Semua Genre</option>
-        <option data-movie="28" data-tv="10759">Action</option>
-        <option data-movie="12" data-tv="10759">Adventure</option>
-        <option data-movie="16" data-tv="16">Animation</option>
-        <option data-movie="35" data-tv="35">Comedy</option>
-        <option data-movie="80" data-tv="80">Crime</option>
-        <option data-movie="99" data-tv="99">Documentary</option>
-        <option data-movie="18" data-tv="18">Drama</option>
-        <option data-movie="10751" data-tv="10751">Family</option>
-        <option data-movie="14" data-tv="10765">Fantasy</option>
-        <option data-movie="27" data-tv="">Horror</option>
-        <option data-movie="9648" data-tv="9648">Mystery</option>
-        <option data-movie="10749" data-tv="">Romance</option>
-        <option data-movie="878" data-tv="10765">Sci-Fi</option>
-        <option data-movie="53" data-tv="">Thriller</option>
-        <option data-movie="10752" data-tv="10768">War</option>
-    </select>
+                        <select id="filterGenre" class="filter-select">
+                            <option value="">Semua Genre</option>
+                            <option data-movie="28" data-tv="10759">Action</option>
+                            <option data-movie="12" data-tv="10759">Adventure</option>
+                            <option data-movie="16" data-tv="16">Animation</option>
+                            <option data-movie="35" data-tv="35">Comedy</option>
+                            <option data-movie="80" data-tv="80">Crime</option>
+                            <option data-movie="99" data-tv="99">Documentary</option>
+                            <option data-movie="18" data-tv="18">Drama</option>
+                            <option data-movie="10751" data-tv="10751">Family</option>
+                            <option data-movie="14" data-tv="10765">Fantasy</option>
+                            <option data-movie="27" data-tv="">Horror</option>
+                            <option data-movie="9648" data-tv="9648">Mystery</option>
+                            <option data-movie="10749" data-tv="">Romance</option>
+                            <option data-movie="878" data-tv="10765">Sci-Fi</option>
+                            <option data-movie="53" data-tv="">Thriller</option>
+                            <option data-movie="10752" data-tv="10768">War</option>
+                        </select>
 
-    <select id="filterYear" class="filter-select">
-        <option value="">Semua Tahun</option>
-    </select>
+                        <select id="filterYear" class="filter-select">
+                            <option value="">Semua Tahun</option>
+                        </select>
 
-    <select id="filterLanguage" class="filter-select">
-        <option value="">Semua Bahasa</option>
-        <option value="id">Indonesia</option>
-        <option value="en">English</option>
-        <option value="ko">Korea</option>
-        <option value="ja">Jepang</option>
-        <option value="zh">China</option>
-        <option value="hi">Hindi</option>
-        <option value="th">Thailand</option>
-        <option value="es">Spanyol</option>
-        <option value="fr">Prancis</option>
-        <option value="de">Jerman</option>
-    </select>
+                        <select id="filterLanguage" class="filter-select">
+                            <option value="">Semua Bahasa</option>
+                            <option value="id">Indonesia</option>
+                            <option value="en">English</option>
+                            <option value="ko">Korea</option>
+                            <option value="ja">Jepang</option>
+                            <option value="zh">China</option>
+                            <option value="hi">Hindi</option>
+                            <option value="th">Thailand</option>
+                            <option value="es">Spanyol</option>
+                            <option value="fr">Prancis</option>
+                            <option value="de">Jerman</option>
+                        </select>
 
-    <select id="filterCountry" class="filter-select">
-    <option value="">Semua Negara</option>
+                        <select id="filterCountry" class="filter-select col-span-2 md:col-span-1">
+                            <option value="">Semua Negara</option>
+                            <option value="ID">Indonesia</option>
+                            <option value="US">Amerika Serikat</option>
+                            <option value="KR">Korea Selatan</option>
+                            <option value="JP">Jepang</option>
+                            <option value="CN">China</option>
+                            <option value="IN">India</option>
+                            <option value="TH">Thailand</option>
+                            <option value="GB">Inggris / UK</option>
+                            <option value="FR">Prancis</option>
+                            <option value="DE">Jerman</option>
+                            <option value="ES">Spanyol</option>
+                            <option value="IT">Italia</option>
+                            <option value="PH">Filipina</option>
+                            <option value="MY">Malaysia</option>
+                            <option value="SG">Singapura</option>
+                            <option value="TW">Taiwan</option>
+                            <option value="HK">Hong Kong</option>
+                            <option value="TR">Turki</option>
+                            <option value="BR">Brasil</option>
+                            <option value="MX">Meksiko</option>
+                            <option value="CA">Kanada</option>
+                            <option value="AU">Australia</option>
+                        </select>
 
-    <option value="ID">Indonesia</option>
-    <option value="US">Amerika Serikat</option>
-    <option value="KR">Korea Selatan</option>
-    <option value="JP">Jepang</option>
-    <option value="CN">China</option>
-    <option value="IN">India</option>
-    <option value="TH">Thailand</option>
-    <option value="GB">Inggris / United Kingdom</option>
-    <option value="FR">Prancis</option>
-    <option value="DE">Jerman</option>
-    <option value="ES">Spanyol</option>
-    <option value="IT">Italia</option>
-    <option value="PH">Filipina</option>
-    <option value="MY">Malaysia</option>
-    <option value="SG">Singapura</option>
-    <option value="TW">Taiwan</option>
-    <option value="HK">Hong Kong</option>
-    <option value="TR">Turki</option>
-    <option value="BR">Brasil</option>
-    <option value="MX">Meksiko</option>
-    <option value="CA">Kanada</option>
-    <option value="AU">Australia</option>
-
-    <option value="AF">Afghanistan</option>
-    <option value="AL">Albania</option>
-    <option value="DZ">Aljazair</option>
-    <option value="AR">Argentina</option>
-    <option value="AM">Armenia</option>
-    <option value="AT">Austria</option>
-    <option value="AZ">Azerbaijan</option>
-    <option value="BD">Bangladesh</option>
-    <option value="BE">Belgia</option>
-    <option value="BO">Bolivia</option>
-    <option value="BA">Bosnia dan Herzegovina</option>
-    <option value="BG">Bulgaria</option>
-    <option value="KH">Kamboja</option>
-    <option value="CL">Chile</option>
-    <option value="CO">Kolombia</option>
-    <option value="CR">Kosta Rika</option>
-    <option value="HR">Kroasia</option>
-    <option value="CU">Kuba</option>
-    <option value="CZ">Ceko</option>
-    <option value="DK">Denmark</option>
-    <option value="DO">Republik Dominika</option>
-    <option value="EC">Ekuador</option>
-    <option value="EG">Mesir</option>
-    <option value="EE">Estonia</option>
-    <option value="FI">Finlandia</option>
-    <option value="GE">Georgia</option>
-    <option value="GH">Ghana</option>
-    <option value="GR">Yunani</option>
-    <option value="GT">Guatemala</option>
-    <option value="HU">Hungaria</option>
-    <option value="IS">Islandia</option>
-    <option value="IR">Iran</option>
-    <option value="IQ">Irak</option>
-    <option value="IE">Irlandia</option>
-    <option value="IL">Israel</option>
-    <option value="JO">Yordania</option>
-    <option value="KZ">Kazakhstan</option>
-    <option value="KE">Kenya</option>
-    <option value="KW">Kuwait</option>
-    <option value="LV">Latvia</option>
-    <option value="LB">Lebanon</option>
-    <option value="LT">Lituania</option>
-    <option value="LU">Luksemburg</option>
-    <option value="MT">Malta</option>
-    <option value="MA">Maroko</option>
-    <option value="NP">Nepal</option>
-    <option value="NL">Belanda</option>
-    <option value="NZ">Selandia Baru</option>
-    <option value="NG">Nigeria</option>
-    <option value="NO">Norwegia</option>
-    <option value="PK">Pakistan</option>
-    <option value="PS">Palestina</option>
-    <option value="PA">Panama</option>
-    <option value="PY">Paraguay</option>
-    <option value="PE">Peru</option>
-    <option value="PL">Polandia</option>
-    <option value="PT">Portugal</option>
-    <option value="QA">Qatar</option>
-    <option value="RO">Rumania</option>
-    <option value="RU">Rusia</option>
-    <option value="SA">Arab Saudi</option>
-    <option value="RS">Serbia</option>
-    <option value="SK">Slovakia</option>
-    <option value="SI">Slovenia</option>
-    <option value="ZA">Afrika Selatan</option>
-    <option value="LK">Sri Lanka</option>
-    <option value="SE">Swedia</option>
-    <option value="CH">Swiss</option>
-    <option value="SY">Suriah</option>
-    <option value="TZ">Tanzania</option>
-    <option value="TN">Tunisia</option>
-    <option value="UA">Ukraina</option>
-    <option value="AE">Uni Emirat Arab</option>
-    <option value="UY">Uruguay</option>
-    <option value="UZ">Uzbekistan</option>
-    <option value="VE">Venezuela</option>
-    <option value="VN">Vietnam</option>
-</select>
-
-    <div class="flex gap-3">
-        <button onclick="applyFilter()" class="filter-action-btn flex-1 rounded-full bg-white px-6 py-3 text-[10px] font-black uppercase tracking-widest text-black hover:bg-blue-400 hover:text-white transition">
-            Terapkan
-        </button>
-
-        <button onclick="resetFilter()" class="filter-action-btn rounded-full bg-white/10 px-6 py-3 text-[10px] font-black uppercase tracking-widest text-white border border-white/10 hover:bg-white hover:text-black transition">
-            Reset
-        </button>
-    </div>
-</div>
+                        <div class="flex gap-2 col-span-2 md:col-span-1">
+                            <button onclick="applyFilter()" class="filter-action-btn flex-1 rounded-full bg-white px-4 py-2 text-[10px] font-black uppercase tracking-widest text-black hover:bg-blue-400 hover:text-white transition">
+                                Filter
+                            </button>
+                            <button onclick="resetFilter()" class="filter-action-btn rounded-full bg-white/10 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-white border border-white/10 hover:bg-white hover:text-black transition">
+                                X
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </section>
 
             <section>
@@ -1197,7 +937,6 @@
         </footer>
     </main>
 
-    <!-- DETAIL MODAL -->
     <div id="detailModal" class="hidden fixed inset-0 z-[450] bg-black/85 overflow-y-auto no-scrollbar">
         <div id="detailBackdrop"></div>
         <div class="detail-gradient"></div>
@@ -1251,7 +990,6 @@
         </div>
     </div>
 
-    <!-- TRAILER MODAL -->
     <div id="trailerModal" class="hidden fixed inset-0 z-[800] bg-black/90 items-center justify-center px-4">
         <button onclick="closeTrailerModal()" class="fixed top-6 right-6 md:top-8 md:right-8 z-[820] text-white/50 hover:text-red-500 text-3xl transition font-black">
             ✕
@@ -1269,7 +1007,6 @@
         </div>
     </div>
 
-    <!-- PLAYER -->
     <div id="playerContainer" class="hidden fixed inset-0 z-[500] flex items-center justify-center bg-black/95 transition-all">
         <button
             id="playerCloseBtn"
