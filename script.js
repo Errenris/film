@@ -588,17 +588,20 @@ function changeServer(s) {
     f.setAttribute('mozallowfullscreen', '');
     f.removeAttribute('referrerpolicy');
 
+    // SERVER 1: VAPlayer (Tetap bawaan aslimu)
     if (s === 'VidSrc') {
         if (currentPlayType === 'tv') {
             url = `https://vaplayer.ru/embed/tv/${currentPlayId}/${currentSeason}/${currentEpisode}?lang=id&ds_lang=id`;
         } else {
             url = `https://vaplayer.ru/embed/movie/${currentPlayId}?lang=id&ds_lang=id`;
         }
-    } else {
-        url = `https://player.autoembed.app/embed/${currentPlayType}/${currentPlayId}`;
-
+    } 
+    // SERVER 2: Embed.su (Database Super Lengkap & HD)
+    else {
         if (currentPlayType === 'tv') {
-            url += `/${currentSeason}/${currentEpisode}`;
+            url = `https://embed.su/embed/tv/${currentPlayId}/${currentSeason}/${currentEpisode}`;
+        } else {
+            url = `https://embed.su/embed/movie/${currentPlayId}`;
         }
     }
 
@@ -613,6 +616,94 @@ function changeServer(s) {
     if (active) {
         active.className = "server-btn px-8 py-3 rounded-full text-[10px] font-black uppercase bg-white text-black shadow-xl transition active:scale-95";
     }
+}
+
+async function playMovie(id, title, type, backdrop, poster, season = 1, episode = 1) {
+    currentPlayId = id;
+    currentPlayType = type;
+    currentSeason = Number(season) || 1;
+    currentEpisode = Number(episode) || 1;
+    currentTvDetails = null;
+
+    currentPlayTitle = title;
+    currentPlayBackdrop = backdrop || '';
+    currentPlayPoster = poster || '';
+
+    const player = document.getElementById('playerContainer');
+    const playingTitle = document.getElementById('playingTitle');
+    const playerOverview = document.getElementById('playerOverview');
+    const playerRating = document.getElementById('playerRating');
+    const playerRuntime = document.getElementById('playerRuntime');
+    const playerYear = document.getElementById('playerYear');
+    const playerControls = document.getElementById('playerControls');
+
+    if (!player) return;
+
+    if (playingTitle) playingTitle.innerText = title;
+    if (playerOverview) playerOverview.innerText = "Memuat sinopsis...";
+    if (playerRating) playerRating.innerText = "⭐ ...";
+    if (playerRuntime) playerRuntime.innerText = "...";
+    if (playerYear) playerYear.innerText = "....";
+
+    if (playerControls) {
+        // Label tombol Server 2 diubah biar mencerminkan keunggulannya
+        playerControls.innerHTML = `
+            <button id="btn-VidSrc" onclick="changeServer('VidSrc')" class="server-btn px-8 py-3 rounded-full text-[10px] font-black uppercase bg-white text-black shadow-xl">
+                Server 1
+            </button>
+
+            <button id="btn-AutoEmbed" onclick="changeServer('AutoEmbed')" class="server-btn px-8 py-3 rounded-full text-[10px] font-black uppercase border border-white/10 opacity-40">
+                Server 2 (Lengkap)
+            </button>
+
+            <button onclick="shareMovie('${title.replace(/'/g, "\\'")}')" class="px-8 py-3 rounded-full text-[10px] font-black uppercase bg-white/5 border border-white/10 hover:bg-white hover:text-black transition">
+                Share
+            </button>
+        `;
+    }
+
+    clearInterval(carouselTimer);
+
+    player.classList.remove('hidden');
+    document.body.classList.add('player-open');
+    document.body.style.overflow = 'hidden';
+
+    changeServer('VidSrc');
+
+    if (backdrop && backdrop !== 'null') {
+        updateAmbient(backdrop);
+    }
+
+    try {
+        const res = await fetch(`/api/movies?path=${type}/${id}`);
+        const m = await res.json();
+
+        if (type === 'tv') {
+            renderEpisodeControls(m);
+        }
+
+        if (playerOverview) {
+            playerOverview.innerText = m.overview || 'Sinopsis tidak tersedia untuk film ini.';
+        }
+
+        if (playerRating) {
+            playerRating.innerText = `⭐ ${m.vote_average ? m.vote_average.toFixed(1) : 'N/A'}`;
+        }
+
+        if (playerYear) {
+            playerYear.innerText = (m.release_date || m.first_air_date || '2024').split('-')[0];
+        }
+
+        if (playerRuntime) {
+            playerRuntime.innerText = m.runtime
+                ? `${m.runtime}m`
+                : (m.episode_run_time?.length ? `${m.episode_run_time[0]}m` : 'TV Series');
+        }
+
+        saveToHistory(id, type, backdrop || m.backdrop_path, poster || m.poster_path, title);
+    } catch (e) {}
+
+    fetchDetails(id, type);
 }
 
 function renderEpisodeControls(tvDetails) {
