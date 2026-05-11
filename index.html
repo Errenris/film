@@ -611,6 +611,37 @@
                 gap: 2px;
             }
         }
+
+/* ===================================================== */
+        /* PENGATURAN KHUSUS GOOGLE TV / ANDROID TV (REMOTE FOCUS) */
+        /* ===================================================== */
+        body.tv-active #mobileNav {
+            display: none !important; /* Sembunyikan menu bawah HP di layar TV */
+        }
+
+        /* Hilangkan garis biru bawaan browser TV */
+        body.tv-active *:focus {
+            outline: none !important;
+        }
+
+        /* Efek nyala/highlight saat poster, tombol, atau aktor disorot panah remote */
+        body.tv-active .poster-container:focus,
+        body.tv-active .actor-circle:focus,
+        body.tv-active button:focus,
+        body.tv-active select:focus,
+        body.tv-active input:focus {
+            border: 4px solid #ef4444 !important;
+            transform: scale(1.1) !important;
+            box-shadow: 0 0 30px rgba(239, 68, 68, 1) !important;
+            z-index: 500;
+        }
+
+        /* Highlight khusus untuk hasil pencarian saat disorot remote */
+        body.tv-active .suggestion-item:focus {
+            background: rgba(59, 130, 246, 0.3) !important;
+            border-left: 4px solid #ef4444;
+        }
+        
     </style>
 </head>
 
@@ -1065,5 +1096,27 @@
     </div>
 
     <script src="script.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/spatial-navigation-js@1.0.3/spatial_navigation.min.js"></script>
+    <script>
+        window.addEventListener('load', function() {
+            // Cek otomatis apakah web diakses dengan parameter ?mode=tv atau dari perangkat TV
+            const urlParams = new URLSearchParams(window.location.search);
+            const isTvMode = urlParams.get('mode') === 'tv' || navigator.userAgent.toLowerCase().includes('tv');
+
+            if (isTvMode) {
+                console.log("MODE GOOGLE TV AKTIF: Mengaktifkan navigasi remote D-Pad...");
+                document.body.classList.add('tv-active');
+
+                // Inisialisasi auto-fokus kursor remote TV
+                SpatialNavigation.init();
+                SpatialNavigation.add({
+                    selector: '[tabindex="0"], button, input, select, .poster-container, .actor-circle, .suggestion-item'
+                });
+                SpatialNavigation.makeFocusable();
+                SpatialNavigation.focus(); // Fokuskan otomatis ke elemen pertama saat web tayang
+            }
+        });
+    </script>
+    
 </body>
 </html>
