@@ -644,96 +644,144 @@
         
     </style>
 
-<style id="clean-premium-upgrade">
+<style id="ultimate-streaming-upgrade">
 
 body{
     background:
-      radial-gradient(circle at top, rgba(59,130,246,.08), transparent 35%),
+      radial-gradient(circle at top, rgba(59,130,246,.08), transparent 30%),
       #050505 !important;
     color:white;
 }
 
-.header-capsule{
-    background: rgba(15,15,20,.72) !important;
-    backdrop-filter: blur(18px);
-    border: 1px solid rgba(255,255,255,.06);
-    box-shadow: 0 8px 30px rgba(0,0,0,.35);
-}
-
 .movie-card{
-    transition:
-      transform .35s ease,
-      filter .35s ease !important;
+    transition:all .35s ease !important;
 }
 
 .movie-card:hover{
-    transform: translateY(-8px) scale(1.02);
-    z-index: 50;
+    transform:translateY(-8px) scale(1.02);
+    z-index:20;
 }
 
 .poster-container{
-    border-radius: 24px !important;
+    border-radius:24px !important;
     overflow:hidden;
-    border:1px solid rgba(255,255,255,.05);
+    border:1px solid rgba(255,255,255,.06);
     box-shadow:0 10px 30px rgba(0,0,0,.35);
 }
 
 .poster-container img{
-    transition: transform .5s ease;
+    transition:transform .5s ease;
 }
 
-.movie-card:hover .poster-container img{
-    transform: scale(1.05);
+.movie-card:hover img{
+    transform:scale(1.05);
 }
 
-.movie-card:hover .poster-container{
-    border-color: rgba(255,255,255,.12);
-    box-shadow:
-      0 20px 50px rgba(0,0,0,.5),
-      0 0 20px rgba(59,130,246,.12);
+.section-box{
+    margin:24px 0;
+    padding:24px;
+    border-radius:32px;
+    background:rgba(255,255,255,.03);
+    border:1px solid rgba(255,255,255,.05);
+    backdrop-filter:blur(12px);
 }
 
-.row-title{
-    letter-spacing:.18em !important;
-    font-weight:700 !important;
-    opacity:.92;
+.section-title{
+    font-size:14px;
+    font-weight:800;
+    letter-spacing:.2em;
+    margin-bottom:18px;
+    opacity:.9;
 }
 
-.row-nav-btn{
-    background: rgba(255,255,255,.06) !important;
-    backdrop-filter: blur(12px);
+.trending-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:18px;
+}
+
+.trending-card{
+    position:relative;
+    overflow:hidden;
+    border-radius:28px;
+    min-height:280px;
+    background:#111;
     border:1px solid rgba(255,255,255,.06);
-    transition:all .25s ease;
 }
 
-.row-nav-btn:hover{
-    background:white !important;
-    color:black !important;
-    transform:scale(1.06);
+.trending-card img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
 }
 
-::-webkit-scrollbar{
-    width:8px;
-}
-
-::-webkit-scrollbar-thumb{
-    background:rgba(255,255,255,.12);
-    border-radius:999px;
-}
-
-.hero-overlay-clean{
+.trending-info{
     position:absolute;
-    inset:0;
-    background:
-      linear-gradient(to top, rgba(0,0,0,.7), transparent 40%),
-      linear-gradient(to right, rgba(0,0,0,.45), transparent 55%);
-    pointer-events:none;
+    inset:auto 0 0 0;
+    padding:22px;
+    background:linear-gradient(to top, rgba(0,0,0,.92), transparent);
 }
 
-.clean-badge{
-    background:rgba(255,255,255,.06);
+.badge{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding:8px 14px;
+    border-radius:999px;
+    background:rgba(255,255,255,.08);
     border:1px solid rgba(255,255,255,.08);
-    backdrop-filter:blur(10px);
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:.14em;
+    margin-bottom:12px;
+}
+
+.upcoming-list{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+    gap:16px;
+}
+
+.upcoming-item{
+    padding:18px;
+    border-radius:24px;
+    background:rgba(255,255,255,.03);
+    border:1px solid rgba(255,255,255,.06);
+}
+
+.release-date{
+    color:#60a5fa;
+    font-size:13px;
+    margin-top:8px;
+}
+
+.live-dot{
+    width:8px;
+    height:8px;
+    border-radius:999px;
+    background:#22c55e;
+    box-shadow:0 0 12px #22c55e;
+}
+
+.countdown{
+    margin-top:12px;
+    font-size:13px;
+    opacity:.7;
+}
+
+.search-premium{
+    width:100%;
+    padding:16px 20px;
+    border-radius:22px;
+    background:rgba(255,255,255,.04);
+    border:1px solid rgba(255,255,255,.06);
+    color:white;
+    outline:none;
+    margin-bottom:22px;
+}
+
+.search-premium::placeholder{
+    color:rgba(255,255,255,.4);
 }
 
 </style>
@@ -1214,7 +1262,99 @@ body{
     </script>
     
 
-<div class="hero-overlay-clean"></div>
+<section class="section-box">
+    <div class="section-title">TRENDING TODAY</div>
+
+    <input class="search-premium" placeholder="Search movies, series, anime...">
+
+    <div class="trending-grid">
+
+        <div class="trending-card">
+            <img src="https://image.tmdb.org/t/p/w780/qJ2tW6WMUDux911r6m7haRef0WH.jpg">
+            <div class="trending-info">
+                <div class="badge">
+                    <div class="live-dot"></div>
+                    TOP TRENDING
+                </div>
+                <h2>Oppenheimer</h2>
+                <p>Now Streaming</p>
+            </div>
+        </div>
+
+        <div class="trending-card">
+            <img src="https://image.tmdb.org/t/p/w780/8rpDcsfLJypbO6vREc0547VKqEv.jpg">
+            <div class="trending-info">
+                <div class="badge">NEW EPISODE</div>
+                <h2>The Last of Us</h2>
+                <p>Episode 12 Released</p>
+            </div>
+        </div>
+
+        <div class="trending-card">
+            <img src="https://image.tmdb.org/t/p/w780/rktDFPbfHfUbArZ6OOOKsXcv0Bm.jpg">
+            <div class="trending-info">
+                <div class="badge">COMING SOON</div>
+                <h2>Deadpool & Wolverine</h2>
+                <div class="countdown">Release in 5 Days</div>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<section class="section-box">
+
+    <div class="section-title">UPCOMING RELEASES</div>
+
+    <div class="upcoming-list">
+
+        <div class="upcoming-item">
+            <div class="badge">MOVIE</div>
+            <h3>Avatar 3</h3>
+            <div class="release-date">December 2025</div>
+            <div class="countdown">Premiere Countdown Active</div>
+        </div>
+
+        <div class="upcoming-item">
+            <div class="badge">SERIES</div>
+            <h3>Wednesday Season 2</h3>
+            <div class="release-date">Coming This Year</div>
+            <div class="countdown">New teaser available</div>
+        </div>
+
+        <div class="upcoming-item">
+            <div class="badge">ANIME</div>
+            <h3>Solo Leveling</h3>
+            <div class="release-date">Episode Airing Tonight</div>
+            <div class="countdown">02:14:55 remaining</div>
+        </div>
+
+    </div>
+
+</section>
+
+<section class="section-box">
+    <div class="section-title">TOP 10 THIS WEEK</div>
+
+    <div class="upcoming-list">
+
+        <div class="upcoming-item">
+            <h1>#1</h1>
+            <h3>Dune Part Two</h3>
+        </div>
+
+        <div class="upcoming-item">
+            <h1>#2</h1>
+            <h3>The Boys</h3>
+        </div>
+
+        <div class="upcoming-item">
+            <h1>#3</h1>
+            <h3>House of The Dragon</h3>
+        </div>
+
+    </div>
+</section>
 
 </body>
 </html>
