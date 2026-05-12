@@ -12,19 +12,29 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
 
     <style>
+        
         :root {
-            --bg: #030305;
-            --accent: #3b82f6;
-            --glass: rgba(255, 255, 255, 0.03);
-            --border: rgba(255, 255, 255, 0.07);
+            --bg: #050507;
+            --bg-soft: #0f1117;
+            --accent: #60a5fa;
+            --accent-2: #8b5cf6;
+            --glass: rgba(255,255,255,0.05);
+            --border: rgba(255,255,255,0.08);
+            --shadow: 0 20px 60px rgba(0,0,0,0.45);
         }
 
         body {
-            background-color: var(--bg);
+            background:
+                radial-gradient(circle at top left, rgba(59,130,246,0.18), transparent 30%),
+                radial-gradient(circle at top right, rgba(139,92,246,0.18), transparent 30%),
+                linear-gradient(to bottom, #050507, #08090d);
+
             color: white;
             font-family: 'Outfit', sans-serif;
             overflow-x: hidden;
+            min-height: 100vh;
         }
+
 
         #ambientBg {
             position: fixed;
@@ -56,25 +66,36 @@
             border-radius: 10px;
         }
 
-        .header-capsule {
-            background: rgba(10, 10, 15, 0.7);
-            backdrop-filter: blur(30px);
-            border: 1px solid var(--border);
-            padding: 10px 24px;
-            border-radius: 100px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
-            transition: 0.4s;
-        }
+        
+.header-capsule {
+    background: rgba(12,12,18,0.72);
+    backdrop-filter: blur(30px) saturate(180%);
+    border: 1px solid rgba(255,255,255,0.08);
+    padding: 12px 26px;
+    border-radius: 999px;
+    box-shadow:
+        0 10px 30px rgba(0,0,0,0.4),
+        inset 0 1px 0 rgba(255,255,255,0.08);
 
-        .movie-card {
-            width: 140px;
-            flex-shrink: 0;
-            cursor: pointer;
-            transition: 0.5s cubic-bezier(0.2, 1, 0.3, 1);
-            position: relative;
-            will-change: transform;
-            transform: translateZ(0);
-        }
+    transition: all .35s ease;
+}
+
+.header-capsule:hover {
+    transform: translateY(-2px);
+    border-color: rgba(96,165,250,0.35);
+}
+
+
+        
+.movie-card {
+    width: 150px;
+    flex-shrink: 0;
+    cursor: pointer;
+    transition: all .45s cubic-bezier(.2,1,.3,1);
+    position: relative;
+    transform-style: preserve-3d;
+}
+
 
         @media (min-width: 768px) {
             .movie-card {
@@ -82,25 +103,58 @@
             }
         }
 
-        .movie-card:hover {
-            transform: translateY(-10px);
-            z-index: 600;
-        }
+        
+.movie-card:hover {
+    transform:
+        translateY(-12px)
+        scale(1.03);
 
-        .poster-container {
-            aspect-ratio: 2/3;
-            border-radius: 20px;
-            overflow: hidden;
-            position: relative;
-            border: 1px solid transparent;
-            transition: 0.3s;
-            background: var(--glass);
-        }
+    z-index: 500;
+}
 
-        .movie-card:hover .poster-container {
-            border-color: var(--accent);
-            box-shadow: 0 15px 45px rgba(59, 130, 246, 0.4);
-        }
+
+        
+.poster-container {
+    aspect-ratio: 2/3;
+    border-radius: 28px;
+    overflow: hidden;
+    position: relative;
+    background: rgba(255,255,255,0.03);
+
+    border: 1px solid rgba(255,255,255,0.06);
+
+    transition: all .35s ease;
+
+    box-shadow:
+        0 10px 30px rgba(0,0,0,0.35),
+        inset 0 1px 0 rgba(255,255,255,0.04);
+}
+
+.poster-container::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+
+    background:
+        linear-gradient(
+            to top,
+            rgba(0,0,0,0.8),
+            transparent 45%
+        );
+
+    z-index: 2;
+}
+
+
+        
+.movie-card:hover .poster-container {
+    border-color: rgba(96,165,250,0.4);
+
+    box-shadow:
+        0 25px 60px rgba(59,130,246,0.25),
+        0 10px 40px rgba(0,0,0,0.5);
+}
+
 
         .netflix-number {
             position: absolute;
@@ -131,14 +185,18 @@
             gap: 12px;
         }
 
-        .row-title {
-            font-size: 11px;
-            font-weight: 900;
-            letter-spacing: 0.4em;
-            text-transform: uppercase;
-            color: rgba(255,255,255,0.6);
-            margin-bottom: 0;
-        }
+        
+.row-title {
+    font-size: 12px;
+    font-weight: 900;
+    letter-spacing: .35em;
+    text-transform: uppercase;
+
+    background: linear-gradient(to right, #fff, rgba(255,255,255,0.55));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
 
         .explore-btn {
             font-size: 9px;
@@ -642,7 +700,32 @@
             border-left: 4px solid #ef4444;
         }
         
-    </style>
+    
+.poster-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform .6s ease;
+}
+
+.movie-card:hover img {
+    transform: scale(1.08);
+}
+
+.fade-up {
+    opacity: 0;
+    transform: translateY(30px);
+    animation: fadeUp .7s ease forwards;
+}
+
+@keyframes fadeUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+</style>
 </head>
 
 <body class="pb-20">
@@ -651,7 +734,59 @@
     <div class="overlay"></div>
 
     <div class="fixed top-6 w-full z-[100] flex justify-center px-4">
-        <header id="mainHeader" class="header-capsule flex items-center gap-4 md:gap-10 w-full max-w-5xl justify-between md:justify-center">
+        
+<div class="sticky top-4 z-50 px-4 md:px-10 mb-8 fade-up">
+    <div class="max-w-2xl mx-auto flex items-center gap-4 bg-white/5 border border-white/10 backdrop-blur-2xl rounded-3xl px-5 py-4 shadow-2xl">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-white/50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35m1.85-5.15a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+
+        <input
+            type="text"
+            placeholder="Search movies, genres, actors..."
+            class="bg-transparent outline-none w-full text-white placeholder:text-white/40"
+        />
+    </div>
+</div>
+
+<section class="relative px-6 md:px-12 pt-8 pb-14 overflow-hidden fade-up">
+
+    <div class="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/10 blur-3xl"></div>
+
+    <div class="relative z-10 max-w-4xl">
+
+        <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-xl mb-6">
+            <span class="w-2 h-2 rounded-full bg-blue-400"></span>
+            <span class="text-xs tracking-[0.3em] uppercase text-white/70">
+                Premium Streaming
+            </span>
+        </div>
+
+        <h1 class="text-5xl md:text-7xl font-black leading-[0.95] tracking-tight mb-6">
+            Streaming Film
+            <span class="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+                Lebih Cinematic
+            </span>
+        </h1>
+
+        <p class="text-white/60 text-lg md:text-xl max-w-2xl leading-relaxed mb-8">
+            Explore ribuan film trending dengan tampilan modern, cepat, dan immersive.
+        </p>
+
+        <div class="flex gap-4 flex-wrap">
+            <button class="px-7 py-4 rounded-2xl bg-white text-black font-bold hover:scale-105 transition">
+                ▶ Watch Now
+            </button>
+
+            <button class="px-7 py-4 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl hover:bg-white/10 transition">
+                Browse Movies
+            </button>
+        </div>
+
+    </div>
+</section>
+
+<header id="mainHeader" class="header-capsule flex items-center gap-4 md:gap-10 w-full max-w-5xl justify-between md:justify-center">
             
             <div class="flex items-center gap-3 cursor-pointer group" onclick="goHome()">
                 <div class="logo-box-premium group-hover:scale-110 transition-transform">
