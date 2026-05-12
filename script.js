@@ -1648,3 +1648,163 @@ async function surpriseMe() {
         r.poster_path || ''
     );
 }
+
+// ===============================
+// WEBVIEW BACK BUTTON FIX
+// ===============================
+
+window.addEventListener('popstate', () => {
+
+    // =========================
+    // CLOSE TRAILER MODAL
+    // =========================
+    const trailerModal = document.getElementById('trailerModal');
+
+    if (
+        trailerModal &&
+        !trailerModal.classList.contains('hidden')
+    ) {
+
+        closeTrailerModal();
+
+        history.pushState({
+            modal: 'trailer-closed'
+        }, '');
+
+        return;
+    }
+
+    // =========================
+    // CLOSE PLAYER
+    // =========================
+    if (document.body.classList.contains('player-open')) {
+
+        closePlayer();
+
+        history.pushState({
+            modal: 'player-closed'
+        }, '');
+
+        return;
+    }
+
+    // =========================
+    // CLOSE DETAIL MODAL
+    // =========================
+    const detailModal = document.getElementById('detailModal');
+
+    if (
+        detailModal &&
+        !detailModal.classList.contains('hidden')
+    ) {
+
+        closeDetailModal();
+
+        history.pushState({
+            modal: 'detail-closed'
+        }, '');
+
+        return;
+    }
+
+    // =========================
+    // CLOSE CATEGORY / GRID
+    // =========================
+    const gridSection = document.getElementById('gridSection');
+    const homeView = document.getElementById('homeView');
+    const heroSection = document.getElementById('heroSection');
+
+    if (
+        gridSection &&
+        !gridSection.classList.contains('hidden')
+    ) {
+
+        gridSection.classList.add('hidden');
+
+        homeView?.classList.remove('hidden');
+
+        heroSection?.classList.remove('hidden');
+
+        history.pushState({
+            modal: 'home'
+        }, '');
+
+        return;
+    }
+});
+
+// ===============================
+// PUSH INITIAL HISTORY
+// ===============================
+
+window.addEventListener('load', () => {
+
+    history.replaceState({
+        page: 'home'
+    }, '');
+
+});
+
+// ===============================
+// DETAIL MODAL HISTORY PATCH
+// ===============================
+
+const __originalOpenMovieDetail = openMovieDetail;
+
+openMovieDetail = async function(
+    id,
+    title,
+    type,
+    backdrop,
+    poster,
+    season = 1,
+    episode = 1
+) {
+
+    history.pushState({
+        page: 'detail',
+        id: id
+    }, '');
+
+    return await __originalOpenMovieDetail(
+        id,
+        title,
+        type,
+        backdrop,
+        poster,
+        season,
+        episode
+    );
+};
+
+// ===============================
+// PLAYER HISTORY PATCH
+// ===============================
+
+const __originalPlayMovie = playMovie;
+
+playMovie = async function(
+    id,
+    title,
+    type,
+    backdrop,
+    poster,
+    season = 1,
+    episode = 1
+) {
+
+    history.pushState({
+        page: 'player',
+        id: id
+    }, '');
+
+    return await __originalPlayMovie(
+        id,
+        title,
+        type,
+        backdrop,
+        poster,
+        season,
+        episode
+    );
+};
