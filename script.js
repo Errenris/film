@@ -675,7 +675,12 @@ async function playMovie(id, title, type, backdrop, poster, season = 1, episode 
     }
 
     clearInterval(carouselTimer);
-
+history.pushState(
+    {
+        playerOpen: true
+    },
+    ''
+);
     player.classList.remove('hidden');
     document.body.classList.add('player-open');
     document.body.style.overflow = 'hidden';
@@ -1007,6 +1012,9 @@ function closePlayer() {
 
     document.body.classList.remove('player-open');
     document.body.style.overflow = 'auto';
+    if (history.state?.playerOpen) {
+    history.back();
+}
 
     if (featuredMovies && featuredMovies.length > 0) {
         startCarousel();
@@ -1777,34 +1785,3 @@ openMovieDetail = async function(
     );
 };
 
-// ===============================
-// PLAYER HISTORY PATCH
-// ===============================
-
-const __originalPlayMovie = playMovie;
-
-playMovie = async function(
-    id,
-    title,
-    type,
-    backdrop,
-    poster,
-    season = 1,
-    episode = 1
-) {
-
-    history.pushState({
-        page: 'player',
-        id: id
-    }, '');
-
-    return await __originalPlayMovie(
-        id,
-        title,
-        type,
-        backdrop,
-        poster,
-        season,
-        episode
-    );
-};
