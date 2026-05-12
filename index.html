@@ -1104,7 +1104,61 @@ body{
                 </button>
             </div>
         </section>
+<section class="space-y-24">
 
+    <!-- UPCOMING -->
+    <section>
+        <div class="row-header">
+            <h2 class="row-title text-cyan-400">
+                Upcoming Releases 🚀
+            </h2>
+
+            <button onclick="loadCategory('movie/upcoming', 'Upcoming Movies')" class="explore-btn">
+                Lihat Semua ➔
+            </button>
+        </div>
+
+        <div id="rowUpcoming"
+            class="flex gap-6 overflow-x-auto no-scrollbar px-2">
+        </div>
+    </section>
+
+    <!-- TOP RATED -->
+    <section>
+        <div class="row-header">
+            <h2 class="row-title text-yellow-400">
+                Top 10 Minggu Ini 👑
+            </h2>
+
+            <button onclick="loadCategory('trending/all/week', 'Top Minggu Ini')" class="explore-btn">
+                Lihat Semua ➔
+            </button>
+        </div>
+
+        <div id="rowTopWeekly"
+            class="flex gap-6 overflow-x-auto no-scrollbar px-2">
+        </div>
+    </section>
+
+    <!-- LATEST EPISODE -->
+    <section>
+        <div class="row-header">
+            <h2 class="row-title text-pink-400">
+                Episode Terbaru 📺
+            </h2>
+
+            <button onclick="loadCategory('tv/on_the_air', 'Episode Terbaru')" class="explore-btn">
+                Lihat Semua ➔
+            </button>
+        </div>
+
+        <div id="rowLatestEpisode"
+            class="flex gap-6 overflow-x-auto no-scrollbar px-2">
+        </div>
+    </section>
+
+</section>
+        
         <footer class="pt-32 pb-12 text-center opacity-40">
             <img src="https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fnobargasi.vercel.app&countColor=%233b82f6&style=flat-square" class="h-4 mx-auto mb-6 opacity-70">
             <p class="text-[10px] font-black uppercase tracking-[0.6em]">NOBARGASI ENTERTAINMENT © 2026</p>
