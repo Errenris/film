@@ -1012,9 +1012,7 @@ function closePlayer() {
 
     document.body.classList.remove('player-open');
     document.body.style.overflow = 'auto';
-    if (history.state?.playerOpen) {
-    history.back();
-}
+    
 
     if (featuredMovies && featuredMovies.length > 0) {
         startCarousel();
@@ -1658,14 +1656,104 @@ async function surpriseMe() {
 }
 
 // ===============================
-// WEBVIEW BACK BUTTON FIX
+// WEBVIEW BACK FIX FINAL
+// ===============================
+
+// PUSH HOME STATE
+window.addEventListener('load', () => {
+
+    history.replaceState(
+        {
+            app: 'home'
+        },
+        ''
+    );
+
+});
+
+// ===============================
+// DETAIL HISTORY
+// ===============================
+
+const __realOpenMovieDetail = openMovieDetail;
+
+openMovieDetail = async function(
+    id,
+    title,
+    type,
+    backdrop,
+    poster,
+    season = 1,
+    episode = 1
+) {
+
+    history.pushState(
+        {
+            app: 'detail'
+        },
+        ''
+    );
+
+    return await __realOpenMovieDetail(
+        id,
+        title,
+        type,
+        backdrop,
+        poster,
+        season,
+        episode
+    );
+};
+
+// ===============================
+// PLAYER HISTORY
+// ===============================
+
+const __realPlayMovie = playMovie;
+
+playMovie = async function(
+    id,
+    title,
+    type,
+    backdrop,
+    poster,
+    season = 1,
+    episode = 1
+) {
+
+    history.pushState(
+        {
+            app: 'player'
+        },
+        ''
+    );
+
+    return await __realPlayMovie(
+        id,
+        title,
+        type,
+        backdrop,
+        poster,
+        season,
+        episode
+    );
+};
+
+// ===============================
+// BACK BUTTON HANDLER
 // ===============================
 
 window.addEventListener('popstate', () => {
 
-    // =========================
-    // CLOSE TRAILER MODAL
-    // =========================
+    // CLOSE PLAYER
+    if (document.body.classList.contains('player-open')) {
+
+        closePlayer();
+
+        return;
+    }
+
+    // CLOSE TRAILER
     const trailerModal = document.getElementById('trailerModal');
 
     if (
@@ -1675,30 +1763,10 @@ window.addEventListener('popstate', () => {
 
         closeTrailerModal();
 
-        history.pushState({
-            modal: 'trailer-closed'
-        }, '');
-
         return;
     }
 
-    // =========================
-    // CLOSE PLAYER
-    // =========================
-    if (document.body.classList.contains('player-open')) {
-
-        closePlayer();
-
-        history.pushState({
-            modal: 'player-closed'
-        }, '');
-
-        return;
-    }
-
-    // =========================
-    // CLOSE DETAIL MODAL
-    // =========================
+    // CLOSE DETAIL
     const detailModal = document.getElementById('detailModal');
 
     if (
@@ -1708,16 +1776,10 @@ window.addEventListener('popstate', () => {
 
         closeDetailModal();
 
-        history.pushState({
-            modal: 'detail-closed'
-        }, '');
-
         return;
     }
 
-    // =========================
-    // CLOSE CATEGORY / GRID
-    // =========================
+    // CLOSE GRID
     const gridSection = document.getElementById('gridSection');
     const homeView = document.getElementById('homeView');
     const heroSection = document.getElementById('heroSection');
@@ -1733,55 +1795,7 @@ window.addEventListener('popstate', () => {
 
         heroSection?.classList.remove('hidden');
 
-        history.pushState({
-            modal: 'home'
-        }, '');
-
         return;
     }
-});
-
-// ===============================
-// PUSH INITIAL HISTORY
-// ===============================
-
-window.addEventListener('load', () => {
-
-    history.replaceState({
-        page: 'home'
-    }, '');
 
 });
-
-// ===============================
-// DETAIL MODAL HISTORY PATCH
-// ===============================
-
-const __originalOpenMovieDetail = openMovieDetail;
-
-openMovieDetail = async function(
-    id,
-    title,
-    type,
-    backdrop,
-    poster,
-    season = 1,
-    episode = 1
-) {
-
-    history.pushState({
-        page: 'detail',
-        id: id
-    }, '');
-
-    return await __originalOpenMovieDetail(
-        id,
-        title,
-        type,
-        backdrop,
-        poster,
-        season,
-        episode
-    );
-};
-
