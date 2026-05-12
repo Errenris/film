@@ -101,6 +101,9 @@ function initApp() {
     fetchAndRender('discover/tv?with_original_language=ja&with_genres=16', 'rowAnime', true);
     fetchAndRender('movie/popular', 'row1');
     fetchAndRender('tv/popular', 'row2', true);
+    fetchAndRender('movie/upcoming', 'rowUpcoming');
+    fetchAndRender('trending/all/week', 'rowTopWeekly');
+    fetchAndRender('tv/on_the_air', 'rowLatestEpisode', true);
 
     renderHistory();
 }
