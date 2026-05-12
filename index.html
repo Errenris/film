@@ -1238,29 +1238,37 @@ body{
         </div>
     </div>
 
-    <script src="script.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/spatial-navigation-js@1.0.3/spatial_navigation.min.js"></script>
+       <script src="script.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/spatial-navigation-js@1.0.3/spatial_navigation.min.js"></script>
+
     <script>
         window.addEventListener('load', function() {
-            // Cek otomatis apakah web diakses dengan parameter ?mode=tv atau dari perangkat TV
+
             const urlParams = new URLSearchParams(window.location.search);
-            const isTvMode = urlParams.get('mode') === 'tv' || navigator.userAgent.toLowerCase().includes('tv');
+
+            const isTvMode =
+                urlParams.get('mode') === 'tv' ||
+                navigator.userAgent.toLowerCase().includes('tv');
 
             if (isTvMode) {
-                console.log("MODE GOOGLE TV AKTIF: Mengaktifkan navigasi remote D-Pad...");
+
+                console.log("MODE GOOGLE TV AKTIF");
+
                 document.body.classList.add('tv-active');
 
-                // Inisialisasi auto-fokus kursor remote TV
                 SpatialNavigation.init();
+
                 SpatialNavigation.add({
                     selector: '[tabindex="0"], button, input, select, .poster-container, .actor-circle, .suggestion-item'
                 });
+
                 SpatialNavigation.makeFocusable();
-                SpatialNavigation.focus(); // Fokuskan otomatis ke elemen pertama saat web tayang
+
+                SpatialNavigation.focus();
             }
         });
     </script>
-
 
 </body>
 </html>
