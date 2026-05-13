@@ -48,6 +48,28 @@ function handleKeyboardClick(e) {
     }
 }
 
+function setLoadingMessage(container, message) {
+    if (!container) return;
+
+    container.innerHTML = `
+        <div class="w-full rounded-[28px] border border-white/10 bg-white/[0.04] p-8 text-center">
+            <p class="text-xs font-black uppercase tracking-[0.28em] text-white/50">${message}</p>
+        </div>
+    `;
+}
+
+function bindPressAction(element, action) {
+    if (!element || typeof action !== 'function') return;
+
+    element.addEventListener('click', action);
+    element.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            action(e);
+        }
+    });
+}
+
 function setHomeRowsVisible(isVisible) {
     const extraRows = document.getElementById('extraHomeRows');
 
@@ -273,7 +295,7 @@ async function fetchAndRenderActors(path, id) {
 
             d.className = "flex flex-col items-center flex-shrink-0 group";
             d.innerHTML = `
-                <img src="${IMG_PATH + a.profile_path}" class="actor-circle" role="button" tabindex="0" onclick="loadActorFilms(${a.id}, '${sName}')" onkeydown="handleKeyboardClick(event)" loading="lazy">
+                <img src="${IMG_PATH + a.profile_path}" class="actor-circle" role="button" tabindex="0" aria-label="Lihat film ${sName}" onclick="loadActorFilms(${a.id}, '${sName}')" onkeydown="handleKeyboardClick(event)" loading="lazy" alt="Foto ${sName}">
                 <p class="text-[9px] text-center text-white/50 mt-4 font-black group-hover:text-white uppercase tracking-widest truncate w-20 transition">${sName}</p>
             `;
 
@@ -546,13 +568,16 @@ async function openMovieDetail(id, title, type, backdrop, poster, season = 1, ep
             const d = document.createElement('div');
 
             d.className = "flex-shrink-0 text-center w-20 opacity-70 hover:opacity-100 cursor-pointer transition hover:scale-110";
-            d.onclick = () => {
+            d.setAttribute('role', 'button');
+            d.setAttribute('tabindex', '0');
+            d.setAttribute('aria-label', `Lihat film ${sName}`);
+            bindPressAction(d, () => {
                 closeDetailModal();
                 loadActorFilms(a.id, sName);
-            };
+            });
 
             d.innerHTML = `
-                <img src="${IMG_PATH + a.profile_path}" class="actor-circle mx-auto mb-3 shadow-lg border border-white/10" alt="${sName}">
+                <img src="${IMG_PATH + a.profile_path}" class="actor-circle mx-auto mb-3 shadow-lg border border-white/10" alt="Foto ${sName}">
                 <p class="text-[8px] font-black uppercase tracking-tighter truncate w-full text-white">${sName}</p>
             `;
 
@@ -660,99 +685,6 @@ function changeServer(s) {
     if (active) {
         active.className = "server-btn px-8 py-3 rounded-full text-[10px] font-black uppercase bg-white text-black shadow-xl transition active:scale-95";
     }
-}
-
-async function playMovie(id, title, type, backdrop, poster, season = 1, episode = 1) {
-    currentPlayId = id;
-    currentPlayType = type;
-    currentSeason = Number(season) || 1;
-    currentEpisode = Number(episode) || 1;
-    currentTvDetails = null;
-
-    currentPlayTitle = title;
-    currentPlayBackdrop = backdrop || '';
-    currentPlayPoster = poster || '';
-
-    const player = document.getElementById('playerContainer');
-    const playingTitle = document.getElementById('playingTitle');
-    const playerOverview = document.getElementById('playerOverview');
-    const playerRating = document.getElementById('playerRating');
-    const playerRuntime = document.getElementById('playerRuntime');
-    const playerYear = document.getElementById('playerYear');
-    const playerControls = document.getElementById('playerControls');
-
-    if (!player) return;
-
-    if (playingTitle) playingTitle.innerText = title;
-    if (playerOverview) playerOverview.innerText = "Memuat sinopsis...";
-    if (playerRating) playerRating.innerText = "⭐ ...";
-    if (playerRuntime) playerRuntime.innerText = "...";
-    if (playerYear) playerYear.innerText = "....";
-
-    if (playerControls) {
-        // Label tombol Server 2 diubah menjadi "Server 2 (VidKing)"
-        playerControls.innerHTML = `
-            <button id="btn-VidSrc" onclick="changeServer('VidSrc')" class="server-btn px-8 py-3 rounded-full text-[10px] font-black uppercase bg-white text-black shadow-xl">
-                Server 1
-            </button>
-
-            <button id="btn-AutoEmbed" onclick="changeServer('AutoEmbed')" class="server-btn px-8 py-3 rounded-full text-[10px] font-black uppercase border border-white/10 opacity-40">
-                Server 2 (VidKing)
-            </button>
-
-            <button onclick="shareMovie('${title.replace(/'/g, "\\'")}')" class="px-8 py-3 rounded-full text-[10px] font-black uppercase bg-white/5 border border-white/10 hover:bg-white hover:text-black transition">
-                Share
-            </button>
-        `;
-    }
-
-    clearInterval(carouselTimer);
-history.pushState(
-    {
-        playerOpen: true
-    },
-    ''
-);
-    player.classList.remove('hidden');
-    document.body.classList.add('player-open');
-    document.body.style.overflow = 'hidden';
-
-    changeServer('VidSrc');
-
-    if (backdrop && backdrop !== 'null') {
-        updateAmbient(backdrop);
-    }
-
-    try {
-        const res = await fetch(`/api/movies?path=${type}/${id}`);
-        const m = await res.json();
-
-        if (type === 'tv') {
-            renderEpisodeControls(m);
-        }
-
-        if (playerOverview) {
-            playerOverview.innerText = m.overview || 'Sinopsis tidak tersedia untuk film ini.';
-        }
-
-        if (playerRating) {
-            playerRating.innerText = `⭐ ${m.vote_average ? m.vote_average.toFixed(1) : 'N/A'}`;
-        }
-
-        if (playerYear) {
-            playerYear.innerText = (m.release_date || m.first_air_date || '2024').split('-')[0];
-        }
-
-        if (playerRuntime) {
-            playerRuntime.innerText = m.runtime
-                ? `${m.runtime}m`
-                : (m.episode_run_time?.length ? `${m.episode_run_time[0]}m` : 'TV Series');
-        }
-
-        saveToHistory(id, type, backdrop || m.backdrop_path, poster || m.poster_path, title);
-    } catch (e) {}
-
-    fetchDetails(id, type);
 }
 
 function renderEpisodeControls(tvDetails) {
@@ -872,15 +804,15 @@ async function playMovie(id, title, type, backdrop, poster, season = 1, episode 
 
     if (playerControls) {
         playerControls.innerHTML = `
-            <button id="btn-VidSrc" onclick="changeServer('VidSrc')" class="server-btn px-8 py-3 rounded-full text-[10px] font-black uppercase bg-white text-black shadow-xl">
+            <button type="button" id="btn-VidSrc" onclick="changeServer('VidSrc')" class="server-btn px-8 py-3 rounded-full text-[10px] font-black uppercase bg-white text-black shadow-xl">
                 Server 1
             </button>
 
-            <button id="btn-AutoEmbed" onclick="changeServer('AutoEmbed')" class="server-btn px-8 py-3 rounded-full text-[10px] font-black uppercase border border-white/10 opacity-40">
-                Server 2
+            <button type="button" id="btn-AutoEmbed" onclick="changeServer('AutoEmbed')" class="server-btn px-8 py-3 rounded-full text-[10px] font-black uppercase border border-white/10 opacity-40">
+                Server 2 (VidKing)
             </button>
 
-            <button onclick="shareMovie('${title.replace(/'/g, "\\'")}')" class="px-8 py-3 rounded-full text-[10px] font-black uppercase bg-white/5 border border-white/10 hover:bg-white hover:text-black transition">
+            <button type="button" onclick="shareMovie('${title.replace(/'/g, "\\'")}')" class="px-8 py-3 rounded-full text-[10px] font-black uppercase bg-white/5 border border-white/10 hover:bg-white hover:text-black transition">
                 Share
             </button>
         `;
@@ -947,14 +879,16 @@ async function fetchDetails(id, type) {
             const d = document.createElement('div');
 
             d.className = "flex-shrink-0 text-center w-20 opacity-60 hover:opacity-100 cursor-pointer transition hover:scale-110";
-
-            d.onclick = () => {
+            d.setAttribute('role', 'button');
+            d.setAttribute('tabindex', '0');
+            d.setAttribute('aria-label', `Lihat film ${sName}`);
+            bindPressAction(d, () => {
                 closePlayer();
                 loadActorFilms(a.id, sName);
-            };
+            });
 
             d.innerHTML = `
-                <img src="${IMG_PATH + a.profile_path}" class="actor-circle mx-auto mb-3 shadow-lg border border-white/10" alt="${sName}">
+                <img src="${IMG_PATH + a.profile_path}" class="actor-circle mx-auto mb-3 shadow-lg border border-white/10" alt="Foto ${sName}">
                 <p class="text-[8px] font-black uppercase tracking-tighter truncate w-full text-white">${sName}</p>
             `;
 
@@ -1077,7 +1011,9 @@ async function loadCategory(path, label) {
         const data = await res.json();
 
         renderCards(data.results || [], document.getElementById('gridResults'));
-    } catch (e) {}
+    } catch (e) {
+        setLoadingMessage(gridResults, 'Gagal memuat data. Coba tekan Reload atau pilih kategori lain.');
+    }
 }
 
 async function loadMore() {
@@ -1088,7 +1024,10 @@ async function loadMore() {
         const data = await res.json();
 
         renderCards(data.results || [], document.getElementById('gridResults'), true);
-    } catch (e) {}
+    } catch (e) {
+        currentPage--;
+        alert('Gagal memuat halaman berikutnya. Coba lagi.');
+    }
 }
 
 async function loadActorFilms(actorId, actorName) {
@@ -1117,7 +1056,9 @@ async function loadActorFilms(actorId, actorName) {
         const data = await res.json();
 
         renderCards(data.results || [], document.getElementById('gridResults'));
-    } catch (e) {}
+    } catch (e) {
+        setLoadingMessage(gridResults, 'Gagal memuat film aktor ini. Coba lagi nanti.');
+    }
 }
 
 function goHome() {
@@ -1142,7 +1083,7 @@ function setupSearch() {
 
     if (!input || !suggestions) return;
 
-    input.addEventListener('keypress', (e) => {
+    input.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' && input.value.trim()) {
             hideSearchSuggestions();
             loadCategory(
@@ -1205,7 +1146,7 @@ async function loadSearchSuggestions(query) {
             item.className = 'suggestion-item w-full text-left';
 
             item.innerHTML = `
-                <img src="${IMG_PATH + m.poster_path}" class="suggestion-poster" loading="lazy">
+                <img src="${IMG_PATH + m.poster_path}" class="suggestion-poster" loading="lazy" alt="Poster ${title}">
                 <div class="min-w-0">
                     <h4 class="text-xs font-black text-white truncate uppercase">${title}</h4>
                     <p class="text-[9px] font-black tracking-widest uppercase text-blue-400">${type === 'tv' ? 'Series' : 'Movie'}</p>
@@ -1213,7 +1154,7 @@ async function loadSearchSuggestions(query) {
                 </div>
             `;
 
-            item.addEventListener('pointerdown', (e) => {
+            const openSuggestion = (e) => {
                 e.preventDefault();
                 e.stopPropagation();
 
@@ -1227,7 +1168,9 @@ async function loadSearchSuggestions(query) {
                     m.backdrop_path || '',
                     m.poster_path || ''
                 );
-            });
+            };
+
+            item.addEventListener('click', openSuggestion);
 
             suggestions.appendChild(item);
         });
@@ -1620,6 +1563,7 @@ function updateHero() {
     const heroTitle = document.getElementById('heroTitle');
     const heroDesc = document.getElementById('heroDesc');
     const heroPlayBtn = document.getElementById('heroPlayBtn');
+    const heroMeta = document.getElementById('heroMeta');
 
     if (heroContent) {
         heroContent.style.backgroundImage = `url('${BACK_PATH + m.backdrop_path}')`;
@@ -1631,6 +1575,19 @@ function updateHero() {
 
     if (heroDesc) {
         heroDesc.innerText = m.overview || '';
+    }
+
+    if (heroMeta) {
+        const year = (m.release_date || m.first_air_date || '').split('-')[0] || 'Baru';
+        const rating = m.vote_average ? m.vote_average.toFixed(1) : 'N/A';
+        const typeLabel = (m.media_type || (m.title ? 'movie' : 'tv')) === 'tv' ? 'Series' : 'Movie';
+
+        heroMeta.innerHTML = `
+            <span>⭐ ${rating}</span>
+            <span>${year}</span>
+            <span>${typeLabel}</span>
+            <span>HD</span>
+        `;
     }
 
     if (heroPlayBtn) {
