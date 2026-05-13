@@ -38,7 +38,36 @@ window.onload = () => {
 
 function safeText(str) {
     if (!str) return 'Unknown';
-    return String(str).replace(/['"\\`]/g, '');
+    return String(str).replace(/['"\\`]/g, '').replace(/[<>&]/g, '');
+}
+
+function handleKeyboardClick(e) {
+    if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        e.currentTarget.click();
+    }
+}
+
+function setHomeRowsVisible(isVisible) {
+    const extraRows = document.getElementById('extraHomeRows');
+
+    if (extraRows) {
+        extraRows.classList.toggle('hidden', !isVisible);
+    }
+}
+
+function showGridView() {
+    document.getElementById('homeView')?.classList.add('hidden');
+    document.getElementById('heroSection')?.classList.add('hidden');
+    document.getElementById('gridSection')?.classList.remove('hidden');
+    setHomeRowsVisible(false);
+}
+
+function showHomeView() {
+    document.getElementById('gridSection')?.classList.add('hidden');
+    document.getElementById('homeView')?.classList.remove('hidden');
+    document.getElementById('heroSection')?.classList.remove('hidden');
+    setHomeRowsVisible(true);
 }
 
 function updateAmbient(img) {
@@ -82,7 +111,10 @@ function initApp() {
         'rowDrakor',
         'rowAnime',
         'row1',
-        'row2'
+        'row2',
+        'rowUpcoming',
+        'rowTopWeekly',
+        'rowLatestEpisode'
     ];
 
     rows.forEach(r => renderSkeleton(r));
@@ -203,9 +235,7 @@ function toggleDetailFavorite() {
 function showMyList() {
     window.scrollTo(0, 0);
 
-    document.getElementById('homeView')?.classList.add('hidden');
-    document.getElementById('heroSection')?.classList.add('hidden');
-    document.getElementById('gridSection')?.classList.remove('hidden');
+    showGridView();
 
     const gridTitle = document.getElementById('gridTitle');
     const loadMoreBtn = document.getElementById('loadMoreBtn');
@@ -243,7 +273,7 @@ async function fetchAndRenderActors(path, id) {
 
             d.className = "flex flex-col items-center flex-shrink-0 group";
             d.innerHTML = `
-                <img src="${IMG_PATH + a.profile_path}" class="actor-circle" onclick="loadActorFilms(${a.id}, '${sName}')" loading="lazy">
+                <img src="${IMG_PATH + a.profile_path}" class="actor-circle" role="button" tabindex="0" onclick="loadActorFilms(${a.id}, '${sName}')" onkeydown="handleKeyboardClick(event)" loading="lazy">
                 <p class="text-[9px] text-center text-white/50 mt-4 font-black group-hover:text-white uppercase tracking-widest truncate w-20 transition">${sName}</p>
             `;
 
@@ -286,9 +316,10 @@ async function fetchAndRenderTrending(path, id) {
             w.innerHTML = `
                 <div class="netflix-number">${i + 1}</div>
                 <div class="movie-card">
-                    <button onclick="toggleMyList(event, '${movieStr}')" class="fav-btn" style="color: ${isFav ? '#ef4444' : 'white'}">${isFav ? '❤️' : '🤍'}</button>
-                    <div class="poster-container" onclick="openMovieDetail(${m.id}, '${sTitle}', '${type}', '${m.backdrop_path || ''}', '${m.poster_path || ''}')">
-                        <img src="${IMG_PATH + m.poster_path}" class="w-full h-full object-cover" loading="lazy">
+                    <button type="button" onclick="toggleMyList(event, '${movieStr}')" class="fav-btn" style="color: ${isFav ? '#ef4444' : 'white'}">${isFav ? '❤️' : '🤍'}</button>
+                    <div class="poster-container" role="button" tabindex="0" aria-label="Buka detail ${sTitle}" onclick="openMovieDetail(${m.id}, '${sTitle}', '${type}', '${m.backdrop_path || ''}', '${m.poster_path || ''}')" onkeydown="handleKeyboardClick(event)">
+                        <img src="${IMG_PATH + m.poster_path}" class="w-full h-full object-cover" loading="lazy" alt="Poster ${sTitle}">
+                        <div class="card-play-pill">▶ Detail</div>
                     </div>
                     <div class="mt-3 px-1 text-center">
                         <h3 class="text-[11px] font-black truncate text-white uppercase tracking-wider drop-shadow-md">${sTitle}</h3>
@@ -379,16 +410,17 @@ function renderCards(movies, container, append = false, isTV = false, isHistory 
         card.className = "movie-card";
 
         card.innerHTML = `
-            <button onclick="toggleMyList(event, '${movieStr}')" class="fav-btn" style="color: ${isFav ? '#ef4444' : 'white'}">${isFav ? '❤️' : '🤍'}</button>
+            <button type="button" onclick="toggleMyList(event, '${movieStr}')" class="fav-btn" style="color: ${isFav ? '#ef4444' : 'white'}">${isFav ? '❤️' : '🤍'}</button>
 
             ${deleteHistoryBtn}
 
-            <div class="poster-container" onclick="openMovieDetail(${m.id}, '${sTitle}', '${type}', '${m.backdrop_path || ''}', '${m.poster_path || ''}', ${seasonInfo || 1}, ${episodeInfo || 1})">
-                <img src="${IMG_PATH + m.poster_path}" class="w-full h-full object-cover" loading="lazy">
+            <div class="poster-container" role="button" tabindex="0" aria-label="Buka detail ${sTitle}" onclick="openMovieDetail(${m.id}, '${sTitle}', '${type}', '${m.backdrop_path || ''}', '${m.poster_path || ''}', ${seasonInfo || 1}, ${episodeInfo || 1})" onkeydown="handleKeyboardClick(event)">
+                <img src="${IMG_PATH + m.poster_path}" class="w-full h-full object-cover" loading="lazy" alt="Poster ${sTitle}">
 
                 <div class="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 flex items-center justify-center transition-all duration-500">
                     <div class="w-12 h-12 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white text-lg">▶</div>
                 </div>
+                <div class="card-play-pill">▶ Detail</div>
 
                 ${resumeBadge}
                 ${progHTML}
@@ -520,7 +552,7 @@ async function openMovieDetail(id, title, type, backdrop, poster, season = 1, ep
             };
 
             d.innerHTML = `
-                <img src="${IMG_PATH + a.profile_path}" class="actor-circle mx-auto mb-3 shadow-lg border border-white/10">
+                <img src="${IMG_PATH + a.profile_path}" class="actor-circle mx-auto mb-3 shadow-lg border border-white/10" alt="${sName}">
                 <p class="text-[8px] font-black uppercase tracking-tighter truncate w-full text-white">${sName}</p>
             `;
 
@@ -922,7 +954,7 @@ async function fetchDetails(id, type) {
             };
 
             d.innerHTML = `
-                <img src="${IMG_PATH + a.profile_path}" class="actor-circle mx-auto mb-3 shadow-lg border border-white/10">
+                <img src="${IMG_PATH + a.profile_path}" class="actor-circle mx-auto mb-3 shadow-lg border border-white/10" alt="${sName}">
                 <p class="text-[8px] font-black uppercase tracking-tighter truncate w-full text-white">${sName}</p>
             `;
 
@@ -1022,9 +1054,7 @@ function closePlayer() {
 async function loadCategory(path, label) {
     window.scrollTo(0, 0);
 
-    document.getElementById('homeView')?.classList.add('hidden');
-    document.getElementById('heroSection')?.classList.add('hidden');
-    document.getElementById('gridSection')?.classList.remove('hidden');
+    showGridView();
 
     const gridTitle = document.getElementById('gridTitle');
     const loadMoreBtn = document.getElementById('loadMoreBtn');
@@ -1064,9 +1094,7 @@ async function loadMore() {
 async function loadActorFilms(actorId, actorName) {
     window.scrollTo(0, 0);
 
-    document.getElementById('homeView')?.classList.add('hidden');
-    document.getElementById('heroSection')?.classList.add('hidden');
-    document.getElementById('gridSection')?.classList.remove('hidden');
+    showGridView();
 
     const gridTitle = document.getElementById('gridTitle');
     const loadMoreBtn = document.getElementById('loadMoreBtn');
@@ -1093,7 +1121,19 @@ async function loadActorFilms(actorId, actorName) {
 }
 
 function goHome() {
-    window.location.reload();
+    closeTrailerModal();
+    closeDetailModal();
+
+    if (document.body.classList.contains('player-open')) {
+        closePlayer();
+    }
+
+    showHomeView();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    if (featuredMovies && featuredMovies.length > 0) {
+        startCarousel();
+    }
 }
 
 function setupSearch() {
@@ -1438,7 +1478,7 @@ function setupDragToScroll() {
 }
 
 function setupRowButtons() {
-    const rows = document.querySelectorAll('#homeView section > .overflow-x-auto');
+    const rows = document.querySelectorAll('#homeView section > .overflow-x-auto, #extraHomeRows section > .overflow-x-auto');
 
     rows.forEach(row => {
         if (!row || !row.id) return;
@@ -1453,6 +1493,8 @@ function setupRowButtons() {
 
         row.classList.remove('cursor-grab');
         row.classList.remove('active:cursor-grabbing');
+        row.style.scrollSnapType = 'x proximity';
+        row.style.scrollPaddingLeft = '12px';
 
         const controls = document.createElement('div');
         controls.className = 'row-nav-controls';
@@ -1789,11 +1831,7 @@ window.addEventListener('popstate', () => {
         !gridSection.classList.contains('hidden')
     ) {
 
-        gridSection.classList.add('hidden');
-
-        homeView?.classList.remove('hidden');
-
-        heroSection?.classList.remove('hidden');
+        showHomeView();
 
         return;
     }
