@@ -330,7 +330,7 @@ async function sendMovieToTelegram(movieId) {
 <b>${escapeHtml(title)}</b>
 
 ⭐ ${rating}/10
-📅 ${escapeHtml(getYear(movie.release_date))}
+📅 ${escapeHtml(formatDateID(movie.release_date))}
 ⏱️ ${escapeHtml(runtime)}
 🎭 ${escapeHtml(genres || 'N/A')}
 
@@ -362,7 +362,7 @@ async function sendSeriesToTelegram(seriesId, preloadedSeries = null) {
     const lastEp = series.last_episode_to_air;
 
     const latestEpisode = lastEp
-        ? `S${lastEp.season_number} E${lastEp.episode_number} - ${lastEp.name || 'Tanpa judul'}`
+        ? `S${lastEp.season_number} E${lastEp.episode_number} - ${lastEp.name || 'Tanpa judul'} (${formatDateID(lastEp.air_date)})`
         : 'N/A';
 
     const siteUrl = buildSiteLink('tv', series.id, lastEp);
@@ -377,7 +377,7 @@ async function sendSeriesToTelegram(seriesId, preloadedSeries = null) {
 <b>${escapeHtml(title)}</b>
 
 ⭐ ${rating}/10
-📅 ${escapeHtml(getYear(series.first_air_date))}
+📅 ${escapeHtml(formatDateID(series.first_air_date))}
 🎭 ${escapeHtml(genres || 'N/A')}
 
 🆕 Episode terbaru:
@@ -543,6 +543,16 @@ function listCast(cast, limit = 5) {
 function getYear(date) {
     if (!date) return 'N/A';
     return String(date).slice(0, 4);
+}
+
+function formatDateID(date) {
+    if (!date) return 'N/A';
+
+    return new Date(date).toLocaleDateString('id-ID', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+    });
 }
 
 function formatISODate(date) {
