@@ -1,56 +1,36 @@
 const TMDB_BASE = 'https://api.themoviedb.org/3';
 const IMG_BASE = 'https://image.tmdb.org/t/p/w500';
 
-/*
-    Movie tetap per ID film.
-    Series per episode terakhir, jadi episode baru bisa terkirim otomatis.
-*/
-const MOVIE_SENT_KEY = 'nobargasi:telegram:sent:movies:v2';
-const SERIES_SENT_KEY = 'nobargasi:telegram:sent:series:v2';
+const MOVIE_SENT_KEY = 'nobargasi:telegram:sent:movies:v4';
+const SERIES_SENT_KEY = 'nobargasi:telegram:sent:series:v4';
 
-/*
-    TELEGRAM_MAX_PER_RUN:
-    Jumlah maksimal yang dikirim per kategori dalam sekali cron.
-    Contoh:
-    3 = maksimal 3 film + 3 series.
-
-    TELEGRAM_SCAN_LIMIT:
-    Jumlah item yang dipindai dari TMDB.
-    Default 20.
-    Jadi walaupun 3 teratas sudah pernah dikirim, bot tetap lanjut cari item baru.
-*/
 const MAX_PER_RUN = getMaxPerRun();
 const SCAN_LIMIT = getScanLimit();
 const SCAN_PAGES = getScanPages();
 
-const DELAY_BETWEEN_ITEMS = 3500;
-const DELAY_BETWEEN_PHOTO_AND_DETAIL = 1500;
+const DELAY_BETWEEN_ITEMS = 12000;
 
 export default async function handler(req, res) {
     try {
         const secret = process.env.CRON_SECRET;
-
         const authHeader = req.headers.authorization || '';
 
-const isVercelCron =
-    req.headers['x-vercel-cron'] === '1' ||
-    req.headers['x-vercel-cron'] === 'true';
+        const isVercelCron =
+            req.headers['x-vercel-cron'] === '1' ||
+            req.headers['x-vercel-cron'] === 'true';
 
-const isBearerAllowed =
-    secret &&
-    authHeader === `Bearer ${secret}`;
+        const isBearerAllowed =
+            secret && authHeader === `Bearer ${secret}`;
 
-const isManualAllowed =
-    secret &&
-    req.query &&
-    req.query.secret === secret;
+        const isManualAllowed =
+            secret && req.query && req.query.secret === secret;
 
-if (secret && !isManualAllowed && !isBearerAllowed && !isVercelCron) {
-    return res.status(401).json({
-        ok: false,
-        error: 'Unauthorized'
-    });
-}
+        if (secret && !isManualAllowed && !isBearerAllowed && !isVercelCron) {
+            return res.status(401).json({
+                ok: false,
+                error: 'Unauthorized'
+            });
+        }
 
         const token = process.env.TELEGRAM_BOT_TOKEN;
         const chatId = process.env.TELEGRAM_CHAT_ID;
@@ -88,34 +68,29 @@ function getTmdbKey() {
 }
 
 function getMaxPerRun() {
-    const n = Number(process.env.TELEGRAM_MAX_PER_RUN || 3);
-
-    if (!Number.isFinite(n)) return 3;
-
-    return Math.max(1, Math.min(n, 8));
+    const n = Number(process.env.TELEGRAM_MAX_PER_RUN || 15);
+    if (!Number.isFinite(n)) return 15;
+    return Math.max(1, Math.min(n, 50));
 }
 
 function getScanLimit() {
-    const n = Number(process.env.TELEGRAM_SCAN_LIMIT || 20);
-
-    if (!Number.isFinite(n)) return 20;
-
-    return Math.max(MAX_PER_RUN, Math.min(n, 50));
+    const n = Number(process.env.TELEGRAM_SCAN_LIMIT || 60);
+    if (!Number.isFinite(n)) return 60;
+    return Math.max(MAX_PER_RUN, Math.min(n, 120));
 }
 
 function getScanPages() {
-    const n = Number(process.env.TELEGRAM_SCAN_PAGES || 2);
-
-    if (!Number.isFinite(n)) return 2;
-
-    return Math.max(1, Math.min(n, 5));
+    const n = Number(process.env.TELEGRAM_SCAN_PAGES || 5);
+    if (!Number.isFinite(n)) return 5;
+    return Math.max(1, Math.min(n, 10));
 }
 
 async function checkMovies() {
     const today = formatISODate(new Date());
-    const lastMonth = formatISODate(addDays(new Date(), -35));
+    const lastMonth = formatISODate(addDays(new Date(), -45));
 
     const paths = [
+        `discover/movie?language=id-ID&region=ID&with_original_language=id&sort_by=primary_release_date.desc&primary_release_date.lte=${today}&primary_release_date.gte=${lastMonth}`,
         `movie/now_playing?language=id-ID&region=ID`,
         `movie/upcoming?language=id-ID&region=ID`,
         `discover/movie?language=id-ID&region=ID&sort_by=primary_release_date.desc&primary_release_date.lte=${today}&primary_release_date.gte=${lastMonth}`
@@ -147,15 +122,13 @@ async function checkMovies() {
 
             sent++;
 
-            if (sent >= MAX_PER_RUN) {
-                break;
+            if (sent < MAX_PER_RUN) {
+                await sleep(DELAY_BETWEEN_ITEMS);
             }
-
-            await sleep(DELAY_BETWEEN_ITEMS);
         } catch (err) {
             failed++;
             console.error('Gagal kirim movie:', movie.id, err.message);
-            await sleep(1200);
+            await sleep(3000);
         }
     }
 
@@ -171,9 +144,10 @@ async function checkMovies() {
 
 async function checkSeries() {
     const today = formatISODate(new Date());
-    const lastMonth = formatISODate(addDays(new Date(), -35));
+    const lastMonth = formatISODate(addDays(new Date(), -45));
 
     const paths = [
+        `discover/tv?language=id-ID&timezone=Asia/Jakarta&with_original_language=id&sort_by=first_air_date.desc&first_air_date.lte=${today}&first_air_date.gte=${lastMonth}`,
         `tv/airing_today?language=id-ID&timezone=Asia/Jakarta`,
         `tv/on_the_air?language=id-ID&timezone=Asia/Jakarta`,
         `discover/tv?language=id-ID&sort_by=first_air_date.desc&first_air_date.lte=${today}&first_air_date.gte=${lastMonth}`
@@ -212,15 +186,13 @@ async function checkSeries() {
 
             sent++;
 
-            if (sent >= MAX_PER_RUN) {
-                break;
+            if (sent < MAX_PER_RUN) {
+                await sleep(DELAY_BETWEEN_ITEMS);
             }
-
-            await sleep(DELAY_BETWEEN_ITEMS);
         } catch (err) {
             failed++;
             console.error('Gagal kirim series:', series.id, err.message);
-            await sleep(1200);
+            await sleep(3000);
         }
     }
 
@@ -262,15 +234,29 @@ async function collectTmdbCandidates(paths, limit) {
         }
     }
 
+    const items = Array.from(map.values())
+        .sort((a, b) => {
+            const aIsID = isIndonesiaItem(a);
+            const bIsID = isIndonesiaItem(b);
+
+            if (aIsID && !bIsID) return -1;
+            if (!aIsID && bIsID) return 1;
+
+            const da = new Date(a.release_date || a.first_air_date || 0).getTime();
+            const db = new Date(b.release_date || b.first_air_date || 0).getTime();
+
+            return db - da;
+        })
+        .slice(0, limit);
+
     return {
-        items: Array.from(map.values()).slice(0, limit),
+        items,
         errors
     };
 }
 
 async function getTmdbList(path, page = 1) {
     const tmdbKey = getTmdbKey();
-
     const separator = path.includes('?') ? '&' : '?';
     const url = `${TMDB_BASE}/${path}${separator}api_key=${tmdbKey}&page=${page}`;
 
@@ -327,96 +313,38 @@ async function sendMovieToTelegram(movieId) {
     const movieTopicId = process.env.TELEGRAM_MOVIE_TOPIC_ID;
 
     const title = movie.title || movie.original_title || 'Tanpa Judul';
-    const originalTitle = movie.original_title && movie.original_title !== title
-        ? movie.original_title
-        : '';
-
-    const year = getYear(movie.release_date);
-    const releaseDate = formatDate(movie.release_date);
     const rating = movie.vote_average ? movie.vote_average.toFixed(1) : 'N/A';
-    const voteCount = movie.vote_count ? formatNumber(movie.vote_count) : '0';
     const runtime = movie.runtime ? `${movie.runtime} menit` : 'N/A';
     const genres = listNames(movie.genres);
-    const countries = listNames(movie.production_countries);
-    const languages = listNames(movie.spoken_languages, 'english_name');
-    const studios = listNames(movie.production_companies?.slice(0, 4));
-    const cast = listCast(movie.credits?.cast);
-    const director = listCrew(movie.credits?.crew, 'Director');
-    const writers = listCrew(movie.credits?.crew, 'Writer');
-    const certification = getMovieCertification(movie.release_dates);
-    const trailer = getYoutubeTrailer(movie.videos?.results);
+    const cast = listCast(movie.credits?.cast, 5);
     const overview = movie.overview || 'Sinopsis belum tersedia.';
-    const budget = movie.budget ? `$${formatNumber(movie.budget)}` : 'N/A';
-    const revenue = movie.revenue ? `$${formatNumber(movie.revenue)}` : 'N/A';
-
-    const tmdbLink = `https://www.themoviedb.org/movie/${movie.id}`;
-    const imdbLink = movie.external_ids?.imdb_id
-        ? `https://www.imdb.com/title/${movie.external_ids.imdb_id}`
-        : '';
-
     const siteUrl = buildSiteLink('movie', movie.id);
 
-    const photoCaption = `
-🎬 <b>FILM BARU TERSEDIA</b>
+    const idBadge = isIndonesiaItem(movie)
+        ? '\n🇮🇩 Prioritas Indonesia'
+        : '';
+
+    const caption = `
+🎬 <b>FILM BARU TERSEDIA</b>${idBadge}
 
 <b>${escapeHtml(title)}</b>
-${originalTitle ? `\n<i>${escapeHtml(originalTitle)}</i>` : ''}
 
-⭐ <b>${rating}</b>/10 dari ${voteCount} vote
-📅 ${escapeHtml(year)}
-🎭 ${escapeHtml(genres || 'Genre tidak tersedia')}
-`.trim();
+⭐ ${rating}/10
+📅 ${escapeHtml(getYear(movie.release_date))}
+⏱️ ${escapeHtml(runtime)}
+🎭 ${escapeHtml(genres || 'N/A')}
 
-    const detailText = `
-🎬 <b>INFO UPDATE FILM</b>
-
-<b>${escapeHtml(title)}</b>
-${originalTitle ? `🎞️ Judul asli: <b>${escapeHtml(originalTitle)}</b>\n` : ''}
-
-<b>📌 Detail Utama</b>
-• Tahun: <b>${escapeHtml(year)}</b>
-• Tanggal rilis: <b>${escapeHtml(releaseDate)}</b>
-• Rating TMDB: <b>${rating}/10</b>
-• Jumlah vote: <b>${voteCount}</b>
-• Durasi: <b>${escapeHtml(runtime)}</b>
-• Usia rating: <b>${escapeHtml(certification || 'N/A')}</b>
-• Status: <b>${escapeHtml(movie.status || 'N/A')}</b>
-• Bahasa asli: <b>${escapeHtml((movie.original_language || 'N/A').toUpperCase())}</b>
-
-<b>🎭 Kategori</b>
-• Genre: ${escapeHtml(genres || 'N/A')}
-• Negara: ${escapeHtml(countries || 'N/A')}
-• Bahasa tersedia: ${escapeHtml(languages || 'N/A')}
-
-<b>🎥 Produksi</b>
-• Sutradara: ${escapeHtml(director || 'N/A')}
-• Penulis: ${escapeHtml(writers || 'N/A')}
-• Studio: ${escapeHtml(studios || 'N/A')}
-• Budget: ${escapeHtml(budget)}
-• Revenue: ${escapeHtml(revenue)}
-
-<b>👥 Pemeran</b>
+👥 Pemeran:
 ${escapeHtml(cast || 'N/A')}
 
-<b>📝 Sinopsis</b>
-${escapeHtml(trimText(overview, 950))}
+📝 ${escapeHtml(trimText(overview, 260))}
 
-<b>🔗 Link</b>
-• Nobargasi: ${escapeHtml(siteUrl)}
-• TMDB: ${escapeHtml(tmdbLink)}
-${imdbLink ? `• IMDb: ${escapeHtml(imdbLink)}\n` : ''}${trailer ? `• Trailer: ${escapeHtml(trailer)}` : '• Trailer: N/A'}
+🔗 ${escapeHtml(siteUrl)}
 `.trim();
 
     await sendTelegramPhoto({
         photo: `${IMG_BASE}${movie.poster_path}`,
-        caption: trimTelegramCaption(photoCaption),
-        topicId: movieTopicId
-    });
-
-    await sleep(DELAY_BETWEEN_PHOTO_AND_DETAIL);
-
-    await sendTelegramMessage({
-        text: trimTelegramMessage(detailText),
+        caption: trimTelegramCaption(caption),
         topicId: movieTopicId
     });
 }
@@ -426,116 +354,46 @@ async function sendSeriesToTelegram(seriesId, preloadedSeries = null) {
     const seriesTopicId = process.env.TELEGRAM_SERIES_TOPIC_ID;
 
     const title = series.name || series.original_name || 'Tanpa Judul';
-    const originalTitle = series.original_name && series.original_name !== title
-        ? series.original_name
-        : '';
-
-    const firstYear = getYear(series.first_air_date);
-    const firstAirDate = formatDate(series.first_air_date);
-    const lastAirDate = formatDate(series.last_air_date);
     const rating = series.vote_average ? series.vote_average.toFixed(1) : 'N/A';
-    const voteCount = series.vote_count ? formatNumber(series.vote_count) : '0';
-    const runtime = series.episode_run_time?.length
-        ? `${series.episode_run_time[0]} menit/episode`
-        : 'N/A';
-
     const genres = listNames(series.genres);
-    const countries = listNames(series.production_countries);
-    const languages = listNames(series.spoken_languages, 'english_name');
-    const networks = listNames(series.networks);
-    const studios = listNames(series.production_companies?.slice(0, 4));
-    const creators = listNames(series.created_by);
-    const cast = listCast(series.credits?.cast);
-    const trailer = getYoutubeTrailer(series.videos?.results);
+    const cast = listCast(series.credits?.cast, 5);
     const overview = series.overview || 'Sinopsis belum tersedia.';
-    const certification = getSeriesCertification(series.content_ratings);
 
     const lastEp = series.last_episode_to_air;
-    const nextEp = series.next_episode_to_air;
 
-    const lastEpisodeText = lastEp
-        ? `S${lastEp.season_number} E${lastEp.episode_number} - ${lastEp.name || 'Tanpa judul'} (${formatDate(lastEp.air_date)})`
+    const latestEpisode = lastEp
+        ? `S${lastEp.season_number} E${lastEp.episode_number} - ${lastEp.name || 'Tanpa judul'}`
         : 'N/A';
-
-    const nextEpisodeText = nextEp
-        ? `S${nextEp.season_number} E${nextEp.episode_number} - ${nextEp.name || 'Tanpa judul'} (${formatDate(nextEp.air_date)})`
-        : 'Belum ada jadwal';
-
-    const tmdbLink = `https://www.themoviedb.org/tv/${series.id}`;
-    const imdbLink = series.external_ids?.imdb_id
-        ? `https://www.imdb.com/title/${series.external_ids.imdb_id}`
-        : '';
 
     const siteUrl = buildSiteLink('tv', series.id, lastEp);
 
-    const photoCaption = `
-📺 <b>SERIES UPDATE</b>
+    const idBadge = isIndonesiaItem(series)
+        ? '\n🇮🇩 Prioritas Indonesia'
+        : '';
+
+    const caption = `
+📺 <b>SERIES UPDATE</b>${idBadge}
 
 <b>${escapeHtml(title)}</b>
-${originalTitle ? `\n<i>${escapeHtml(originalTitle)}</i>` : ''}
 
-⭐ <b>${rating}</b>/10 dari ${voteCount} vote
-📅 Mulai: ${escapeHtml(firstYear)}
-🎭 ${escapeHtml(genres || 'Genre tidak tersedia')}
-🧩 ${series.number_of_seasons || 0} Season • ${series.number_of_episodes || 0} Episode
-${lastEp ? `🆕 Terakhir: S${lastEp.season_number} E${lastEp.episode_number}` : ''}
-`.trim();
+⭐ ${rating}/10
+📅 ${escapeHtml(getYear(series.first_air_date))}
+🎭 ${escapeHtml(genres || 'N/A')}
 
-    const detailText = `
-📺 <b>INFO UPDATE SERIES</b>
+🆕 Episode terbaru:
+${escapeHtml(latestEpisode)}
 
-<b>${escapeHtml(title)}</b>
-${originalTitle ? `🎞️ Judul asli: <b>${escapeHtml(originalTitle)}</b>\n` : ''}
-
-<b>📌 Detail Utama</b>
-• Tahun mulai: <b>${escapeHtml(firstYear)}</b>
-• Tanggal tayang awal: <b>${escapeHtml(firstAirDate)}</b>
-• Tanggal tayang terakhir: <b>${escapeHtml(lastAirDate)}</b>
-• Rating TMDB: <b>${rating}/10</b>
-• Jumlah vote: <b>${voteCount}</b>
-• Durasi: <b>${escapeHtml(runtime)}</b>
-• Usia rating: <b>${escapeHtml(certification || 'N/A')}</b>
-• Status: <b>${escapeHtml(series.status || 'N/A')}</b>
-• Bahasa asli: <b>${escapeHtml((series.original_language || 'N/A').toUpperCase())}</b>
-
-<b>🧩 Episode</b>
-• Total season: <b>${series.number_of_seasons || 0}</b>
-• Total episode: <b>${series.number_of_episodes || 0}</b>
-• Episode terakhir: ${escapeHtml(lastEpisodeText)}
-• Episode berikutnya: ${escapeHtml(nextEpisodeText)}
-
-<b>🎭 Kategori</b>
-• Genre: ${escapeHtml(genres || 'N/A')}
-• Negara: ${escapeHtml(countries || 'N/A')}
-• Bahasa tersedia: ${escapeHtml(languages || 'N/A')}
-
-<b>🏢 Produksi</b>
-• Creator: ${escapeHtml(creators || 'N/A')}
-• Network: ${escapeHtml(networks || 'N/A')}
-• Studio: ${escapeHtml(studios || 'N/A')}
-
-<b>👥 Pemeran</b>
+👥 Pemeran:
 ${escapeHtml(cast || 'N/A')}
 
-<b>📝 Sinopsis</b>
-${escapeHtml(trimText(overview, 950))}
+📝 ${escapeHtml(trimText(overview, 260))}
 
-<b>🔗 Link</b>
-• Nobargasi: ${escapeHtml(siteUrl)}
-• TMDB: ${escapeHtml(tmdbLink)}
-${imdbLink ? `• IMDb: ${escapeHtml(imdbLink)}\n` : ''}${trailer ? `• Trailer: ${escapeHtml(trailer)}` : '• Trailer: N/A'}
+🔗 ${escapeHtml(siteUrl)}
 `.trim();
 
     await sendTelegramPhoto({
         photo: `${IMG_BASE}${series.poster_path}`,
-        caption: trimTelegramCaption(photoCaption),
-        topicId: seriesTopicId
-    });
-
-    await sleep(DELAY_BETWEEN_PHOTO_AND_DETAIL);
-
-    await sendTelegramMessage({
-        text: trimTelegramMessage(detailText),
+        caption: trimTelegramCaption(caption),
         topicId: seriesTopicId
     });
 }
@@ -553,21 +411,6 @@ async function sendTelegramPhoto({ photo, caption, topicId }) {
     }
 
     return sendTelegramApi('sendPhoto', payload);
-}
-
-async function sendTelegramMessage({ text, topicId }) {
-    const payload = {
-        chat_id: process.env.TELEGRAM_CHAT_ID,
-        text,
-        parse_mode: 'HTML',
-        disable_web_page_preview: false
-    };
-
-    if (topicId) {
-        payload.message_thread_id = Number(topicId);
-    }
-
-    return sendTelegramApi('sendMessage', payload);
 }
 
 async function sendTelegramApi(method, payload, attempt = 1) {
@@ -606,14 +449,16 @@ async function isAlreadySent(key, value) {
     }
 
     try {
-        const res = await fetch(`${kvUrl}/sismember/${encodeURIComponent(key)}/${encodeURIComponent(value)}`, {
-            headers: {
-                Authorization: `Bearer ${kvToken}`
+        const res = await fetch(
+            `${kvUrl}/sismember/${encodeURIComponent(key)}/${encodeURIComponent(value)}`,
+            {
+                headers: {
+                    Authorization: `Bearer ${kvToken}`
+                }
             }
-        });
+        );
 
         const data = await res.json();
-
         return data.result === 1;
     } catch (err) {
         console.error('Gagal cek KV:', err.message);
@@ -630,11 +475,14 @@ async function markAsSent(key, value) {
     }
 
     try {
-        await fetch(`${kvUrl}/sadd/${encodeURIComponent(key)}/${encodeURIComponent(value)}`, {
-            headers: {
-                Authorization: `Bearer ${kvToken}`
+        await fetch(
+            `${kvUrl}/sadd/${encodeURIComponent(key)}/${encodeURIComponent(value)}`,
+            {
+                headers: {
+                    Authorization: `Bearer ${kvToken}`
+                }
             }
-        });
+        );
 
         return true;
     } catch (err) {
@@ -661,94 +509,71 @@ function buildSiteLink(type, id, episodeData = null) {
     return `${siteUrl}/?${params.toString()}`;
 }
 
+function isIndonesiaItem(item) {
+    const countries = item.origin_country || [];
+    const productionCountries = item.production_countries || [];
+
+    return (
+        item.original_language === 'id' ||
+        countries.includes('ID') ||
+        productionCountries.some(country => country.iso_3166_1 === 'ID')
+    );
+}
+
 function listNames(items, field = 'name') {
     if (!Array.isArray(items) || items.length === 0) return '';
 
     return items
         .map(item => item?.[field])
         .filter(Boolean)
-        .slice(0, 8)
         .join(', ');
 }
 
-function listCast(cast) {
-    if (!Array.isArray(cast) || cast.length === 0) return '';
+function listCast(cast, limit = 5) {
+    if (!Array.isArray(cast) || cast.length === 0) {
+        return '';
+    }
 
     return cast
-        .slice(0, 8)
-        .map(actor => {
-            const name = actor.name || 'Unknown';
-            const character = actor.character ? ` sebagai ${actor.character}` : '';
-            return `• ${name}${character}`;
-        })
+        .slice(0, limit)
+        .map(person => `• ${person.name}`)
         .join('\n');
 }
 
-function listCrew(crew, job) {
-    if (!Array.isArray(crew) || crew.length === 0) return '';
-
-    return crew
-        .filter(person => person.job === job)
-        .map(person => person.name)
-        .filter(Boolean)
-        .slice(0, 5)
-        .join(', ');
+function getYear(date) {
+    if (!date) return 'N/A';
+    return String(date).slice(0, 4);
 }
 
-function getYoutubeTrailer(videos) {
-    if (!Array.isArray(videos) || videos.length === 0) return '';
-
-    const trailer = videos.find(v => {
-        return v.site === 'YouTube' && v.type === 'Trailer';
-    }) || videos.find(v => v.site === 'YouTube');
-
-    if (!trailer) return '';
-
-    return `https://www.youtube.com/watch?v=${trailer.key}`;
+function formatISODate(date) {
+    return date.toISOString().slice(0, 10);
 }
 
-function getMovieCertification(releaseDates) {
-    const results = releaseDates?.results || [];
-
-    const preferred =
-        results.find(r => r.iso_3166_1 === 'ID') ||
-        results.find(r => r.iso_3166_1 === 'US') ||
-        results.find(r => r.release_dates?.some(x => x.certification));
-
-    const cert = preferred?.release_dates?.find(x => x.certification)?.certification;
-
-    return cert || '';
+function addDays(date, days) {
+    const d = new Date(date);
+    d.setDate(d.getDate() + days);
+    return d;
 }
 
-function getSeriesCertification(contentRatings) {
-    const results = contentRatings?.results || [];
+function trimText(text, max = 300) {
+    if (!text) return '';
 
-    const preferred =
-        results.find(r => r.iso_3166_1 === 'ID') ||
-        results.find(r => r.iso_3166_1 === 'US') ||
-        results.find(r => r.rating);
+    const clean = String(text).trim();
 
-    return preferred?.rating || '';
+    if (clean.length <= max) return clean;
+
+    return clean.slice(0, max).trim() + '...';
 }
 
-function getYear(dateText) {
-    if (!dateText) return 'N/A';
+function trimTelegramCaption(text) {
+    if (!text) return '';
 
-    return String(dateText).split('-')[0] || 'N/A';
-}
+    const max = 1000;
+    const clean = String(text).trim();
 
-function formatDate(dateText) {
-    if (!dateText) return 'N/A';
+    if (clean.length <= max) return clean;
 
-    const parts = String(dateText).split('-');
-
-    if (parts.length !== 3) return dateText;
-
-    return `${parts[2]}/${parts[1]}/${parts[0]}`;
-}
-
-function formatNumber(num) {
-    return Number(num || 0).toLocaleString('en-US');
+    return clean.slice(0, max - 3).trim() + '...';
 }
 
 function escapeHtml(text) {
@@ -757,40 +582,6 @@ function escapeHtml(text) {
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;');
-}
-
-function trimText(text, max = 450) {
-    const clean = String(text || '').trim();
-
-    if (clean.length <= max) return clean;
-
-    return clean.slice(0, max).trim() + '...';
-}
-
-function trimTelegramCaption(text) {
-    const clean = String(text || '').trim();
-
-    if (clean.length <= 1000) return clean;
-
-    return clean.slice(0, 997).trim() + '...';
-}
-
-function trimTelegramMessage(text) {
-    const clean = String(text || '').trim();
-
-    if (clean.length <= 3900) return clean;
-
-    return clean.slice(0, 3897).trim() + '...';
-}
-
-function addDays(date, days) {
-    const copy = new Date(date);
-    copy.setDate(copy.getDate() + days);
-    return copy;
-}
-
-function formatISODate(date) {
-    return date.toISOString().split('T')[0];
 }
 
 function sleep(ms) {
