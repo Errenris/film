@@ -816,7 +816,7 @@ async function playMovie(id, title, type, backdrop, poster, season = 1, episode 
             </button>
 
             <button type="button" id="btn-AutoEmbed" onclick="changeServer('AutoEmbed')" class="server-btn px-8 py-3 rounded-full text-[10px] font-black uppercase border border-white/10 opacity-40">
-                Server 2 (VidKing)
+                Server 2
             </button>
 
             <button type="button" onclick="shareMovie('${title.replace(/'/g, "\\'")}')" class="px-8 py-3 rounded-full text-[10px] font-black uppercase bg-white/5 border border-white/10 hover:bg-white hover:text-black transition">
