@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 
     <title>NOBARGASI | Premium</title>
 
@@ -79,6 +79,10 @@
         }
 
         @media (min-width: 768px) {
+            #mobileNav {
+                display: none !important;
+            }
+
             .movie-card {
                 width: 190px;
             }
@@ -307,7 +311,8 @@
         body.player-open .overlay,
         body.player-open #mainContainer,
         body.player-open #mobileNav,
-        body.player-open #mainHeader {
+        body.player-open #mainHeader,
+        body.player-open .floating-actions {
             display: none !important;
         }
 
@@ -644,6 +649,499 @@
             border-left: 4px solid #ef4444;
         }
         
+
+        /* ===================================================== */
+        /* MODERN RESPONSIVE REFRESH */
+        /* ===================================================== */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            min-height: 100vh;
+            background:
+                radial-gradient(circle at 12% 8%, rgba(59,130,246,0.18), transparent 32rem),
+                radial-gradient(circle at 88% 18%, rgba(239,68,68,0.14), transparent 30rem),
+                linear-gradient(135deg, #020308 0%, #090b16 48%, #030305 100%);
+        }
+
+        body.comfort-mode {
+            --bg: #080b13;
+            --accent: #38bdf8;
+            --accent-2: #f97316;
+            background:
+                radial-gradient(circle at 18% 8%, rgba(56,189,248,0.18), transparent 34rem),
+                radial-gradient(circle at 88% 24%, rgba(249,115,22,0.12), transparent 32rem),
+                linear-gradient(135deg, #07101d 0%, #0d1220 52%, #070a12 100%);
+        }
+
+        .header-capsule {
+            max-width: min(1120px, calc(100vw - 24px));
+            background: linear-gradient(135deg, rgba(15,23,42,0.74), rgba(2,6,23,0.62));
+            border-color: rgba(255,255,255,0.12);
+            box-shadow: 0 24px 80px rgba(0,0,0,0.42), inset 0 1px 0 rgba(255,255,255,0.08);
+        }
+
+        .desktop-nav-btn {
+            border-radius: 999px;
+            padding: 10px 14px;
+            transition: color 0.25s ease, background 0.25s ease, transform 0.25s ease;
+        }
+
+        .desktop-nav-btn:hover,
+        .desktop-nav-btn:focus-visible {
+            background: rgba(255,255,255,0.09);
+            color: white;
+            transform: translateY(-1px);
+            outline: none;
+        }
+
+        .search-wrap {
+            background: rgba(255,255,255,0.07);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 999px;
+            padding: 8px 12px;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.06);
+        }
+
+        #searchInput {
+            min-height: 28px;
+        }
+
+        #searchSuggestions {
+            background: rgba(10,14,24,0.96) !important;
+            backdrop-filter: blur(22px);
+        }
+
+        #mobileNav {
+            display: grid;
+            grid-template-columns: repeat(5, minmax(0, 1fr));
+            gap: 4px;
+            background: rgba(9,13,24,0.92) !important;
+            box-shadow: 0 18px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08);
+        }
+
+        #mobileNav button {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
+            min-height: 48px;
+            border-radius: 999px;
+            transition: background 0.25s ease, transform 0.25s ease, opacity 0.25s ease;
+        }
+
+        #mobileNav button:active {
+            transform: scale(0.94);
+            background: rgba(255,255,255,0.1);
+        }
+
+        #heroSection,
+        .row-shell,
+        #adguardNotice,
+        #filterPanel,
+        #gridSection {
+            box-shadow: 0 30px 100px rgba(0,0,0,0.24);
+        }
+
+        #heroSection {
+            border-radius: clamp(28px, 5vw, 54px) !important;
+            isolation: isolate;
+        }
+
+        #heroSection::after {
+            content: "";
+            position: absolute;
+            inset: 1px;
+            border-radius: inherit;
+            border: 1px solid rgba(255,255,255,0.12);
+            pointer-events: none;
+            z-index: 4;
+        }
+
+        .hero-copy {
+            align-items: flex-start !important;
+            text-align: left !important;
+        }
+
+        .hero-actions-panel {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 10px;
+            width: min(100%, 560px);
+        }
+
+        .hero-stat-card {
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 22px;
+            background: rgba(255,255,255,0.07);
+            backdrop-filter: blur(18px);
+            padding: 12px 14px;
+        }
+
+        .quick-mood-panel {
+            position: relative;
+            overflow: hidden;
+            border-radius: 34px;
+            border: 1px solid rgba(255,255,255,0.1);
+            background: linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03));
+            padding: 20px;
+        }
+
+        .quick-mood-panel::before {
+            content: "";
+            position: absolute;
+            inset: -45%;
+            background: radial-gradient(circle at top left, rgba(59,130,246,0.22), transparent 42%), radial-gradient(circle at bottom right, rgba(239,68,68,0.16), transparent 36%);
+            pointer-events: none;
+        }
+
+        .quick-chip {
+            position: relative;
+            z-index: 1;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            border-radius: 999px;
+            border: 1px solid rgba(255,255,255,0.12);
+            background: rgba(255,255,255,0.07);
+            padding: 12px 16px;
+            color: white;
+            font-size: 11px;
+            font-weight: 900;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            transition: transform 0.25s ease, background 0.25s ease, border-color 0.25s ease;
+            white-space: nowrap;
+        }
+
+        .quick-chip:hover,
+        .quick-chip:focus-visible {
+            transform: translateY(-2px);
+            background: rgba(59,130,246,0.22);
+            border-color: rgba(96,165,250,0.55);
+            outline: none;
+        }
+
+        .movie-card {
+            scroll-snap-align: start;
+        }
+
+        .poster-container {
+            border-color: rgba(255,255,255,0.08);
+            box-shadow: 0 12px 38px rgba(0,0,0,0.22);
+        }
+
+        .fav-btn {
+            backdrop-filter: blur(16px);
+            box-shadow: 0 12px 28px rgba(0,0,0,0.32);
+        }
+
+        .floating-actions {
+            position: fixed;
+            right: 18px;
+            bottom: calc(env(safe-area-inset-bottom, 0px) + 92px);
+            z-index: 110;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .float-btn {
+            width: 48px;
+            height: 48px;
+            border-radius: 999px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(255,255,255,0.12);
+            background: rgba(10,14,24,0.82);
+            backdrop-filter: blur(18px);
+            box-shadow: 0 18px 44px rgba(0,0,0,0.38);
+            color: white;
+            transition: transform 0.25s ease, background 0.25s ease, opacity 0.25s ease;
+        }
+
+        .float-btn:hover,
+        .float-btn:focus-visible {
+            background: rgba(59,130,246,0.8);
+            transform: translateY(-2px) scale(1.04);
+            outline: none;
+        }
+
+        #backToTopBtn {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        #backToTopBtn.is-visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        @media (min-width: 768px) {
+            .movie-card {
+                width: clamp(172px, 13vw, 205px);
+            }
+        }
+
+        @media (max-width: 767px) {
+            body {
+                padding-bottom: calc(98px + env(safe-area-inset-bottom, 0px));
+            }
+
+            .header-capsule {
+                padding: 8px 10px;
+                border-radius: 24px;
+            }
+
+            .search-wrap {
+                flex: 1;
+                min-width: 0;
+            }
+
+            .hero-copy {
+                align-items: center !important;
+                text-align: center !important;
+            }
+
+            .hero-actions-panel {
+                display: none;
+            }
+
+            .hero-stat-card {
+                padding: 10px 12px;
+            }
+
+            .quick-mood-panel {
+                margin-inline: -4px;
+                padding: 16px;
+                border-radius: 28px;
+            }
+
+            .quick-chip {
+                padding: 11px 14px;
+                font-size: 10px;
+            }
+
+            .floating-actions {
+                right: 12px;
+                bottom: calc(env(safe-area-inset-bottom, 0px) + 86px);
+            }
+
+            .float-btn {
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+
+        /* Critical layout fallback: keeps the app usable even if utility CDN is slow. */
+        .fixed.top-6 {
+            position: fixed;
+            top: 1.5rem;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: center;
+            padding-inline: 1rem;
+        }
+
+        #mainHeader {
+            display: flex !important;
+            flex-direction: row !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            gap: 14px !important;
+            width: 100% !important;
+        }
+
+        #mainHeader > div:first-child {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 0 0 auto;
+        }
+
+        #mainHeader nav {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            flex: 1 1 auto;
+            justify-content: center;
+            min-width: 0;
+        }
+
+        #mainHeader .search-wrap {
+            flex: 0 1 280px;
+            min-width: 190px;
+        }
+
+        #mainContainer {
+            width: min(1550px, calc(100% - 2rem));
+            margin-inline: auto;
+            padding-top: 6rem;
+        }
+
+        #heroSection {
+            position: relative;
+            width: 100%;
+            height: min(82vh, 820px);
+            min-height: 520px;
+            overflow: hidden;
+        }
+
+        #heroContent,
+        #heroSection > .absolute.inset-0 {
+            position: absolute;
+            inset: 0;
+        }
+
+        #heroContent {
+            background-size: cover;
+            background-position: center;
+        }
+
+        #heroSection .hero-copy {
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            z-index: 10;
+            width: min(760px, 100%);
+            padding: clamp(2rem, 5vw, 5rem);
+        }
+
+        #homeView,
+        #extraHomeRows,
+        #gridSection {
+            margin-top: 6rem;
+        }
+
+        .row-shell,
+        #historySection,
+        #adguardNotice,
+        #filterPanel {
+            margin-bottom: 6rem;
+        }
+
+        .overflow-x-auto {
+            overflow-x: auto;
+        }
+
+        .flex {
+            display: flex;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        @media (min-width: 1024px) {
+            #mobileNav {
+                display: none !important;
+            }
+        }
+
+        @media (max-width: 1023px) {
+            #mainHeader nav {
+                display: none !important;
+            }
+
+            #mainHeader {
+                justify-content: space-between !important;
+            }
+        }
+
+        @media (max-width: 767px) {
+            #mainContainer {
+                width: min(100% - 1.5rem, 1550px);
+                padding-top: 6.5rem;
+            }
+
+            #heroSection {
+                height: min(72vh, 640px);
+                min-height: 480px;
+            }
+
+            #heroSection .hero-copy {
+                width: 100%;
+                padding: 1.5rem 1rem 2rem;
+            }
+
+            #mainHeader .search-wrap {
+                flex-basis: 170px;
+                min-width: 0;
+            }
+        }
+
+
+        @media (min-width: 1024px) {
+            #mainHeader nav.hidden {
+                display: flex !important;
+            }
+
+            #mainHeader h1.hidden {
+                display: block !important;
+            }
+        }
+
+        #heroSection .hero-copy > .flex:last-child,
+        #heroSection .hero-copy .flex.flex-col {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        #heroPlayBtn {
+            border: 0;
+            border-radius: 999px;
+            padding: 16px 44px;
+            font-weight: 900;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            cursor: pointer;
+        }
+
+        #heroSection button[aria-label="Pilih tontonan acak"] {
+            border-radius: 999px;
+            width: 52px;
+            height: 52px;
+            border: 1px solid rgba(255,255,255,0.12);
+            background: rgba(255,255,255,0.08);
+            color: white;
+            cursor: pointer;
+        }
+
+        .quick-mood-panel .flex {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .quick-mood-panel .overflow-x-auto {
+            overflow-x: auto;
+            flex-wrap: nowrap;
+        }
+
+
+        @media (max-width: 767px) {
+            #heroSection .hero-copy > .flex:last-child {
+                flex-direction: column;
+                align-items: stretch;
+                width: 100%;
+            }
+
+            #heroPlayBtn {
+                width: 100%;
+            }
+
+            #heroSection button[aria-label="Pilih tontonan acak"] {
+                align-self: center;
+            }
+        }
+
     </style>
 
 <style id="ultimate-streaming-upgrade">
@@ -1325,21 +1823,24 @@ body::before {
                 </h1>
             </div>
 
-            <nav class="hidden lg:flex items-center gap-8 text-[11px] font-bold uppercase tracking-[0.2em] text-white/40">
-                <button type="button" onclick="location.reload()" class="hover:text-white transition">🔄 Reload</button>
-                <button type="button" onclick="goHome()" class="hover:text-white transition">Home</button>
-                <button type="button" onclick="loadCategory('movie/popular', 'Movies')" class="hover:text-white transition">Movies</button>
-                <button type="button" onclick="loadCategory('tv/popular', 'Series')" class="hover:text-white transition">Series</button>
-                <button type="button" onclick="showMyList()" class="hover:text-white transition text-pink-500 font-black animate-pulse">❤️ My List</button>
+            <nav class="hidden lg:flex items-center gap-1 text-[11px] font-bold uppercase tracking-[0.16em] text-white/55" aria-label="Navigasi utama">
+                <button type="button" onclick="location.reload()" class="desktop-nav-btn">🔄 Reload</button>
+                <button type="button" onclick="goHome()" class="desktop-nav-btn">Home</button>
+                <button type="button" onclick="loadCategory('movie/popular', 'Movies')" class="desktop-nav-btn">Movies</button>
+                <button type="button" onclick="loadCategory('tv/popular', 'Series')" class="desktop-nav-btn">Series</button>
+                <button type="button" onclick="showMyList()" class="desktop-nav-btn text-pink-300 font-black">❤️ My List</button>
+                <button type="button" onclick="toggleComfortMode()" class="desktop-nav-btn" aria-label="Toggle mode nyaman">🌙 Mode</button>
             </nav>
 
-            <div class="relative flex items-center gap-4 sm:border-l sm:border-white/10 sm:pl-6">
+            <div class="search-wrap relative flex items-center gap-2 sm:ml-2">
+                <span class="text-white/45 text-sm" aria-hidden="true">⌕</span>
                 <input
                     type="text"
                     id="searchInput"
-                    placeholder="Search..."
+                    placeholder="Cari film / series..."
                     autocomplete="off"
-                    class="bg-transparent text-xs font-bold focus:outline-none w-20 sm:w-24 focus:w-36 md:focus:w-48 transition-all text-white placeholder-white/40"
+                    aria-label="Cari film atau series"
+                    class="bg-transparent text-xs font-bold focus:outline-none w-28 sm:w-36 md:w-44 lg:w-52 transition-all text-white placeholder-white/40"
                 >
                <div id="searchSuggestions" class="hidden absolute top-full mt-5 right-0 z-[999] w-[300px] md:w-[340px] bg-[#111115] rounded-[30px] max-h-96 overflow-y-auto no-scrollbar p-3 border border-white/10 shadow-2xl"></div>
             </div>
@@ -1366,10 +1867,25 @@ body::before {
                 <h2 id="heroTitle" class="text-3xl md:text-8xl font-black mb-4 tracking-tighter leading-none uppercase drop-shadow-2xl text-white"></h2>
                 <p id="heroDesc" class="text-white/60 text-xs md:text-lg line-clamp-2 mb-5 max-w-2xl font-light"></p>
 
-                <div id="heroMeta" class="hero-meta mb-8" aria-label="Informasi film unggulan">
+                <div id="heroMeta" class="hero-meta mb-5" aria-label="Informasi film unggulan">
                     <span>⭐ Loading</span>
                     <span>HD</span>
                     <span>Trending</span>
+                </div>
+
+                <div class="hero-actions-panel mb-6" aria-label="Keunggulan Nobargasi">
+                    <div class="hero-stat-card">
+                        <p class="text-[9px] font-black uppercase tracking-[0.22em] text-white/45">Akses</p>
+                        <p class="text-sm font-black text-white">Cepat & ringan</p>
+                    </div>
+                    <div class="hero-stat-card">
+                        <p class="text-[9px] font-black uppercase tracking-[0.22em] text-white/45">Device</p>
+                        <p class="text-sm font-black text-white">Laptop + HP</p>
+                    </div>
+                    <div class="hero-stat-card">
+                        <p class="text-[9px] font-black uppercase tracking-[0.22em] text-white/45">Fitur</p>
+                        <p class="text-sm font-black text-white">Favorit & riwayat</p>
+                    </div>
                 </div>
 
                 <div class="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 w-full sm:w-auto">
@@ -1387,6 +1903,25 @@ body::before {
         </section>
 
         <div id="homeView" class="space-y-28">
+
+            <section class="quick-mood-panel" aria-labelledby="quickMoodTitle">
+                <div class="relative z-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">
+                    <div>
+                        <p class="text-[10px] font-black uppercase tracking-[0.35em] text-blue-300 mb-2">Shortcut Baru</p>
+                        <h2 id="quickMoodTitle" class="text-xl md:text-3xl font-black tracking-tight text-white">Pilih mood, langsung jalan ✨</h2>
+                        <p class="mt-2 max-w-2xl text-sm text-white/55">Chip cepat ini membantu kamu cari tontonan tanpa ribet filter manual.</p>
+                    </div>
+
+                    <div class="flex gap-2 overflow-x-auto no-scrollbar pb-1 lg:pb-0">
+                        <button type="button" class="quick-chip" onclick="loadMood('discover/movie?with_genres=28&sort_by=popularity.desc', 'Mood Action Ngebut')">⚡ Action</button>
+                        <button type="button" class="quick-chip" onclick="loadMood('discover/movie?with_genres=35&sort_by=popularity.desc', 'Mood Komedi Ringan')">😂 Komedi</button>
+                        <button type="button" class="quick-chip" onclick="loadMood('discover/movie?with_genres=10749&sort_by=popularity.desc', 'Mood Romance')">💘 Romance</button>
+                        <button type="button" class="quick-chip" onclick="loadMood('discover/tv?with_original_language=ko&sort_by=popularity.desc', 'Mood Drakor')">🫰 Drakor</button>
+                        <button type="button" class="quick-chip" onclick="loadMood('discover/tv?with_original_language=ja&with_genres=16&sort_by=popularity.desc', 'Mood Anime')">🌸 Anime</button>
+                        <button type="button" class="quick-chip" onclick="surpriseMe()">🎲 Surprise</button>
+                    </div>
+                </div>
+            </section>
 
             <section id="historySection" class="hidden">
                 <div class="row-header">
@@ -1759,6 +2294,12 @@ body::before {
                 allowfullscreen
             ></iframe>
         </div>
+    </div>
+
+    <div class="floating-actions" aria-label="Aksi cepat">
+        <button type="button" class="float-btn" onclick="surpriseMe()" aria-label="Pilih tontonan acak">🎲</button>
+        <button type="button" class="float-btn" onclick="toggleComfortMode()" aria-label="Toggle mode nyaman">🌙</button>
+        <button type="button" id="backToTopBtn" class="float-btn" onclick="scrollToTop()" aria-label="Kembali ke atas">↑</button>
     </div>
 
     <div id="playerContainer" class="hidden fixed inset-0 z-[500] flex items-center justify-center bg-black/95 transition-all">

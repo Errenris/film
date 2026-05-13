@@ -34,6 +34,9 @@ window.onload = () => {
     setupFilterYears();
     openFromTelegramLink();
     setupLiveVisitors();
+    setupFloatingActions();
+    setupKeyboardShortcuts();
+    restoreComfortMode();
 };
 
 function safeText(str) {
@@ -100,6 +103,66 @@ function updateAmbient(img) {
     }
 }
 
+function loadMood(path, label) {
+    loadCategory(path, label);
+}
+
+function restoreComfortMode() {
+    const isComfort = localStorage.getItem('nbg_comfort_mode') === '1';
+    document.body.classList.toggle('comfort-mode', isComfort);
+}
+
+function toggleComfortMode() {
+    const isComfort = document.body.classList.toggle('comfort-mode');
+    localStorage.setItem('nbg_comfort_mode', isComfort ? '1' : '0');
+}
+
+function scrollToTop() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function setupFloatingActions() {
+    const backToTopBtn = document.getElementById('backToTopBtn');
+    if (!backToTopBtn) return;
+
+    const toggleBackToTop = () => {
+        backToTopBtn.classList.toggle('is-visible', window.scrollY > 520);
+    };
+
+    toggleBackToTop();
+    window.addEventListener('scroll', toggleBackToTop, { passive: true });
+}
+
+function setupKeyboardShortcuts() {
+    document.addEventListener('keydown', (e) => {
+        const target = e.target;
+        const isTyping = target && ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName);
+
+        if (e.key === '/' && !isTyping) {
+            const input = document.getElementById('searchInput');
+            if (input) {
+                e.preventDefault();
+                input.focus();
+            }
+        }
+
+        if (e.key === 'Escape') {
+            hideSearchSuggestions();
+
+            const trailerModal = document.getElementById('trailerModal');
+            const detailModal = document.getElementById('detailModal');
+
+            if (document.body.classList.contains('player-open')) {
+                closePlayer();
+            } else if (trailerModal && !trailerModal.classList.contains('hidden')) {
+                closeTrailerModal();
+            } else if (detailModal && !detailModal.classList.contains('hidden')) {
+                closeDetailModal();
+            }
+        }
+    });
+}
+
 function setupScrollEffects() {
     const header = document.getElementById('mainHeader');
 
@@ -107,10 +170,11 @@ function setupScrollEffects() {
         if (!header) return;
 
         const cur = window.pageYOffset;
-        header.style.opacity = cur > 100 ? "0.1" : "1";
+        header.style.opacity = cur > 100 ? "0.92" : "1";
+        header.style.transform = cur > 100 ? "scale(0.98)" : "scale(1)";
 
         if (header.parentElement) {
-            header.parentElement.style.transform = cur > 100 ? "translateY(-15px)" : "translateY(0)";
+            header.parentElement.style.transform = cur > 100 ? "translateY(-6px)" : "translateY(0)";
         }
     }, { passive: true });
 }
