@@ -1305,6 +1305,225 @@ body::before {
 
 </style>
 
+
+
+<style id="modern-friendly-upgrade">
+/* ===================================================== */
+/* MODERN FRIENDLY UX - LAPTOP + HANDPHONE */
+/* ===================================================== */
+:root {
+    --friendly-surface: rgba(13, 18, 30, 0.72);
+    --friendly-border: rgba(255, 255, 255, 0.12);
+    --friendly-glow: 0 30px 90px rgba(37, 99, 235, 0.18);
+}
+
+body {
+    background-attachment: fixed;
+}
+
+.header-capsule {
+    gap: clamp(10px, 2vw, 36px) !important;
+}
+
+.header-capsule nav button,
+#mobileNav button,
+.mood-chip,
+.comfort-pill,
+#backToTopBtn {
+    min-width: 44px;
+    min-height: 44px;
+}
+
+.experience-panel,
+.watch-stats-card,
+#filterPanel,
+#adguardNotice {
+    box-shadow: var(--friendly-glow), inset 0 1px 0 rgba(255,255,255,0.08);
+    backdrop-filter: blur(22px);
+}
+
+.experience-panel {
+    position: relative;
+    overflow: hidden;
+}
+
+.experience-panel::before {
+    content: "";
+    position: absolute;
+    inset: -35%;
+    background:
+        radial-gradient(circle at 15% 20%, rgba(16, 185, 129, 0.22), transparent 34%),
+        radial-gradient(circle at 82% 15%, rgba(59, 130, 246, 0.18), transparent 34%);
+    pointer-events: none;
+}
+
+.mood-chip-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.mood-chip {
+    position: relative;
+    overflow: hidden;
+    border-radius: 999px;
+    padding: 13px 16px;
+    border: 1px solid rgba(255,255,255,0.12);
+    background: linear-gradient(135deg, rgba(255,255,255,0.10), rgba(255,255,255,0.035));
+    color: rgba(255,255,255,0.88);
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    transition: transform 0.25s ease, background 0.25s ease, border-color 0.25s ease;
+}
+
+.mood-chip:hover,
+.mood-chip:focus-visible {
+    transform: translateY(-2px);
+    border-color: rgba(96, 165, 250, 0.7);
+    background: linear-gradient(135deg, rgba(59,130,246,0.38), rgba(16,185,129,0.22));
+}
+
+.watch-stats-card {
+    border-radius: 30px;
+    border: 1px solid rgba(255,255,255,0.12);
+    background: linear-gradient(145deg, rgba(255,255,255,0.10), rgba(255,255,255,0.035));
+    padding: 22px;
+}
+
+.comfort-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 50px;
+    height: 50px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.14);
+    font-size: 20px;
+}
+
+.stat-tile {
+    border-radius: 22px;
+    border: 1px solid rgba(255,255,255,0.10);
+    background: rgba(0,0,0,0.24);
+    padding: 14px 10px;
+    text-align: center;
+}
+
+.stat-tile strong {
+    display: block;
+    color: #fff;
+    font-size: clamp(1.35rem, 4vw, 2rem);
+    font-weight: 900;
+    line-height: 1;
+}
+
+.stat-tile span {
+    display: block;
+    margin-top: 7px;
+    color: rgba(255,255,255,0.52);
+    font-size: 9px;
+    font-weight: 900;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+}
+
+#backToTopBtn {
+    position: fixed;
+    right: 18px;
+    bottom: calc(92px + env(safe-area-inset-bottom, 0px));
+    z-index: 120;
+    width: 48px;
+    height: 48px;
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,0.14);
+    background: rgba(12, 12, 18, 0.82);
+    color: white;
+    font-size: 22px;
+    font-weight: 900;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.45);
+    backdrop-filter: blur(18px);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(12px);
+    transition: 0.25s ease;
+}
+
+#backToTopBtn.show {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+}
+
+body.comfort-mode .movie-card {
+    width: 160px;
+}
+
+body.comfort-mode .poster-container {
+    border-radius: 30px !important;
+}
+
+body.comfort-mode .row-shell {
+    padding: 18px;
+    border-radius: 34px;
+    background: rgba(255,255,255,0.025);
+    border: 1px solid rgba(255,255,255,0.055);
+}
+
+body.comfort-mode #comfortToggle {
+    color: #86efac;
+    background: rgba(34,197,94,0.16);
+}
+
+@media (min-width: 768px) {
+    .mood-chip-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    body.comfort-mode .movie-card {
+        width: 220px;
+    }
+}
+
+@media (max-width: 767px) {
+    #mobileNav {
+        gap: 2px;
+    }
+
+    #mobileNav button {
+        padding-inline: 6px !important;
+    }
+
+    .experience-panel,
+    .watch-stats-card {
+        border-radius: 26px;
+    }
+
+    .mood-chip-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .mood-chip {
+        justify-content: center;
+        text-align: center;
+        font-size: 10px;
+    }
+
+    body.comfort-mode .movie-card {
+        width: 152px;
+    }
+
+    #backToTopBtn {
+        right: 14px;
+        bottom: calc(86px + env(safe-area-inset-bottom, 0px));
+        width: 46px;
+        height: 46px;
+    }
+}
+</style>
+
 </head>
 
 <body class="pb-20">
@@ -1330,7 +1549,9 @@ body::before {
                 <button type="button" onclick="goHome()" class="hover:text-white transition">Home</button>
                 <button type="button" onclick="loadCategory('movie/popular', 'Movies')" class="hover:text-white transition">Movies</button>
                 <button type="button" onclick="loadCategory('tv/popular', 'Series')" class="hover:text-white transition">Series</button>
+                <button type="button" onclick="scrollToMoodPanel()" class="hover:text-white transition">Mood</button>
                 <button type="button" onclick="showMyList()" class="hover:text-white transition text-pink-500 font-black animate-pulse">❤️ My List</button>
+                <button type="button" id="comfortToggle" onclick="toggleComfortMode()" class="hover:text-white transition">Mode Nyaman</button>
             </nav>
 
             <div class="relative flex items-center gap-4 sm:border-l sm:border-white/10 sm:pl-6">
@@ -1352,6 +1573,7 @@ body::before {
         <button type="button" onclick="goHome()" class="py-1 opacity-70 hover:opacity-100"><span>🏠</span><span>Home</span></button>
         <button type="button" onclick="loadCategory('movie/popular', 'Movies')" class="py-1 opacity-70 hover:opacity-100"><span>🎬</span><span>Film</span></button>
         <button type="button" onclick="loadCategory('tv/popular', 'Series')" class="py-1 opacity-70 hover:opacity-100"><span>📺</span><span>Series</span></button>
+        <button type="button" onclick="scrollToMoodPanel()" class="py-1 opacity-70 hover:opacity-100"><span>🎛️</span><span>Mood</span></button>
         <button type="button" onclick="showMyList()" class="py-1 text-pink-500 font-bold"><span>❤️</span><span>List</span></button>
     </nav>
 
@@ -1431,6 +1653,62 @@ body::before {
                         <button type="button" onclick="closeAdguardNotice()" class="adguard-close-btn rounded-full bg-white/10 px-6 py-3 text-[10px] font-black uppercase tracking-widest text-white border border-white/10 hover:bg-white hover:text-black transition">
                             Tutup
                         </button>
+                    </div>
+                </div>
+            </section>
+
+            <section id="moodPanel" class="experience-panel rounded-[34px] border border-white/10 bg-white/[0.04] p-5 md:p-8 shadow-2xl">
+                <div class="relative z-10 grid gap-6 lg:grid-cols-[1.15fr_0.85fr]">
+                    <div class="space-y-5">
+                        <div>
+                            <p class="text-[10px] font-black uppercase tracking-[0.35em] text-emerald-300 mb-2">
+                                Smart Mood Picks
+                            </p>
+                            <h2 class="text-2xl md:text-4xl font-black tracking-tight text-white">
+                                Pilih vibe, langsung dapat rekomendasi yang pas ⚡
+                            </h2>
+                            <p class="mt-3 text-sm md:text-base text-white/60 leading-relaxed max-w-3xl">
+                                Shortcut kategori populer untuk laptop dan handphone: sekali tap, halaman hasil terbuka dengan filter otomatis.
+                            </p>
+                        </div>
+
+                        <div class="mood-chip-grid" aria-label="Pilihan mood tontonan">
+                            <button type="button" class="mood-chip" onclick="quickMood('discover/movie?with_genres=35&sort_by=popularity.desc', 'Mood Komedi Ringan')">😂 Komedi Ringan</button>
+                            <button type="button" class="mood-chip" onclick="quickMood('discover/movie?with_genres=28&sort_by=popularity.desc', 'Mood Aksi Cepat')">💥 Aksi Cepat</button>
+                            <button type="button" class="mood-chip" onclick="quickMood('discover/tv?with_original_language=ko&sort_by=popularity.desc', 'Mood Drakor')">🫰 Drakor</button>
+                            <button type="button" class="mood-chip" onclick="quickMood('discover/tv?with_original_language=ja&with_genres=16&sort_by=popularity.desc', 'Mood Anime')">🌸 Anime</button>
+                            <button type="button" class="mood-chip" onclick="quickMood('discover/movie?with_genres=27&sort_by=popularity.desc', 'Mood Horor')">👻 Horor</button>
+                            <button type="button" class="mood-chip" onclick="surpriseMe()">🎲 Surprise Me</button>
+                        </div>
+                    </div>
+
+                    <div class="watch-stats-card">
+                        <div class="flex items-center justify-between gap-4">
+                            <div>
+                                <p class="text-[10px] font-black uppercase tracking-[0.3em] text-blue-300">Dashboard Kamu</p>
+                                <h3 class="mt-2 text-2xl font-black text-white">Nonton lebih rapi</h3>
+                            </div>
+                            <button type="button" onclick="toggleComfortMode()" class="comfort-pill" aria-label="Toggle mode nyaman">☕</button>
+                        </div>
+
+                        <div class="mt-6 grid grid-cols-3 gap-3">
+                            <div class="stat-tile">
+                                <strong id="statFavorites">0</strong>
+                                <span>Favorit</span>
+                            </div>
+                            <div class="stat-tile">
+                                <strong id="statHistory">0</strong>
+                                <span>Riwayat</span>
+                            </div>
+                            <div class="stat-tile">
+                                <strong id="statOnline">...</strong>
+                                <span>Online</span>
+                            </div>
+                        </div>
+
+                        <p class="mt-5 text-xs text-white/50 leading-relaxed">
+                            Mode Nyaman memperbesar area sentuh, membuat card lebih lega, dan disimpan otomatis di perangkat ini.
+                        </p>
                     </div>
                 </div>
             </section>
@@ -1743,6 +2021,8 @@ body::before {
             </div>
         </div>
     </div>
+
+    <button type="button" id="backToTopBtn" onclick="scrollToTopSmooth()" aria-label="Kembali ke atas">↑</button>
 
     <div id="trailerModal" class="hidden fixed inset-0 z-[800] bg-black/90 items-center justify-center px-4">
         <button type="button" onclick="closeTrailerModal()" class="fixed top-6 right-6 md:top-8 md:right-8 z-[820] text-white/50 hover:text-red-500 text-3xl transition font-black">

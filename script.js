@@ -32,8 +32,10 @@ window.onload = () => {
     setupRowButtons();
     setupSearch();
     setupFilterYears();
+    setupModernUx();
     openFromTelegramLink();
     setupLiveVisitors();
+    updateUserStats();
 };
 
 function safeText(str) {
@@ -107,10 +109,13 @@ function setupScrollEffects() {
         if (!header) return;
 
         const cur = window.pageYOffset;
-        header.style.opacity = cur > 100 ? "0.1" : "1";
+        const isScrolled = cur > 100;
+
+        header.style.opacity = isScrolled ? "0.96" : "1";
+        header.style.transform = isScrolled ? "scale(0.98)" : "scale(1)";
 
         if (header.parentElement) {
-            header.parentElement.style.transform = cur > 100 ? "translateY(-15px)" : "translateY(0)";
+            header.parentElement.style.transform = isScrolled ? "translateY(-6px)" : "translateY(0)";
         }
     }, { passive: true });
 }
@@ -215,6 +220,7 @@ function toggleMyList(e, movieStr) {
     }
 
     saveMyList(list);
+    updateUserStats();
 
     const gridSection = document.getElementById('gridSection');
     const gridTitle = document.getElementById('gridTitle');
@@ -252,6 +258,7 @@ function toggleDetailFavorite() {
     }
 
     saveMyList(list);
+    updateUserStats();
 }
 
 function showMyList() {
@@ -1330,6 +1337,70 @@ function resetFilter() {
     goHome();
 }
 
+
+function updateUserStats() {
+    const favorites = getMyList();
+    const history = JSON.parse(localStorage.getItem('nbg_history') || '[]');
+
+    const statFavorites = document.getElementById('statFavorites');
+    const statHistory = document.getElementById('statHistory');
+
+    if (statFavorites) statFavorites.innerText = favorites.length;
+    if (statHistory) statHistory.innerText = history.length;
+}
+
+function setupModernUx() {
+    const prefersComfort = localStorage.getItem('nbg_comfort_mode') === '1';
+    document.body.classList.toggle('comfort-mode', prefersComfort);
+    updateComfortToggleLabel();
+    setupBackToTopButton();
+}
+
+function updateComfortToggleLabel() {
+    const toggle = document.getElementById('comfortToggle');
+    if (!toggle) return;
+
+    toggle.innerText = document.body.classList.contains('comfort-mode')
+        ? 'Mode Compact'
+        : 'Mode Nyaman';
+}
+
+function toggleComfortMode() {
+    const isActive = document.body.classList.toggle('comfort-mode');
+    localStorage.setItem('nbg_comfort_mode', isActive ? '1' : '0');
+    updateComfortToggleLabel();
+}
+
+function quickMood(path, label) {
+    loadCategory(path, label);
+}
+
+function scrollToMoodPanel() {
+    showHomeView();
+
+    const panel = document.getElementById('moodPanel');
+
+    if (panel) {
+        panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+}
+
+function scrollToTopSmooth() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function setupBackToTopButton() {
+    const btn = document.getElementById('backToTopBtn');
+    if (!btn) return;
+
+    const sync = () => {
+        btn.classList.toggle('show', window.scrollY > 700);
+    };
+
+    sync();
+    window.addEventListener('scroll', sync, { passive: true });
+}
+
 function saveToHistory(id, type, backdrop, poster, title) {
     let h = JSON.parse(localStorage.getItem('nbg_history') || '[]');
 
@@ -1377,6 +1448,8 @@ function renderHistory() {
         row.innerHTML = '';
         sect.classList.add('hidden');
     }
+
+    updateUserStats();
 }
 
 function deleteHistoryItem(e, id, type) {
@@ -1414,6 +1487,8 @@ function clearHistory() {
     if (sect) {
         sect.classList.add('hidden');
     }
+
+    updateUserStats();
 }
 
 function setupDragToScroll() {
@@ -1531,6 +1606,8 @@ async function updateLiveVisitorCount() {
 
         if (data.ok) {
             el.innerText = data.online;
+            const statOnline = document.getElementById('statOnline');
+            if (statOnline) statOnline.innerText = data.online;
         }
     } catch (err) {
         console.warn('Gagal update visitor live:', err.message);
