@@ -15,6 +15,8 @@
         :root {
             --bg: #030305;
             --accent: #3b82f6;
+            --accent-2: #ef4444;
+            --card: rgba(15, 15, 22, 0.72);
             --glass: rgba(255, 255, 255, 0.03);
             --border: rgba(255, 255, 255, 0.07);
         }
@@ -784,6 +786,523 @@ body{
     color:rgba(255,255,255,.4);
 }
 
+
+/* ===================================================== */
+/* NETFLIX-LIKE RESPONSIVE EXPERIENCE UPGRADE */
+/* ===================================================== */
+html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+}
+
+button,
+.poster-container,
+.actor-circle,
+.suggestion-item,
+[role="button"] {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+.poster-container:focus-visible,
+.actor-circle:focus-visible,
+.suggestion-item:focus-visible {
+    outline: 3px solid rgba(59, 130, 246, 0.95);
+    outline-offset: 4px;
+}
+
+.header-capsule {
+    max-width: min(1120px, calc(100vw - 24px));
+    background: linear-gradient(135deg, rgba(12, 12, 18, 0.82), rgba(24, 24, 34, 0.62));
+}
+
+#heroSection {
+    isolation: isolate;
+    min-height: 520px;
+    background: #08080d;
+}
+
+#heroSection::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    pointer-events: none;
+    background:
+        linear-gradient(90deg, rgba(3, 3, 5, 0.92) 0%, rgba(3, 3, 5, 0.54) 42%, transparent 72%),
+        linear-gradient(0deg, rgba(3, 3, 5, 0.96) 0%, transparent 46%);
+}
+
+#heroContent {
+    filter: saturate(1.15) contrast(1.06);
+}
+
+#heroSection .netflix-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,0.12);
+    background: rgba(255,255,255,0.08);
+    padding: 9px 14px;
+    color: rgba(255,255,255,0.78);
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    backdrop-filter: blur(18px);
+}
+
+#heroPlayBtn,
+.primary-watch-btn {
+    background: linear-gradient(135deg, #ffffff, #dbeafe) !important;
+    box-shadow: 0 20px 55px rgba(59, 130, 246, 0.24), inset 0 -2px 0 rgba(0,0,0,0.18) !important;
+}
+
+#heroPlayBtn:hover,
+.primary-watch-btn:hover {
+    background: linear-gradient(135deg, #3b82f6, #ef4444) !important;
+    color: #fff !important;
+}
+
+.row-shell {
+    position: relative;
+}
+
+.row-shell::before,
+.row-shell::after {
+    content: "";
+    position: absolute;
+    top: 38px;
+    bottom: 0;
+    width: 42px;
+    z-index: 5;
+    pointer-events: none;
+}
+
+.row-shell::before {
+    left: 0;
+    background: linear-gradient(90deg, var(--bg), transparent);
+}
+
+.row-shell::after {
+    right: 0;
+    background: linear-gradient(270deg, var(--bg), transparent);
+}
+
+.movie-card {
+    scroll-snap-align: start;
+}
+
+.poster-container {
+    width: 100%;
+    isolation: isolate;
+}
+
+.poster-container::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background: linear-gradient(to top, rgba(0,0,0,0.82), transparent 48%);
+    opacity: 0.64;
+    transition: 0.3s ease;
+    pointer-events: none;
+}
+
+.poster-container:hover::after,
+.poster-container:focus-visible::after {
+    opacity: 0.28;
+}
+
+.card-play-pill {
+    position: absolute;
+    left: 10px;
+    right: 10px;
+    bottom: 10px;
+    z-index: 6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 38px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.92);
+    color: #050505;
+    font-size: 9px;
+    font-weight: 900;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: 0.28s ease;
+    box-shadow: 0 18px 35px rgba(0,0,0,0.32);
+}
+
+.movie-card:hover .card-play-pill,
+.poster-container:focus-visible .card-play-pill {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+#gridResults .movie-card {
+    width: clamp(142px, 42vw, 205px);
+}
+
+#playerContainer {
+    padding: clamp(0px, 1.5vw, 20px);
+}
+
+#playerModalBox {
+    background:
+        radial-gradient(circle at top right, rgba(59,130,246,0.13), transparent 32%),
+        #07070b !important;
+}
+
+#videoPlayer {
+    min-height: 210px;
+}
+
+@media (min-width: 1024px) {
+    .movie-card {
+        width: 205px;
+    }
+
+    #heroSection .hero-copy {
+        align-items: flex-start !important;
+        text-align: left !important;
+        max-width: 760px;
+    }
+}
+
+@media (max-width: 767px) {
+    body {
+        padding-bottom: calc(88px + env(safe-area-inset-bottom, 0px));
+    }
+
+    .header-capsule {
+        padding: 10px 12px;
+        border-radius: 26px;
+        gap: 10px;
+    }
+
+    #searchInput {
+        width: 116px !important;
+        min-height: 42px;
+    }
+
+    #searchSuggestions {
+        position: fixed !important;
+        left: 12px !important;
+        right: 12px !important;
+        top: calc(env(safe-area-inset-top, 0px) + 84px) !important;
+        width: auto !important;
+        max-height: min(66vh, 520px) !important;
+    }
+
+    #mainContainer {
+        padding-left: 12px !important;
+        padding-right: 12px !important;
+        gap: 64px;
+    }
+
+    #heroSection {
+        height: min(72vh, 640px) !important;
+        min-height: 480px;
+        border-radius: 30px !important;
+    }
+
+    #heroSection::before {
+        background: linear-gradient(0deg, rgba(3,3,5,0.98) 0%, rgba(3,3,5,0.45) 58%, transparent 100%);
+    }
+
+    #heroSection .hero-copy {
+        padding: 24px 18px 34px !important;
+    }
+
+    #heroTitle {
+        font-size: clamp(2.15rem, 11vw, 4.25rem) !important;
+    }
+
+    #heroDesc {
+        margin-bottom: 22px !important;
+        -webkit-line-clamp: 3;
+    }
+
+    .movie-card {
+        width: 136px;
+    }
+
+    #rowTrending .movie-card {
+        width: 148px;
+    }
+
+    .poster-container {
+        border-radius: 18px !important;
+    }
+
+    .card-play-pill {
+        opacity: 1;
+        transform: none;
+        min-height: 34px;
+        font-size: 8px;
+    }
+
+    .row-shell::before,
+    .row-shell::after {
+        width: 18px;
+    }
+
+    .row-header {
+        padding: 0 2px !important;
+    }
+
+    #detailModal .player-info-card,
+    #playerModalBox .player-info-card {
+        padding: 14px;
+    }
+
+    #detailPlayBtn,
+    #detailTrailerBtn,
+    #detailFavoriteBtn,
+    .server-btn,
+    #playerControls button,
+    #loadMoreBtn {
+        min-height: 46px;
+    }
+
+    #mobileNav {
+        bottom: calc(env(safe-area-inset-bottom, 0px) + 10px) !important;
+        border-radius: 26px !important;
+    }
+}
+
+
+/* ===================================================== */
+/* MODERN NETFLIX POLISH V2 - LAPTOP + MOBILE SAFE */
+/* ===================================================== */
+:root {
+    --netflix-red: #e50914;
+    --surface-strong: rgba(18, 18, 24, 0.86);
+}
+
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -2;
+    pointer-events: none;
+    background:
+        radial-gradient(circle at 18% 8%, rgba(229, 9, 20, 0.18), transparent 30%),
+        radial-gradient(circle at 86% 22%, rgba(59, 130, 246, 0.14), transparent 28%),
+        linear-gradient(180deg, #050507 0%, #09090d 42%, #030305 100%);
+}
+
+.header-capsule {
+    min-height: 62px;
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.58), inset 0 1px 0 rgba(255,255,255,0.08);
+}
+
+.header-capsule button,
+#mobileNav button {
+    border-radius: 999px;
+    min-height: 36px;
+    padding-inline: 10px;
+}
+
+.header-capsule button:hover,
+#mobileNav button:hover {
+    background: rgba(255,255,255,0.08);
+}
+
+#searchInput {
+    border-radius: 999px;
+    background: rgba(255,255,255,0.06) !important;
+    min-height: 40px;
+    padding: 0 14px;
+    border: 1px solid rgba(255,255,255,0.08);
+}
+
+#heroSection {
+    box-shadow: 0 35px 110px rgba(0,0,0,0.68), inset 0 1px 0 rgba(255,255,255,0.08);
+}
+
+.hero-meta {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+}
+
+.hero-meta span {
+    display: inline-flex;
+    align-items: center;
+    min-height: 34px;
+    border-radius: 999px;
+    padding: 0 13px;
+    background: rgba(0,0,0,0.42);
+    border: 1px solid rgba(255,255,255,0.12);
+    color: rgba(255,255,255,0.82);
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    backdrop-filter: blur(16px);
+}
+
+#heroPlayBtn::before,
+.primary-watch-btn::before {
+    content: "▶";
+    margin-right: 8px;
+}
+
+.movie-card {
+    border-radius: 26px;
+}
+
+.movie-card:active {
+    transform: scale(0.98) !important;
+}
+
+.poster-container {
+    background: linear-gradient(145deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02));
+}
+
+.poster-container img {
+    position: relative;
+    z-index: 0;
+}
+
+.fav-btn {
+    box-shadow: 0 12px 26px rgba(0,0,0,0.42);
+}
+
+#gridSection {
+    border-radius: 36px;
+    padding: 24px 0;
+}
+
+#detailModal .relative.z-\[460\] {
+    padding-bottom: calc(88px + env(safe-area-inset-bottom, 0px));
+}
+
+#detailPlayBtn,
+#detailTrailerBtn,
+#detailFavoriteBtn,
+.server-btn,
+#playerControls button,
+#loadMoreBtn,
+.filter-action-btn,
+.adguard-copy-btn,
+.adguard-close-btn {
+    box-shadow: 0 14px 34px rgba(0,0,0,0.28);
+}
+
+
+#detailPlayBtn:active,
+#detailTrailerBtn:active,
+#detailFavoriteBtn:active,
+.server-btn:active,
+#playerControls button:active,
+#loadMoreBtn:active,
+.filter-action-btn:active,
+.adguard-copy-btn:active,
+.adguard-close-btn:active {
+    transform: scale(0.98);
+}
+
+#playerContainer {
+    overscroll-behavior: contain;
+}
+
+#videoPlayer {
+    border-radius: 0 0 28px 28px;
+}
+
+@media (min-width: 1024px) {
+    .hero-meta {
+        justify-content: flex-start;
+    }
+
+    #homeView,
+    #extraHomeRows {
+        margin-inline: -6px;
+    }
+}
+
+@media (max-width: 767px) {
+    .fixed.top-6 {
+        top: calc(env(safe-area-inset-top, 0px) + 8px) !important;
+        padding-inline: 10px !important;
+    }
+
+    .header-capsule {
+        min-height: 56px;
+        max-width: calc(100vw - 20px);
+    }
+
+    #heroSection .netflix-chip {
+        font-size: 8px;
+        padding: 7px 10px;
+        letter-spacing: 0.14em;
+    }
+
+    .hero-meta {
+        margin-bottom: 20px !important;
+    }
+
+    .hero-meta span {
+        min-height: 30px;
+        font-size: 8px;
+        padding-inline: 10px;
+        letter-spacing: 0.12em;
+    }
+
+    #heroPlayBtn {
+        min-height: 50px;
+    }
+
+    #gridResults {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 18px 12px !important;
+        justify-items: stretch !important;
+    }
+
+    #gridResults .movie-card {
+        width: 100% !important;
+    }
+
+    .movie-card:hover {
+        transform: none !important;
+    }
+
+    .row-nav-controls {
+        display: none;
+    }
+
+    #detailModal .relative.z-\[460\] {
+        align-items: flex-start;
+        padding-top: calc(env(safe-area-inset-top, 0px) + 72px);
+    }
+
+    .detail-poster {
+        width: min(46vw, 180px) !important;
+        border-radius: 22px;
+    }
+
+    #detailTitle {
+        font-size: clamp(2rem, 10vw, 3.5rem) !important;
+    }
+
+    #playerModalBox {
+        border-radius: 0 !important;
+    }
+}
+
 </style>
 
 </head>
@@ -796,7 +1315,7 @@ body{
     <div class="fixed top-6 w-full z-[100] flex justify-center px-4">
         <header id="mainHeader" class="header-capsule flex items-center gap-4 md:gap-10 w-full max-w-5xl justify-between md:justify-center">
             
-            <div class="flex items-center gap-3 cursor-pointer group" onclick="goHome()">
+            <div class="flex items-center gap-3 cursor-pointer group" role="button" tabindex="0" onclick="goHome()" onkeydown="handleKeyboardClick(event)" aria-label="Kembali ke beranda">
                 <div class="logo-box-premium group-hover:scale-110 transition-transform">
                     <span class="logo-n-text">N</span>
                     <div class="logo-play-overlay"></div>
@@ -807,11 +1326,11 @@ body{
             </div>
 
             <nav class="hidden lg:flex items-center gap-8 text-[11px] font-bold uppercase tracking-[0.2em] text-white/40">
-                <button onclick="location.reload()" class="hover:text-white transition">🔄 Reload</button>
-                <button onclick="goHome()" class="hover:text-white transition">Home</button>
-                <button onclick="loadCategory('movie/popular', 'Movies')" class="hover:text-white transition">Movies</button>
-                <button onclick="loadCategory('tv/popular', 'Series')" class="hover:text-white transition">Series</button>
-                <button onclick="showMyList()" class="hover:text-white transition text-pink-500 font-black animate-pulse">❤️ My List</button>
+                <button type="button" onclick="location.reload()" class="hover:text-white transition">🔄 Reload</button>
+                <button type="button" onclick="goHome()" class="hover:text-white transition">Home</button>
+                <button type="button" onclick="loadCategory('movie/popular', 'Movies')" class="hover:text-white transition">Movies</button>
+                <button type="button" onclick="loadCategory('tv/popular', 'Series')" class="hover:text-white transition">Series</button>
+                <button type="button" onclick="showMyList()" class="hover:text-white transition text-pink-500 font-black animate-pulse">❤️ My List</button>
             </nav>
 
             <div class="relative flex items-center gap-4 sm:border-l sm:border-white/10 sm:pl-6">
@@ -829,11 +1348,11 @@ body{
     </div>
 
     <nav id="mobileNav" class="md:hidden fixed bottom-4 left-4 right-4 z-[100] bg-[#111115]/90 backdrop-blur-xl rounded-full flex justify-around items-center px-4 py-2 shadow-2xl border border-white/10 text-xs">
-        <button onclick="location.reload()" class="py-1 opacity-70 hover:opacity-100"><span>🔄</span><span>Reload</span></button>
-        <button onclick="goHome()" class="py-1 opacity-70 hover:opacity-100"><span>🏠</span><span>Home</span></button>
-        <button onclick="loadCategory('movie/popular', 'Movies')" class="py-1 opacity-70 hover:opacity-100"><span>🎬</span><span>Film</span></button>
-        <button onclick="loadCategory('tv/popular', 'Series')" class="py-1 opacity-70 hover:opacity-100"><span>📺</span><span>Series</span></button>
-        <button onclick="showMyList()" class="py-1 text-pink-500 font-bold"><span>❤️</span><span>List</span></button>
+        <button type="button" onclick="location.reload()" class="py-1 opacity-70 hover:opacity-100"><span>🔄</span><span>Reload</span></button>
+        <button type="button" onclick="goHome()" class="py-1 opacity-70 hover:opacity-100"><span>🏠</span><span>Home</span></button>
+        <button type="button" onclick="loadCategory('movie/popular', 'Movies')" class="py-1 opacity-70 hover:opacity-100"><span>🎬</span><span>Film</span></button>
+        <button type="button" onclick="loadCategory('tv/popular', 'Series')" class="py-1 opacity-70 hover:opacity-100"><span>📺</span><span>Series</span></button>
+        <button type="button" onclick="showMyList()" class="py-1 text-pink-500 font-bold"><span>❤️</span><span>List</span></button>
     </nav>
 
     <main id="mainContainer" class="max-w-[1550px] mx-auto pt-24 px-4 md:px-10 space-y-24 fade-in">
@@ -842,16 +1361,23 @@ body{
             <div id="heroContent" class="absolute inset-0 bg-cover bg-center transition-transform duration-[2.5s] group-hover:scale-105"></div>
             <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent"></div>
 
-            <div class="absolute bottom-0 left-0 w-full p-8 md:p-20 flex flex-col items-center text-center z-10">
+            <div class="hero-copy absolute bottom-0 left-0 w-full p-8 md:p-20 flex flex-col items-center text-center z-10">
+                <div class="mb-4 flex flex-wrap justify-center lg:justify-start gap-2"><span class="netflix-chip">● Premium Stream</span><span class="netflix-chip">HD Ready</span><span class="netflix-chip">Mobile Friendly</span></div>
                 <h2 id="heroTitle" class="text-3xl md:text-8xl font-black mb-4 tracking-tighter leading-none uppercase drop-shadow-2xl text-white"></h2>
-                <p id="heroDesc" class="text-white/60 text-xs md:text-lg line-clamp-2 mb-10 max-w-2xl font-light"></p>
+                <p id="heroDesc" class="text-white/60 text-xs md:text-lg line-clamp-2 mb-5 max-w-2xl font-light"></p>
 
-                <div class="flex items-center gap-4">
-                    <button id="heroPlayBtn" class="bg-white text-black hover:bg-blue-500 hover:text-white px-12 py-4 rounded-full font-black text-[11px] uppercase tracking-[0.2em] transition-all shadow-2xl hover:scale-110">
+                <div id="heroMeta" class="hero-meta mb-8" aria-label="Informasi film unggulan">
+                    <span>⭐ Loading</span>
+                    <span>HD</span>
+                    <span>Trending</span>
+                </div>
+
+                <div class="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 w-full sm:w-auto">
+                    <button type="button" id="heroPlayBtn" class="bg-white text-black hover:bg-blue-500 hover:text-white px-12 py-4 rounded-full w-full sm:w-auto font-black text-[11px] uppercase tracking-[0.2em] transition-all shadow-2xl hover:scale-110">
                         Lihat Detail
                     </button>
 
-                    <button onclick="surpriseMe()" class="w-12 h-12 rounded-full bg-white/5 backdrop-blur-md flex items-center justify-center text-xl hover:bg-white/20 transition border border-white/10 shadow-lg">
+                    <button type="button" onclick="surpriseMe()" aria-label="Pilih tontonan acak" class="w-12 h-12 rounded-full bg-white/5 backdrop-blur-md flex items-center justify-center text-xl hover:bg-white/20 transition border border-white/10 shadow-lg">
                         🎲
                     </button>
                 </div>
@@ -865,7 +1391,7 @@ body{
             <section id="historySection" class="hidden">
                 <div class="row-header">
                     <h2 class="row-title text-white">Lanjutkan Menonton 🍿</h2>
-                    <button onclick="clearHistory()" class="explore-btn text-red-500 hover:text-red-400">Hapus Semua ✕</button>
+                    <button type="button" onclick="clearHistory()" class="explore-btn text-red-500 hover:text-red-400">Hapus Semua ✕</button>
                 </div>
                 <div id="rowHistory" class="flex gap-6 overflow-x-auto custom-scrollbar-x pb-4 px-2"></div>
             </section>
@@ -990,10 +1516,10 @@ body{
                         </select>
 
                         <div class="flex gap-2 col-span-2 md:col-span-1">
-                            <button onclick="applyFilter()" class="filter-action-btn flex-1 rounded-full bg-white px-4 py-2 text-[10px] font-black uppercase tracking-widest text-black hover:bg-blue-400 hover:text-white transition">
+                            <button type="button" onclick="applyFilter()" class="filter-action-btn flex-1 rounded-full bg-white px-4 py-2 text-[10px] font-black uppercase tracking-widest text-black hover:bg-blue-400 hover:text-white transition">
                                 Filter
                             </button>
-                            <button onclick="resetFilter()" class="filter-action-btn rounded-full bg-white/10 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-white border border-white/10 hover:bg-white hover:text-black transition">
+                            <button type="button" onclick="resetFilter()" class="filter-action-btn rounded-full bg-white/10 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-white border border-white/10 hover:bg-white hover:text-black transition">
                                 X
                             </button>
                         </div>
@@ -1001,93 +1527,93 @@ body{
                 </div>
             </section>
 
-            <section>
+            <section class="row-shell">
                 <div class="row-header">
                     <h2 class="row-title text-red-500">Populer Hari Ini 🔥</h2>
-                    <button onclick="loadCategory('trending/movie/day', 'Paling Populer')" class="explore-btn">Lihat Semua ➔</button>
+                    <button type="button" onclick="loadCategory('trending/movie/day', 'Paling Populer')" class="explore-btn">Lihat Semua ➔</button>
                 </div>
                 <div id="rowTrending" class="flex gap-10 overflow-x-auto no-scrollbar pb-10 pl-10"></div>
             </section>
 
-            <section>
+            <section class="row-shell">
                 <div class="row-header">
                     <h2 class="row-title">Bintang Papan Atas 🌟</h2>
                 </div>
                 <div id="rowActors" class="flex gap-8 overflow-x-auto no-scrollbar pb-4 px-2"></div>
             </section>
 
-            <section>
+            <section class="row-shell">
                 <div class="row-header">
                     <h2 class="row-title text-white">Film Terpopuler ⭐</h2>
-                    <button onclick="loadCategory('movie/popular', 'Film Terpopuler')" class="explore-btn">Lihat Semua ➔</button>
+                    <button type="button" onclick="loadCategory('movie/popular', 'Film Terpopuler')" class="explore-btn">Lihat Semua ➔</button>
                 </div>
                 <div id="row1" class="flex gap-6 overflow-x-auto no-scrollbar px-2"></div>
             </section>
 
-            <section>
+            <section class="row-shell">
                 <div class="row-header">
                     <h2 class="row-title text-white">Serial TV Pilihan 📺</h2>
-                    <button onclick="loadCategory('tv/popular', 'Serial TV Populer')" class="explore-btn">Lihat Semua ➔</button>
+                    <button type="button" onclick="loadCategory('tv/popular', 'Serial TV Populer')" class="explore-btn">Lihat Semua ➔</button>
                 </div>
                 <div id="row2" class="flex gap-6 overflow-x-auto no-scrollbar px-2"></div>
             </section>
 
-            <section class="relative overflow-hidden">
+            <section class="row-shell relative overflow-hidden">
                 <div class="universe-bg-text">AVENGERS</div>
                 <div class="row-header relative z-10">
                     <h2 class="row-title text-white">Marvel Cinematic Universe 🦸‍♂️</h2>
-                    <button onclick="loadCategory('discover/movie?with_companies=420&sort_by=revenue.desc', 'Koleksi Marvel')" class="explore-btn">Lihat Semua ➔</button>
+                    <button type="button" onclick="loadCategory('discover/movie?with_companies=420&sort_by=revenue.desc', 'Koleksi Marvel')" class="explore-btn">Lihat Semua ➔</button>
                 </div>
                 <div id="rowMarvel" class="flex gap-6 overflow-x-auto no-scrollbar relative z-10 px-2"></div>
             </section>
 
-            <section class="relative overflow-hidden">
+            <section class="row-shell relative overflow-hidden">
                 <div class="universe-bg-text">JUSTICE LEAGUE</div>
                 <div class="row-header relative z-10">
                     <h2 class="row-title text-white">DC Extended Universe 🦇</h2>
-                    <button onclick="loadCategory('discover/movie?with_companies=429&sort_by=popularity.desc', 'Koleksi DC')" class="explore-btn">Lihat Semua ➔</button>
+                    <button type="button" onclick="loadCategory('discover/movie?with_companies=429&sort_by=popularity.desc', 'Koleksi DC')" class="explore-btn">Lihat Semua ➔</button>
                 </div>
                 <div id="rowDC" class="flex gap-6 overflow-x-auto no-scrollbar relative z-10 px-2"></div>
             </section>
 
-            <section class="relative overflow-hidden">
+            <section class="row-shell relative overflow-hidden">
                 <div class="universe-bg-text">DISNEY+</div>
                 <div class="row-header relative z-10">
                     <h2 class="row-title text-white">Disney+ Originals 🧚‍♂️</h2>
-                    <button onclick="loadCategory('discover/movie?with_companies=2&sort_by=popularity.desc', 'Koleksi Disney')" class="explore-btn">Lihat Semua ➔</button>
+                    <button type="button" onclick="loadCategory('discover/movie?with_companies=2&sort_by=popularity.desc', 'Koleksi Disney')" class="explore-btn">Lihat Semua ➔</button>
                 </div>
                 <div id="rowDisney" class="flex gap-6 overflow-x-auto no-scrollbar relative z-10 px-2"></div>
             </section>
 
-            <section class="relative overflow-hidden">
+            <section class="row-shell relative overflow-hidden">
                 <div class="universe-bg-text">PIXAR STUDIO</div>
                 <div class="row-header relative z-10">
                     <h2 class="row-title text-white">Dunia Fantasi Pixar 🎨</h2>
-                    <button onclick="loadCategory('discover/movie?with_companies=3&sort_by=popularity.desc', 'Koleksi Pixar')" class="explore-btn">Lihat Semua ➔</button>
+                    <button type="button" onclick="loadCategory('discover/movie?with_companies=3&sort_by=popularity.desc', 'Koleksi Pixar')" class="explore-btn">Lihat Semua ➔</button>
                 </div>
                 <div id="rowPixar" class="flex gap-6 overflow-x-auto no-scrollbar relative z-10 px-2"></div>
             </section>
 
-            <section>
+            <section class="row-shell">
                 <div class="row-header">
                     <h2 class="row-title">Malam Mencekam (Horor) 👻</h2>
-                    <button onclick="loadCategory('discover/movie?with_genres=27', 'Film Horor')" class="explore-btn">Lihat Semua ➔</button>
+                    <button type="button" onclick="loadCategory('discover/movie?with_genres=27', 'Film Horor')" class="explore-btn">Lihat Semua ➔</button>
                 </div>
                 <div id="rowHoror" class="flex gap-6 overflow-x-auto no-scrollbar px-2"></div>
             </section>
 
-            <section>
+            <section class="row-shell">
                 <div class="row-header">
                     <h2 class="row-title">Drama Korea (Drakor) 🫰</h2>
-                    <button onclick="loadCategory('discover/tv?with_original_language=ko', 'Drakor Terbaru')" class="explore-btn">Lihat Semua ➔</button>
+                    <button type="button" onclick="loadCategory('discover/tv?with_original_language=ko', 'Drakor Terbaru')" class="explore-btn">Lihat Semua ➔</button>
                 </div>
                 <div id="rowDrakor" class="flex gap-6 overflow-x-auto no-scrollbar px-2"></div>
             </section>
 
-            <section>
+            <section class="row-shell">
                 <div class="row-header">
                     <h2 class="row-title">Koleksi Anime 🌸</h2>
-                    <button onclick="loadCategory('discover/tv?with_original_language=ja&with_genres=16', 'Anime Populer')" class="explore-btn">Lihat Semua ➔</button>
+                    <button type="button" onclick="loadCategory('discover/tv?with_original_language=ja&with_genres=16', 'Anime Populer')" class="explore-btn">Lihat Semua ➔</button>
                 </div>
                 <div id="rowAnime" class="flex gap-6 overflow-x-auto no-scrollbar px-2"></div>
             </section>
@@ -1099,21 +1625,21 @@ body{
             <div id="gridResults" class="flex flex-wrap justify-center sm:justify-start gap-6 md:gap-10"></div>
 
             <div class="flex justify-center pt-20">
-                <button id="loadMoreBtn" onclick="loadMore()" class="hidden bg-white/10 backdrop-blur-md px-12 py-5 rounded-full font-black text-xs uppercase tracking-widest hover:bg-white hover:text-black transition border border-white/20">
+                <button type="button" id="loadMoreBtn" onclick="loadMore()" class="hidden bg-white/10 backdrop-blur-md px-12 py-5 rounded-full font-black text-xs uppercase tracking-widest hover:bg-white hover:text-black transition border border-white/20">
                     Muat Lebih Banyak
                 </button>
             </div>
         </section>
-<section class="space-y-24">
+<section id="extraHomeRows" class="space-y-24">
 
     <!-- UPCOMING -->
-    <section>
+    <section class="row-shell">
         <div class="row-header">
             <h2 class="row-title text-cyan-400">
                 Upcoming Releases 🚀
             </h2>
 
-            <button onclick="loadCategory('movie/upcoming', 'Upcoming Movies')" class="explore-btn">
+            <button type="button" onclick="loadCategory('movie/upcoming', 'Upcoming Movies')" class="explore-btn">
                 Lihat Semua ➔
             </button>
         </div>
@@ -1124,13 +1650,13 @@ body{
     </section>
 
     <!-- TOP RATED -->
-    <section>
+    <section class="row-shell">
         <div class="row-header">
             <h2 class="row-title text-yellow-400">
                 Top 10 Minggu Ini 👑
             </h2>
 
-            <button onclick="loadCategory('trending/all/week', 'Top Minggu Ini')" class="explore-btn">
+            <button type="button" onclick="loadCategory('trending/all/week', 'Top Minggu Ini')" class="explore-btn">
                 Lihat Semua ➔
             </button>
         </div>
@@ -1141,13 +1667,13 @@ body{
     </section>
 
     <!-- LATEST EPISODE -->
-    <section>
+    <section class="row-shell">
         <div class="row-header">
             <h2 class="row-title text-pink-400">
                 Episode Terbaru 📺
             </h2>
 
-            <button onclick="loadCategory('tv/on_the_air', 'Episode Terbaru')" class="explore-btn">
+            <button type="button" onclick="loadCategory('tv/on_the_air', 'Episode Terbaru')" class="explore-btn">
                 Lihat Semua ➔
             </button>
         </div>
@@ -1169,7 +1695,7 @@ body{
         <div id="detailBackdrop"></div>
         <div class="detail-gradient"></div>
 
-        <button onclick="closeDetailModal()" class="fixed top-6 right-6 md:top-8 md:right-8 z-[470] text-white/50 hover:text-red-500 text-3xl transition font-black">
+        <button type="button" onclick="closeDetailModal()" class="fixed top-6 right-6 md:top-8 md:right-8 z-[470] text-white/50 hover:text-red-500 text-3xl transition font-black">
             ✕
         </button>
 
@@ -1193,15 +1719,15 @@ body{
                         <div id="detailGenres" class="flex flex-wrap justify-center md:justify-start gap-2"></div>
 
                         <div class="flex flex-col sm:flex-row gap-3 justify-center md:justify-start pt-2">
-                            <button id="detailPlayBtn" class="rounded-full bg-white px-8 py-4 text-[10px] font-black uppercase tracking-widest text-black hover:bg-blue-500 hover:text-white transition">
-                                ▶ Nonton Sekarang
+                            <button type="button" id="detailPlayBtn" class="primary-watch-btn rounded-full bg-white px-8 py-4 text-[10px] font-black uppercase tracking-widest text-black hover:bg-blue-500 hover:text-white transition">
+                                Nonton Sekarang
                             </button>
 
-                            <button id="detailTrailerBtn" class="rounded-full bg-red-500 px-8 py-4 text-[10px] font-black uppercase tracking-widest text-white hover:bg-red-400 transition">
+                            <button type="button" id="detailTrailerBtn" class="rounded-full bg-red-500 px-8 py-4 text-[10px] font-black uppercase tracking-widest text-white hover:bg-red-400 transition">
                                 Trailer
                             </button>
 
-                            <button id="detailFavoriteBtn" class="rounded-full bg-white/10 px-8 py-4 text-[10px] font-black uppercase tracking-widest text-white border border-white/10 hover:bg-white hover:text-black transition">
+                            <button type="button" id="detailFavoriteBtn" class="rounded-full bg-white/10 px-8 py-4 text-[10px] font-black uppercase tracking-widest text-white border border-white/10 hover:bg-white hover:text-black transition">
                                 🤍 Favorit
                             </button>
                         </div>
@@ -1219,7 +1745,7 @@ body{
     </div>
 
     <div id="trailerModal" class="hidden fixed inset-0 z-[800] bg-black/90 items-center justify-center px-4">
-        <button onclick="closeTrailerModal()" class="fixed top-6 right-6 md:top-8 md:right-8 z-[820] text-white/50 hover:text-red-500 text-3xl transition font-black">
+        <button type="button" onclick="closeTrailerModal()" class="fixed top-6 right-6 md:top-8 md:right-8 z-[820] text-white/50 hover:text-red-500 text-3xl transition font-black">
             ✕
         </button>
 
@@ -1236,7 +1762,7 @@ body{
     </div>
 
     <div id="playerContainer" class="hidden fixed inset-0 z-[500] flex items-center justify-center bg-black/95 transition-all">
-        <button
+        <button type="button"
             id="playerCloseBtn"
             onclick="safeClosePlayer()"
             class="fixed top-6 right-6 md:top-8 md:right-8 z-[600] text-white/40 hover:text-red-500 text-3xl transition font-black"
