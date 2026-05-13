@@ -38,7 +38,7 @@ window.onload = () => {
 
 function safeText(str) {
     if (!str) return 'Unknown';
-    return String(str).replace(/['"\\`]/g, '');
+    return String(str).replace(/[<>&'"\\`]/g, '');
 }
 
 function updateAmbient(img) {
@@ -62,6 +62,22 @@ function setupScrollEffects() {
             header.parentElement.style.transform = cur > 100 ? "translateY(-15px)" : "translateY(0)";
         }
     }, { passive: true });
+}
+
+
+function setHomeRailsVisible(visible) {
+    const extraRails = document.getElementById('extraHomeRails');
+
+    if (extraRails) {
+        extraRails.classList.toggle('hidden', !visible);
+    }
+}
+
+function openCardKey(event, id, title, type, backdrop, poster, season = 1, episode = 1) {
+    if (event.key !== 'Enter' && event.key !== ' ') return;
+
+    event.preventDefault();
+    openMovieDetail(id, title, type, backdrop, poster, season, episode);
 }
 
 function initApp() {
@@ -206,6 +222,7 @@ function showMyList() {
     document.getElementById('homeView')?.classList.add('hidden');
     document.getElementById('heroSection')?.classList.add('hidden');
     document.getElementById('gridSection')?.classList.remove('hidden');
+    setHomeRailsVisible(false);
 
     const gridTitle = document.getElementById('gridTitle');
     const loadMoreBtn = document.getElementById('loadMoreBtn');
@@ -243,7 +260,9 @@ async function fetchAndRenderActors(path, id) {
 
             d.className = "flex flex-col items-center flex-shrink-0 group";
             d.innerHTML = `
-                <img src="${IMG_PATH + a.profile_path}" class="actor-circle" onclick="loadActorFilms(${a.id}, '${sName}')" loading="lazy">
+                <button type="button" onclick="loadActorFilms(${a.id}, '${sName}')" class="rounded-full focus:outline-none" aria-label="Lihat film ${sName}">
+                    <img src="${IMG_PATH + a.profile_path}" class="actor-circle" loading="lazy" alt="${sName}">
+                </button>
                 <p class="text-[9px] text-center text-white/50 mt-4 font-black group-hover:text-white uppercase tracking-widest truncate w-20 transition">${sName}</p>
             `;
 
@@ -286,8 +305,8 @@ async function fetchAndRenderTrending(path, id) {
             w.innerHTML = `
                 <div class="netflix-number">${i + 1}</div>
                 <div class="movie-card">
-                    <button onclick="toggleMyList(event, '${movieStr}')" class="fav-btn" style="color: ${isFav ? '#ef4444' : 'white'}">${isFav ? '❤️' : '🤍'}</button>
-                    <div class="poster-container" onclick="openMovieDetail(${m.id}, '${sTitle}', '${type}', '${m.backdrop_path || ''}', '${m.poster_path || ''}')">
+                    <button type="button" onclick="toggleMyList(event, '${movieStr}')" class="fav-btn" style="color: ${isFav ? '#ef4444' : 'white'}" aria-label="Tambah atau hapus ${sTitle} dari favorit">${isFav ? '❤️' : '🤍'}</button>
+                    <div class="poster-container" role="button" tabindex="0" onclick="openMovieDetail(${m.id}, '${sTitle}', '${type}', '${m.backdrop_path || ''}', '${m.poster_path || ''}')" onkeydown="openCardKey(event, ${m.id}, '${sTitle}', '${type}', '${m.backdrop_path || ''}', '${m.poster_path || ''}')" aria-label="Buka detail ${sTitle}">
                         <img src="${IMG_PATH + m.poster_path}" class="w-full h-full object-cover" loading="lazy">
                     </div>
                     <div class="mt-3 px-1 text-center">
@@ -379,11 +398,11 @@ function renderCards(movies, container, append = false, isTV = false, isHistory 
         card.className = "movie-card";
 
         card.innerHTML = `
-            <button onclick="toggleMyList(event, '${movieStr}')" class="fav-btn" style="color: ${isFav ? '#ef4444' : 'white'}">${isFav ? '❤️' : '🤍'}</button>
+            <button type="button" onclick="toggleMyList(event, '${movieStr}')" class="fav-btn" style="color: ${isFav ? '#ef4444' : 'white'}" aria-label="Tambah atau hapus ${sTitle} dari favorit">${isFav ? '❤️' : '🤍'}</button>
 
             ${deleteHistoryBtn}
 
-            <div class="poster-container" onclick="openMovieDetail(${m.id}, '${sTitle}', '${type}', '${m.backdrop_path || ''}', '${m.poster_path || ''}', ${seasonInfo || 1}, ${episodeInfo || 1})">
+            <div class="poster-container" role="button" tabindex="0" onclick="openMovieDetail(${m.id}, '${sTitle}', '${type}', '${m.backdrop_path || ''}', '${m.poster_path || ''}', ${seasonInfo || 1}, ${episodeInfo || 1})" onkeydown="openCardKey(event, ${m.id}, '${sTitle}', '${type}', '${m.backdrop_path || ''}', '${m.poster_path || ''}', ${seasonInfo || 1}, ${episodeInfo || 1})" aria-label="Buka detail ${sTitle}">
                 <img src="${IMG_PATH + m.poster_path}" class="w-full h-full object-cover" loading="lazy">
 
                 <div class="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 flex items-center justify-center transition-all duration-500">
@@ -628,99 +647,6 @@ function changeServer(s) {
     if (active) {
         active.className = "server-btn px-8 py-3 rounded-full text-[10px] font-black uppercase bg-white text-black shadow-xl transition active:scale-95";
     }
-}
-
-async function playMovie(id, title, type, backdrop, poster, season = 1, episode = 1) {
-    currentPlayId = id;
-    currentPlayType = type;
-    currentSeason = Number(season) || 1;
-    currentEpisode = Number(episode) || 1;
-    currentTvDetails = null;
-
-    currentPlayTitle = title;
-    currentPlayBackdrop = backdrop || '';
-    currentPlayPoster = poster || '';
-
-    const player = document.getElementById('playerContainer');
-    const playingTitle = document.getElementById('playingTitle');
-    const playerOverview = document.getElementById('playerOverview');
-    const playerRating = document.getElementById('playerRating');
-    const playerRuntime = document.getElementById('playerRuntime');
-    const playerYear = document.getElementById('playerYear');
-    const playerControls = document.getElementById('playerControls');
-
-    if (!player) return;
-
-    if (playingTitle) playingTitle.innerText = title;
-    if (playerOverview) playerOverview.innerText = "Memuat sinopsis...";
-    if (playerRating) playerRating.innerText = "⭐ ...";
-    if (playerRuntime) playerRuntime.innerText = "...";
-    if (playerYear) playerYear.innerText = "....";
-
-    if (playerControls) {
-        // Label tombol Server 2 diubah menjadi "Server 2 (VidKing)"
-        playerControls.innerHTML = `
-            <button id="btn-VidSrc" onclick="changeServer('VidSrc')" class="server-btn px-8 py-3 rounded-full text-[10px] font-black uppercase bg-white text-black shadow-xl">
-                Server 1
-            </button>
-
-            <button id="btn-AutoEmbed" onclick="changeServer('AutoEmbed')" class="server-btn px-8 py-3 rounded-full text-[10px] font-black uppercase border border-white/10 opacity-40">
-                Server 2 (VidKing)
-            </button>
-
-            <button onclick="shareMovie('${title.replace(/'/g, "\\'")}')" class="px-8 py-3 rounded-full text-[10px] font-black uppercase bg-white/5 border border-white/10 hover:bg-white hover:text-black transition">
-                Share
-            </button>
-        `;
-    }
-
-    clearInterval(carouselTimer);
-history.pushState(
-    {
-        playerOpen: true
-    },
-    ''
-);
-    player.classList.remove('hidden');
-    document.body.classList.add('player-open');
-    document.body.style.overflow = 'hidden';
-
-    changeServer('VidSrc');
-
-    if (backdrop && backdrop !== 'null') {
-        updateAmbient(backdrop);
-    }
-
-    try {
-        const res = await fetch(`/api/movies?path=${type}/${id}`);
-        const m = await res.json();
-
-        if (type === 'tv') {
-            renderEpisodeControls(m);
-        }
-
-        if (playerOverview) {
-            playerOverview.innerText = m.overview || 'Sinopsis tidak tersedia untuk film ini.';
-        }
-
-        if (playerRating) {
-            playerRating.innerText = `⭐ ${m.vote_average ? m.vote_average.toFixed(1) : 'N/A'}`;
-        }
-
-        if (playerYear) {
-            playerYear.innerText = (m.release_date || m.first_air_date || '2024').split('-')[0];
-        }
-
-        if (playerRuntime) {
-            playerRuntime.innerText = m.runtime
-                ? `${m.runtime}m`
-                : (m.episode_run_time?.length ? `${m.episode_run_time[0]}m` : 'TV Series');
-        }
-
-        saveToHistory(id, type, backdrop || m.backdrop_path, poster || m.poster_path, title);
-    } catch (e) {}
-
-    fetchDetails(id, type);
 }
 
 function renderEpisodeControls(tvDetails) {
@@ -1025,6 +951,7 @@ async function loadCategory(path, label) {
     document.getElementById('homeView')?.classList.add('hidden');
     document.getElementById('heroSection')?.classList.add('hidden');
     document.getElementById('gridSection')?.classList.remove('hidden');
+    setHomeRailsVisible(false);
 
     const gridTitle = document.getElementById('gridTitle');
     const loadMoreBtn = document.getElementById('loadMoreBtn');
@@ -1067,6 +994,7 @@ async function loadActorFilms(actorId, actorName) {
     document.getElementById('homeView')?.classList.add('hidden');
     document.getElementById('heroSection')?.classList.add('hidden');
     document.getElementById('gridSection')?.classList.remove('hidden');
+    setHomeRailsVisible(false);
 
     const gridTitle = document.getElementById('gridTitle');
     const loadMoreBtn = document.getElementById('loadMoreBtn');
@@ -1438,7 +1366,7 @@ function setupDragToScroll() {
 }
 
 function setupRowButtons() {
-    const rows = document.querySelectorAll('#homeView section > .overflow-x-auto');
+    const rows = document.querySelectorAll('#homeView section > .overflow-x-auto, #extraHomeRails section > .overflow-x-auto');
 
     rows.forEach(row => {
         if (!row || !row.id) return;
@@ -1794,6 +1722,8 @@ window.addEventListener('popstate', () => {
         homeView?.classList.remove('hidden');
 
         heroSection?.classList.remove('hidden');
+
+        setHomeRailsVisible(true);
 
         return;
     }
