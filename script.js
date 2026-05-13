@@ -34,6 +34,7 @@ window.onload = () => {
     setupFilterYears();
     openFromTelegramLink();
     setupLiveVisitors();
+    setupBackToTop();
 };
 
 function safeText(str) {
@@ -71,11 +72,17 @@ function bindPressAction(element, action) {
 }
 
 function setHomeRowsVisible(isVisible) {
-    const extraRows = document.getElementById('extraHomeRows');
+    const homeOnlySections = [
+        document.getElementById('extraHomeRows'),
+        document.getElementById('quickActionPanel'),
+        document.querySelector('.smart-stat-strip')
+    ];
 
-    if (extraRows) {
-        extraRows.classList.toggle('hidden', !isVisible);
-    }
+    homeOnlySections.forEach(section => {
+        if (section) {
+            section.classList.toggle('hidden', !isVisible);
+        }
+    });
 }
 
 function showGridView() {
@@ -113,6 +120,68 @@ function setupScrollEffects() {
             header.parentElement.style.transform = cur > 100 ? "translateY(-15px)" : "translateY(0)";
         }
     }, { passive: true });
+}
+
+
+function setupBackToTop() {
+    const btn = document.getElementById('backToTopBtn');
+    if (!btn) return;
+
+    const toggle = () => {
+        btn.classList.toggle('is-visible', window.scrollY > 520);
+    };
+
+    toggle();
+    window.addEventListener('scroll', toggle, { passive: true });
+}
+
+function scrollToTopSmooth() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function loadQuickPick(kind) {
+    const picks = {
+        family: {
+            path: 'discover/movie?with_genres=10751,16&sort_by=popularity.desc&vote_count.gte=300',
+            label: 'Family Night 👨‍👩‍👧'
+        },
+        date: {
+            path: 'discover/movie?with_genres=10749,18&sort_by=popularity.desc&vote_count.gte=250',
+            label: 'Date Movie 💘'
+        },
+        adrenaline: {
+            path: 'discover/movie?with_genres=28,53,878&sort_by=popularity.desc&vote_count.gte=500',
+            label: 'Adrenaline Picks ⚡'
+        }
+    };
+
+    const pick = picks[kind];
+    if (!pick) return;
+
+    loadCategory(pick.path, pick.label);
+}
+
+function continueWatchingSmart() {
+    const historyItems = JSON.parse(localStorage.getItem('nbg_history') || '[]');
+    const last = historyItems.find(item => item && item.id && item.poster_path);
+
+    if (last) {
+        const type = last.media_type || last.type || (last.title ? 'movie' : 'tv');
+
+        openMovieDetail(
+            last.id,
+            safeText(last.title || last.name || 'Unknown'),
+            type,
+            last.backdrop_path || '',
+            last.poster_path || '',
+            last.lastSeason || last.season_number || 1,
+            last.lastEpisode || last.episode_number || 1
+        );
+
+        return;
+    }
+
+    surpriseMe();
 }
 
 function initApp() {

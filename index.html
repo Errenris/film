@@ -1305,6 +1305,240 @@ body::before {
 
 </style>
 
+
+<style id="nobargasi-modern-friendly-v3">
+/* Modern, friendly refresh for laptop + mobile */
+:root {
+    --friendly-blue: #60a5fa;
+    --friendly-purple: #a855f7;
+    --friendly-pink: #fb7185;
+    --soft-surface: rgba(255, 255, 255, 0.065);
+}
+
+body {
+    background-attachment: fixed;
+}
+
+#mainHeader {
+    transform-origin: top center;
+}
+
+.header-capsule {
+    border-color: rgba(255,255,255,0.13) !important;
+    background: linear-gradient(135deg, rgba(10, 12, 20, 0.86), rgba(25, 28, 42, 0.72)) !important;
+}
+
+.header-capsule button,
+#mobileNav button,
+.quick-pick-card,
+.smart-stat-card {
+    transition: transform .25s ease, border-color .25s ease, background .25s ease, box-shadow .25s ease, opacity .25s ease;
+}
+
+.header-capsule button:active,
+#mobileNav button:active,
+.quick-pick-card:active {
+    transform: scale(.96);
+}
+
+#searchInput {
+    width: clamp(132px, 18vw, 250px) !important;
+}
+
+#heroSection {
+    border-color: rgba(255,255,255,.12) !important;
+}
+
+#heroSection::after {
+    content: "";
+    position: absolute;
+    inset: 1px;
+    pointer-events: none;
+    border-radius: inherit;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.06);
+    z-index: 4;
+}
+
+.quick-action-panel {
+    margin-top: -64px;
+    position: relative;
+    z-index: 30;
+    display: grid;
+    gap: 14px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.quick-pick-card {
+    position: relative;
+    overflow: hidden;
+    border-radius: 28px;
+    padding: 18px;
+    min-height: 126px;
+    text-align: left;
+    background:
+        radial-gradient(circle at 88% 10%, rgba(255,255,255,.20), transparent 26%),
+        linear-gradient(135deg, rgba(255,255,255,.105), rgba(255,255,255,.035));
+    border: 1px solid rgba(255,255,255,.11);
+    box-shadow: 0 18px 50px rgba(0,0,0,.34);
+    backdrop-filter: blur(18px);
+}
+
+.quick-pick-card:hover,
+.quick-pick-card:focus-visible {
+    transform: translateY(-5px);
+    border-color: rgba(96,165,250,.62);
+    background:
+        radial-gradient(circle at 88% 10%, rgba(96,165,250,.28), transparent 30%),
+        linear-gradient(135deg, rgba(255,255,255,.14), rgba(255,255,255,.05));
+    box-shadow: 0 24px 70px rgba(59,130,246,.18);
+}
+
+.quick-pick-card .quick-icon {
+    display: grid;
+    place-items: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 18px;
+    background: rgba(255,255,255,.12);
+    margin-bottom: 14px;
+    font-size: 20px;
+}
+
+.quick-pick-card h3 {
+    font-size: 13px;
+    font-weight: 900;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: #fff;
+}
+
+.quick-pick-card p {
+    margin-top: 6px;
+    font-size: 11px;
+    line-height: 1.45;
+    color: rgba(255,255,255,.58);
+}
+
+.smart-stat-strip {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.smart-stat-card {
+    border-radius: 24px;
+    padding: 16px;
+    background: rgba(255,255,255,.045);
+    border: 1px solid rgba(255,255,255,.09);
+}
+
+.smart-stat-card:hover {
+    border-color: rgba(255,255,255,.18);
+    background: rgba(255,255,255,.07);
+}
+
+.smart-stat-card strong {
+    display: block;
+    font-size: 22px;
+    line-height: 1;
+    color: white;
+}
+
+.smart-stat-card span {
+    display: block;
+    margin-top: 8px;
+    font-size: 9px;
+    font-weight: 900;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,.48);
+}
+
+#backToTopBtn {
+    position: fixed;
+    right: 18px;
+    bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+    z-index: 120;
+    width: 48px;
+    height: 48px;
+    border-radius: 999px;
+    display: grid;
+    place-items: center;
+    color: white;
+    background: linear-gradient(135deg, rgba(59,130,246,.92), rgba(239,68,68,.9));
+    border: 1px solid rgba(255,255,255,.22);
+    box-shadow: 0 18px 48px rgba(0,0,0,.44);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(12px);
+}
+
+#backToTopBtn.is-visible {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+}
+
+@media (min-width: 768px) {
+    .quick-action-panel {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .smart-stat-strip {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 767px) {
+    .quick-action-panel {
+        margin-top: -34px;
+        gap: 10px;
+    }
+
+    .quick-pick-card {
+        border-radius: 22px;
+        min-height: 118px;
+        padding: 14px;
+    }
+
+    .quick-pick-card .quick-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 15px;
+        font-size: 18px;
+        margin-bottom: 12px;
+    }
+
+    .quick-pick-card h3 {
+        font-size: 10px;
+    }
+
+    .quick-pick-card p {
+        font-size: 10px;
+    }
+
+    .smart-stat-strip {
+        gap: 10px;
+    }
+
+    .smart-stat-card {
+        padding: 14px;
+        border-radius: 20px;
+    }
+
+    .smart-stat-card strong {
+        font-size: 18px;
+    }
+
+    #backToTopBtn {
+        right: 18px;
+        bottom: calc(92px + env(safe-area-inset-bottom, 0px));
+        width: 44px;
+        height: 44px;
+    }
+}
+</style>
+
 </head>
 
 <body class="pb-20">
@@ -1385,6 +1619,40 @@ body::before {
 
             <div id="heroDots" class="absolute bottom-10 right-10 flex flex-col gap-2 z-20"></div>
         </section>
+
+        <section id="quickActionPanel" class="quick-action-panel" aria-label="Pilihan cepat sesuai mood">
+            <button type="button" class="quick-pick-card" onclick="loadQuickPick('family')">
+                <span class="quick-icon">👨‍👩‍👧</span>
+                <h3>Family Night</h3>
+                <p>Film aman dan ringan buat nonton bareng keluarga.</p>
+            </button>
+
+            <button type="button" class="quick-pick-card" onclick="loadQuickPick('date')">
+                <span class="quick-icon">💘</span>
+                <h3>Date Movie</h3>
+                <p>Romance dan drama populer buat suasana santai.</p>
+            </button>
+
+            <button type="button" class="quick-pick-card" onclick="loadQuickPick('adrenaline')">
+                <span class="quick-icon">⚡</span>
+                <h3>Adrenaline</h3>
+                <p>Action, thriller, dan sci-fi dengan rating tinggi.</p>
+            </button>
+
+            <button type="button" class="quick-pick-card" onclick="continueWatchingSmart()">
+                <span class="quick-icon">⏯️</span>
+                <h3>Lanjut Cepat</h3>
+                <p>Buka tontonan terakhir atau pilih rekomendasi acak.</p>
+            </button>
+        </section>
+
+        <section class="smart-stat-strip" aria-label="Ringkasan fitur Nobargasi">
+            <div class="smart-stat-card"><strong>HD</strong><span>Stream ready</span></div>
+            <div class="smart-stat-card"><strong>2x</strong><span>Pilihan server</span></div>
+            <div class="smart-stat-card"><strong>❤️</strong><span>Favorit lokal</span></div>
+            <div class="smart-stat-card"><strong>🎛️</strong><span>Filter cepat</span></div>
+        </section>
+
 
         <div id="homeView" class="space-y-28">
 
@@ -1760,6 +2028,8 @@ body::before {
             ></iframe>
         </div>
     </div>
+
+    <button type="button" id="backToTopBtn" onclick="scrollToTopSmooth()" aria-label="Kembali ke atas">↑</button>
 
     <div id="playerContainer" class="hidden fixed inset-0 z-[500] flex items-center justify-center bg-black/95 transition-all">
         <button type="button"
